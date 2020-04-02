@@ -29,7 +29,7 @@ class AdminLoginController extends Controller
         if ($request->validator->fails()) {
             return response()->json([
                 'success'    => false,
-                'message'   => 'Data is invalid.', 
+                'message'   => 'parameter invalid', 
                 'errors'    => $request->validator->errors(),
             ], 400);
         }   
@@ -38,19 +38,19 @@ class AdminLoginController extends Controller
 
             Auth::login($admin);
             $success['token'] =  $admin->createToken('Texi_App')->accessToken; 
-            $success['user'] =  $admin; 
+            $success['data'] =  $admin; 
             
             return response()->json([
                 'success'    => true,
-                'message'   => 'Login success.', 
+                'message'   => 'Login successfully', 
                 'data'    => $success,
             ], 200);
         } 
         else{ 
             return response()->json([
                 'success'    => false,
-                'message'   => 'Fail login', 
-                'data'    => array(),
+                'message'   => "email and password don't match", 
+                'errors'    => array('auth' => ["email and password don't match"]),
             ], 401);
         } 
     }

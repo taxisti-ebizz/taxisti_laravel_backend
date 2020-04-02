@@ -23,16 +23,18 @@ class AdminRegistorRepository extends Controller
 
         $input = $request->all(); 
         $input['password'] = md5($input['password']); 
+        $input['type'] = 1;
+        $input['status'] = 1;
         $input['lastupdated_date'] = date('Y-m-d');
         $input['lastupdated_time'] = date('H:m:s');
-        $user = Admin::create($input); 
+        $admin = Admin::create($input); 
         
-        $success['token'] =  $user->createToken('Texi_App')->accessToken; 
-        $success['name'] =  $user->name;
+        $success['token'] =  $admin->createToken('Texi_App')->accessToken; 
+        $success['data'] =  $admin;
          
         return response()->json([
             'success'    => true,
-            'message'   => 'user date', 
+            'message'   => 'Registration successfully', 
             'data'    => $success,
         ], 200);
     }

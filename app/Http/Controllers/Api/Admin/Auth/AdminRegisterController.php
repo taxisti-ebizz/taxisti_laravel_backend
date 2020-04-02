@@ -21,7 +21,7 @@ class AdminRegisterController extends Controller
         if ($request->validator->fails()) {
             return response()->json([
                 'success'    => false,
-                'message'   => 'Data is invalid.', 
+                'message'   => 'parameter invalid', 
                 'errors'    => $request->validator->errors(),
             ], 400);
         }   
