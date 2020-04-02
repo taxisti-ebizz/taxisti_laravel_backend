@@ -14,6 +14,13 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
+// Admin Gust Routes
+Route::post('adminLogin','API\Admin\Auth\AdminLoginController@login');
+Route::post('adminRegister','API\Admin\Auth\AdminRegisterController@create');
+
+
+Route::group(['middleware' => 'auth:api'], function(){
+
+    // Admin Auth Routes
+    
 });
