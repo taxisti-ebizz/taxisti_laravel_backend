@@ -25,12 +25,12 @@ class AdminRegistorRepository extends Controller
         $input['password'] = md5($input['password']); 
         $input['type'] = 1;
         $input['status'] = 1;
-        $input['lastupdated_date'] = date('Y-m-d');
-        $input['lastupdated_time'] = date('H:m:s');
+        $input['lastupdated_date'] = "0000-00-00";
+        $input['lastupdated_time'] = "00:00:00";
         $admin = Admin::create($input); 
         
         $success['token'] =  $admin->createToken('Texi_App')->accessToken; 
-        $success['data'] =  $admin;
+        $success['data'] =  Admin::where('user_id',$admin->user_id)->get(['name','email_id','mobile_no']);
          
         return response()->json([
             'success'    => true,

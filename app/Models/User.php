@@ -14,6 +14,8 @@ class User extends Authenticatable
 
     protected $table = 'taxi_users';
     protected $primaryKey = 'user_id';
+    public $timestamps = false;
+
 
     /**
      * The attributes that are mass assignable.
@@ -21,7 +23,7 @@ class User extends Authenticatable
      * @var array
      */
      protected $fillable = [
-        'user_id', 'first_name', 'last_name','profile_pic','password','login_type','date_of_birth','mobile_no','user_type','status','created_date','updated_date','facebook_id','device_type','device_token','fire_base_id','verify',
+        'user_id', 'first_name', 'last_name','profile_pic','email_id','password','login_type','date_of_birth','mobile_no','user_type','status','created_date','updated_date','facebook_id','device_type','device_token','fire_base_id','verify',
     ];
 
 

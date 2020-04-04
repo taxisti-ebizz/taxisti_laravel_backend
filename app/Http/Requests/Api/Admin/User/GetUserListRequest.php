@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Api\Admin\Auth;
+namespace App\Http\Requests\Api\Admin\User;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class AdminRegisterRequest extends FormRequest
+class GetUserListRequest extends FormRequest
 {
     public $validator = null;
     protected function failedValidation($validator)
@@ -30,10 +30,8 @@ class AdminRegisterRequest extends FormRequest
     public function rules()
     {
         return [
-            'name' => 'required|string|max:255',
-            // 'email_id' => 'required|string|email|unique:taxi_admin|max:255',
-            'password' => 'required|string|min:8',
-            'mobile_no' => 'required',
+            //
         ];
     }
+
 }

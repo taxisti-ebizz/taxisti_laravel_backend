@@ -38,7 +38,7 @@ class AdminLoginController extends Controller
 
             Auth::login($admin);
             $success['token'] =  $admin->createToken('Texi_App')->accessToken; 
-            $success['data'] =  $admin; 
+            $success['data'] =  Admin::where('user_id',$admin->user_id)->get(['name','email_id','mobile_no']);
             
             return response()->json([
                 'success'    => true,

@@ -19,8 +19,9 @@ Route::post('adminLogin','API\Admin\Auth\AdminLoginController@login');
 Route::post('adminRegister','API\Admin\Auth\AdminRegisterController@create');
 
 
-Route::group(['middleware' => 'auth:api'], function(){
-
+Route::group(['middleware' => 'auth:admin'], function(){
+    
     // Admin Auth Routes
+    Route::post('getUserList','API\Admin\UserController@get_user_list');
     
 });

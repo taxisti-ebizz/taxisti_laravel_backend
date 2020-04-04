@@ -11,7 +11,8 @@ class Admin extends Authenticatable
 {
     use HasApiTokens,Notifiable;
 
-    
+    protected $guard = 'admin';
+
     protected $table = 'taxi_admin';
     protected $primaryKey = 'user_id';
     public $timestamps = false;
