@@ -29,7 +29,7 @@ class UserRepository extends Controller
         }
         $user_list['data'] = $data; 
         return response()->json([
-            'success'    => true,
+            'status'    => true,
             'message'   => 'All user list', 
             'data'    => $user_list,
         ], 200);
@@ -43,14 +43,14 @@ class UserRepository extends Controller
         {
             $user['profile_pic'] = $user['profile_pic'] != ''? url($user['profile_pic']) : '';
             return response()->json([
-                'success'    => true,
+                'status'    => true,
                 'message'   => 'user detail', 
                 'data'    => $user,
             ], 200);
         }
         else {
             return response()->json([
-                'success'    => false,
+                'status'    => false,
                 'message'   => 'No user found', 
                 'error'    => '',
             ], 200);
@@ -76,7 +76,7 @@ class UserRepository extends Controller
             }
             else {
                 return response()->json([
-                    'success'    => false,
+                    'status'    => false,
                     'message'   => 'fail to move profile_pic', 
                     'error'    => '',
                 ], 200);
@@ -93,7 +93,7 @@ class UserRepository extends Controller
 
 
         return response()->json([
-            'success'    => true,
+            'status'    => true,
             'message'   => 'update successfull', 
             'data'    => $user,
         ], 200);
@@ -115,7 +115,7 @@ class UserRepository extends Controller
         User::where('user_id',$user_id)->delete();
         
         return response()->json([
-            'success'    => true,
+            'status'    => true,
             'message'   => 'user deleted', 
             'data'    => '',
         ], 200);   

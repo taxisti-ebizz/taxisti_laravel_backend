@@ -28,30 +28,30 @@ class AdminLoginController extends Controller
     { 
         if ($request->validator->fails()) {
             return response()->json([
-                'success'    => false,
+                'status'    => false,
                 'message'   => 'parameter invalid', 
                 'errors'    => $request->validator->errors(),
-            ], 400);
+            ], 200);
         }   
 
         if($admin = Admin::where(['email_id' => $request->email_id,'password' => md5($request->password)])->first()){ 
 
             Auth::login($admin);
+            $success =  Admin::where('user_id',$admin->user_id)->get(['name','email_id','mobile_no'])->first();
             $success['token'] =  $admin->createToken('Texi_App')->accessToken; 
-            $success['data'] =  Admin::where('user_id',$admin->user_id)->get(['name','email_id','mobile_no']);
             
             return response()->json([
-                'success'    => true,
+                'status'    => true,
                 'message'   => 'Login successfully', 
                 'data'    => $success,
             ], 200);
         } 
         else{ 
             return response()->json([
-                'success'    => false,
+                'status'    => false,
                 'message'   => "email and password don't match", 
-                'errors'    => array('auth' => ["email and password don't match"]),
-            ], 401);
+                'errors'    => '',
+            ], 200);
         } 
     }
 }

@@ -4,23 +4,23 @@ namespace App\Http\Controllers\Api\Admin;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Repositories\Api\Admin\UserRepository;
-use App\Http\Requests\Api\Admin\User\DeleteUserRequest;
-use App\Http\Requests\Api\Admin\User\GetUserListRequest;
-use App\Http\Requests\Api\Admin\User\GetUserDetailRequest;
-use App\Http\Requests\Api\Admin\User\EditUserDetailRequest;
+use App\Repositories\Api\Admin\DriverRepository;
+use App\Http\Requests\Api\Admin\Driver\DeleteDriverRequest;
+use App\Http\Requests\Api\Admin\Driver\GetDriverListRequest;
+use App\Http\Requests\Api\Admin\Driver\GetDriverDetailRequest;
+use App\Http\Requests\Api\Admin\Driver\EditDriverDetailRequest;
 
-class UserController extends Controller
+class DriverController extends Controller
 {
-    protected $user;
+    protected $driver;
 
     public function __construct()
     {
-        $this->user = new UserRepository;
+        $this->driver = new DriverRepository;
     }
 
-    // get user list
-    protected function get_user_list(GetUserListRequest $request)
+    // get driver list
+    protected function get_driver_list(GetDriverListRequest $request)
     {
         if ($request->validator->fails()) {
             return response()->json([
@@ -30,11 +30,11 @@ class UserController extends Controller
             ], 200);
         }   
 
-        return $this->user->get_user_list($request);
+        return $this->driver->get_driver_list($request);
     }
 
-    // get user detail
-    protected function get_user_detail(GetUserDetailRequest $request)
+    // get driver detail
+    protected function get_driver_detail(GetDriverDetailRequest $request)
     {
         if ($request->validator->fails()) {
             return response()->json([
@@ -44,12 +44,12 @@ class UserController extends Controller
             ], 200);
         }   
 
-        return $this->user->get_user_detail($request);
+        return $this->driver->get_driver_detail($request);
 
     }
     
-    // edit user detail
-    protected function edit_user_detail(EditUserDetailRequest $request)
+    // edit driver detail
+    protected function edit_driver_detail(EditDriverDetailRequest $request)
     {
         if ($request->validator->fails()) {
             return response()->json([
@@ -59,12 +59,12 @@ class UserController extends Controller
             ], 200);
         }   
 
-        return $this->user->edit_user_detail($request);
+        return $this->driver->edit_driver_detail($request);
 
     }
 
-    // delete user
-    protected function delete_user(DeleteUserRequest $request, $user_id)
+    // delete driver
+    protected function delete_driver(DeleteDriverRequest $request, $driver_id)
     {
         if ($request->validator->fails()) {
             return response()->json([
@@ -74,7 +74,7 @@ class UserController extends Controller
             ], 200);
         }   
 
-        return $this->user->delete_user($request,$user_id);
+        return $this->driver->delete_driver($request,$driver_id);
     }
     
 }

@@ -20,10 +20,10 @@ class AdminRegisterController extends Controller
     {
         if ($request->validator->fails()) {
             return response()->json([
-                'success'    => false,
+                'status'    => false,
                 'message'   => 'parameter invalid', 
                 'errors'    => $request->validator->errors(),
-            ], 400);
+            ], 200);
         }   
 
         return $this->admin->create($request);

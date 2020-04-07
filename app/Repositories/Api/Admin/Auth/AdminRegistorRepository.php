@@ -29,11 +29,11 @@ class AdminRegistorRepository extends Controller
         $input['lastupdated_time'] = "00:00:00";
         $admin = Admin::create($input); 
         
+        $success =  Admin::where('user_id',$admin->user_id)->get(['name','email_id','mobile_no'])->first();
         $success['token'] =  $admin->createToken('Texi_App')->accessToken; 
-        $success['data'] =  Admin::where('user_id',$admin->user_id)->get(['name','email_id','mobile_no']);
          
         return response()->json([
-            'success'    => true,
+            'status'    => true,
             'message'   => 'Registration successfully', 
             'data'    => $success,
         ], 200);
