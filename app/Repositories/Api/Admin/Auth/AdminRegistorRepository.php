@@ -16,7 +16,7 @@ class AdminRegistorRepository extends Controller
      * Create a new user instance after a valid registration.
      *
      * @param  array  $request
-     * @return \App\Models\User
+     * @return \App\Models\Admin
      */
     public function create($request)
     {

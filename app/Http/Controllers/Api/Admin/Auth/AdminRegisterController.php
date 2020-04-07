@@ -9,11 +9,11 @@ use App\Repositories\Api\Admin\Auth\AdminRegistorRepository;
 
 class AdminRegisterController extends Controller
 {
-    protected $user;
+    protected $admin;
 
     public function __construct()
     {
-        $this->user = new AdminRegistorRepository;
+        $this->admin = new AdminRegistorRepository;
     }
 
     protected function create(AdminRegisterRequest $request)
@@ -26,7 +26,7 @@ class AdminRegisterController extends Controller
             ], 400);
         }   
 
-        return $this->user->create($request);
+        return $this->admin->create($request);
 
     }
 }

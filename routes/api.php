@@ -15,13 +15,20 @@ use Illuminate\Support\Facades\Route;
 */
 
 // Admin Gust Routes
-Route::post('adminLogin','API\Admin\Auth\AdminLoginController@login');
-Route::post('adminRegister','API\Admin\Auth\AdminRegisterController@create');
+Route::post('adminLogin','Api\Admin\Auth\AdminLoginController@login');
+Route::post('adminRegister','Api\Admin\Auth\AdminRegisterController@create');
 
 
+// Admin Auth Routes
 Route::group(['middleware' => 'auth:admin'], function(){
     
-    // Admin Auth Routes
-    Route::post('getUserList','API\Admin\UserController@get_user_list');
+
+    // USER
+    Route::post('getUserList','Api\Admin\UserController@get_user_list');
+    Route::post('getUserDetail','Api\Admin\UserController@get_user_detail');
+    Route::post('editUserDetail','Api\Admin\UserController@edit_user_detail');
+    Route::delete('deleteUser/{user_id}','Api\Admin\UserController@delete_user');
+
+
     
 });
