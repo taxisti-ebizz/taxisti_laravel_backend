@@ -26,5 +26,24 @@ class Driver extends Model
         return $this->belongsTo(User::class, 'driver_id', 'user_id');
     }
 
+    public function rides()
+    {
+        return $this->hasMany(Request::class,'driver_id','driver_id');
+    }
+
+    public function cancel_ride()
+    {
+        return $this->hasMany(Request::class,'driver_id','driver_id');
+    }
+
+    public function total_review()
+    {
+        return $this->hasMany(Ratting::class,'driver_id','driver_id');
+    }
+
+    public function avg_rating()
+    {
+        return $this->hasMany(Ratting::class,'driver_id','driver_id');
+    }
 
 }

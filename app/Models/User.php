@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Ratting;
+use App\Models\Request;
 use Laravel\Passport\HasApiTokens;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -44,4 +46,26 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function complate_ride()
+    {
+        return $this->hasMany(Request::class,'rider_id','user_id');
+    }
+
+    public function cancel_ride()
+    {
+        return $this->hasMany(Request::class,'rider_id','user_id');
+    }
+
+    public function total_review()
+    {
+        return $this->hasMany(Ratting::class,'rider_id','user_id');
+    }
+
+    public function avg_rating()
+    {
+        return $this->hasMany(Ratting::class,'rider_id','user_id');
+    }
+    
+    
 }

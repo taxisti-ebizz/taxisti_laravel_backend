@@ -4,7 +4,7 @@ namespace App\Http\Requests\Api\Admin\Driver;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class GetDriverListRequest extends FormRequest
+class EditDriverStatusRequest extends FormRequest
 {
     public $validator = null;
     protected function failedValidation($validator)
@@ -29,9 +29,9 @@ class GetDriverListRequest extends FormRequest
      */
     public function rules()
     {
-
         return [
-            // 'type' => 'required|string'
+            'driver_id' => 'required',
+            'status' => 'required'
         ];
     }
 }

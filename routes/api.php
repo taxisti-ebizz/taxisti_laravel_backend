@@ -31,6 +31,12 @@ Route::group(['middleware' => 'auth:admin'], function(){
 
     // DRIVER
     Route::post('getDriverList','Api\Admin\DriverController@get_driver_list');
+    Route::post('getDriverDetail','Api\Admin\DriverController@get_driver_detail');
+    Route::post('editDriverDetail','Api\Admin\DriverController@edit_driver_detail');
+    Route::post('editDriverStatus','Api\Admin\DriverController@edit_driver_status');
+    Route::delete('deleteDriver/{driver_id}','Api\Admin\DriverController@delete_driver');
+
+
 
 
 

@@ -9,6 +9,7 @@ use App\Http\Requests\Api\Admin\Driver\DeleteDriverRequest;
 use App\Http\Requests\Api\Admin\Driver\GetDriverListRequest;
 use App\Http\Requests\Api\Admin\Driver\GetDriverDetailRequest;
 use App\Http\Requests\Api\Admin\Driver\EditDriverDetailRequest;
+use App\Http\Requests\Api\Admin\Driver\EditDriverStatusRequest;
 
 class DriverController extends Controller
 {
@@ -60,6 +61,21 @@ class DriverController extends Controller
         }   
 
         return $this->driver->edit_driver_detail($request);
+
+    }
+
+    // edit driver status
+    protected function edit_driver_status(EditDriverStatusRequest $request)
+    {
+        if ($request->validator->fails()) {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'parameter invalid', 
+                'errors'    => $request->validator->errors(),
+            ], 200);
+        }   
+
+        return $this->driver->edit_driver_status($request);
 
     }
 

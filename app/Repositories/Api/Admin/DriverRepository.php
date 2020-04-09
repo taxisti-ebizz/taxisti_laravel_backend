@@ -4,33 +4,66 @@
 namespace App\Repositories\Api\Admin;
 
 use File;
+use App\Models\User;
 use App\Models\Driver;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Storage;
 
 class DriverRepository extends Controller
 {
 
-    /**
-     * Create a new driver instance after a valid registration.
-     *
-     * @param  array  $request
-     * @return \App\Models\Driver
-     */
+    // get driver list
     public function get_driver_list($request)
     {
-        $driver_list = DB::table('taxi_driver_detail')
-        ->select('taxi_driver_detail.*','taxi_users.*')
-        ->join('taxi_users', 'taxi_driver_detail.driver_id', '=', 'taxi_users.user_id')
-        ->paginate(15)->toArray();
+        $driver_list = array();
+        if($request['type'] == 'current') {
+            
+        }
+        else {
+            
+            $driver_list = Driver::select('taxi_driver_detail.*','taxi_users.*')
+                ->join('taxi_users', 'taxi_driver_detail.driver_id', '=', 'taxi_users.user_id')
+                ->where('taxi_users.user_type',1)
+                ->withCount([
+                    'rides' => function ($query) {
+                        $query->where('is_canceled',0);
+                    }])
+                ->withCount([
+                    'cancel_ride' => function ($query) {
+                        $query->where('is_canceled',1);
+                        $query->where('cancel_by',1);
+                    }])
+                ->withCount([
+                    'total_review' => function ($query) {
+                        $query->where('review_by','=','rider');
+                    }
+                ])
+                ->withCount([
+                    'avg_rating' => function ($query) {
+                        $query->select(DB::raw('coalesce(avg(ratting),0)'));
+                    }
+                ])
+                ->orderByRaw('taxi_users.user_id DESC')
+                ->paginate(10)->toArray();
+        }
 
 
-        // add base url 
+         
         foreach($driver_list['data'] as $driver)
         {
-            $driver->licence = $driver->licence != ''? url($driver->licence) : '';
-            $driver->profile = $driver->profile != ''? url($driver->profile) : '';
-            $driver->profile_pic = $driver->profile_pic != ''? url($driver->profile_pic) : '';
+            // add base url
+            $driver['licence'] = $driver['licence'] != ''? env('AWS_S3_URL').$driver['licence'] : '';
+            $driver['profile'] = $driver['profile'] != ''? env('AWS_S3_URL').$driver['profile'] : '';
+            $driver['profile_pic'] = $driver['profile_pic'] != ''? env('AWS_S3_URL').$driver['profile_pic'] : '';
+ 
+            // add calculation
+            $ratio = $this->acceptance_rejected_ratio($driver['driver_id']);
+            $driver['rejected_ratio'] = $ratio['rejected_ratio']; 
+            $driver['acceptance_ratio'] = $ratio['acceptance_ratio'];
+            $driver['online_hours_last_week'] = $this->total_online_hours_lastweek($driver['driver_id']);
+            $driver['online_hours_current_week'] = $this->total_online_hours_currentweek($driver['driver_id']);
+            $driver['total_online_hours'] = $this->total_online_hours($driver['driver_id']);
 
             $data[] = $driver;
 
@@ -47,10 +80,19 @@ class DriverRepository extends Controller
     // get driver detail
     public function get_driver_detail($request)
     {
-        $driver = Driver::where('driver_id',$request->driver_id)->first();
+        $driver = DB::table('taxi_driver_detail')
+        ->select('taxi_driver_detail.*','taxi_users.*')
+        ->join('taxi_users', 'taxi_driver_detail.driver_id', '=', 'taxi_users.user_id')
+        ->where('taxi_users.user_type',1)
+        ->where('taxi_driver_detail.driver_id',$request->driver_id)
+        ->first();
+
         if($driver)
         {
-            $driver['profile_pic'] = $driver['profile_pic'] != ''? url($driver['profile_pic']) : '';
+            $driver->licence = $driver->licence != ''? env('AWS_S3_URL').$driver->licence : '';
+            $driver->profile = $driver->profile != ''? env('AWS_S3_URL').$driver->profile : '';
+            $driver->profile_pic = $driver->profile_pic != ''? env('AWS_S3_URL').$driver->profile_pic : '';
+               
             return response()->json([
                 'status'    => true,
                 'message'   => 'driver detail', 
@@ -76,35 +118,47 @@ class DriverRepository extends Controller
         if($request->file('profile_pic')){
 
             $profile_pic = $request->file('profile_pic');
-            $fileName = 'public/uploads/drivers/'.time().'.'.$profile_pic->getClientOriginalExtension();  
-            
-            // move profile_pic in destination
-            if($profile_pic->move(public_path('/uploads/drivers/'), $fileName))
-            {
-                $input['profile_pic'] = $fileName;
-            }
-            else {
-                return response()->json([
-                    'status'    => false,
-                    'message'   => 'fail to move profile_pic', 
-                    'error'    => '',
-                ], 200);
-            }
+            $imageName = 'uploads/driver_images/'.time().'.'.$profile_pic->getClientOriginalExtension();
+            $img = Storage::disk('s3')->put($imageName, file_get_contents($profile_pic), 'public');
+            $input['profile_pic'] = $imageName;
+
+            // update in driver_detail table
+            $driver['profile'] = $imageName;
+            $driver['last_update'] = date('Y-m-d H:m:s');
+            Driver::where('driver_id',$request['driver_id'])->update($driver);
                                   
         }
 
         // update data
-        Driver::where('driver_id',$request['driver_id'])->update($input);
+        User::where('user_id',$request['driver_id'])->update($input);
         
-        // get driver 
-        $driver = Driver::where('driver_id',$request->driver_id)->get()->first();
-        $driver['profile_pic'] = $driver['profile_pic'] != ''? url($driver['profile_pic']) : '';
-
+        // get driver details
+        $get_driver_detail = $this->get_driver_detail($request);
 
         return response()->json([
             'status'    => true,
             'message'   => 'update successfull', 
-            'data'    => $driver,
+            'data'    => $get_driver_detail->original['data'],
+        ], 200);
+        
+    }
+
+    // edit driver status
+    public function edit_driver_status($request)
+    {
+        $input = $request->except(['driver_id']);
+        $input['updated_date'] = date('Y-m-d H:m:s');
+
+        // update status
+        User::where('user_id',$request['driver_id'])->update($input);
+        
+        // get driver details
+        $get_driver_detail = $this->get_driver_detail($request);
+
+        return response()->json([
+            'status'    => true,
+            'message'   => 'update successfull', 
+            'data'    => $get_driver_detail->original['data'],
         ], 200);
         
     }
@@ -113,21 +167,188 @@ class DriverRepository extends Controller
     public function delete_driver($request ,$driver_id)
     {
         $driver = Driver::where('driver_id',$driver_id)->first();
-        $image_path = $driver['profile_pic']; 
+        $user = User::where('user_id',$driver_id)->first();
 
-        // delete profile_pic
-        if(File::exists($image_path))
-        {
-            File::delete($image_path);
-        }
+        $licence_image_path = $driver['licence']; 
+        $profile_pic_image_path = $user['profile_pic']; 
+
+        // delete files
+        Storage::disk('s3')->exists($licence_image_path) ? Storage::disk('s3')->delete($licence_image_path) : '';
+        Storage::disk('s3')->exists($profile_pic_image_path) ? Storage::disk('s3')->delete($profile_pic_image_path) : '';
 
         Driver::where('driver_id',$driver_id)->delete();
-        
+        User::where('user_id',$driver_id)->delete();
+
         return response()->json([
             'status'    => true,
             'message'   => 'driver deleted', 
             'data'    => '',
         ], 200);   
     }
+
+
+
+
+    // Sub Function =====================
+
+    public function acceptance_rejected_ratio($driver_id)
+    {
+        $accepted = DB::table('taxi_request')
+            ->select(DB::raw('count(id) as accepted'))
+            ->whereRaw('FIND_IN_SET('.$driver_id.',all_driver)')
+            ->value('accepted');
+
+        $total = DB::table('taxi_request')
+            ->select(DB::raw('count(id) as total'))
+            ->whereRaw('FIND_IN_SET('.$driver_id.',all_driver)')
+            ->whereRaw('FIND_IN_SET('.$driver_id.',rejected_by)')
+            ->value('total');
+
+        $rejected =  $total - $accepted;
+
+        if($total)
+        {
+            $ratio['rejected_ratio'] = round((($rejected / $total) * 100),2);
+            $ratio['acceptance_ratio'] = round((($accepted / $total) * 100),2);
+        }
+        else
+        {
+            $ratio['rejected_ratio'] = 0;
+            $ratio['acceptance_ratio'] = 0;
+        }
+
+        return $ratio;
+
+    }
+    
+
+    public function secToHR($seconds) 
+    {
+
+        $hours = floor($seconds / 3600);
+        $minutes = floor(($seconds / 60) % 60);
+        $seconds = $seconds % 60;
+        
+        return "$hours.$minutes";
+    }
+
+    public function total_online_hours($driver_id)
+    {
+        $hours = DB::table('taxi_driver_online_hours')
+            ->select(DB::raw('TIMEDIFF(end_time,start_time) as time'))
+            ->where('driver_id',$driver_id)
+            ->where('end_time','!=','00:00:00')
+            ->get();
+
+        $total_hours = 0;
+        if(!empty($hours))
+        {
+            $Thours=0;
+            $Tminutes=0;
+            $Tseconds=0;
+            foreach ($hours as $hour) {
+
+                $cal_time=0;
+                $timestm=explode(':',$hour->time);
+                if($timestm[0]!=00)
+                {	      
+                    $Thours+=(int)$timestm[0];
+                }
+                $Tminutes+=(int)$timestm[1];
+                $Tseconds+=(int)$timestm[2];
+                $totalSeconds= (($Thours*(60*60))+($Tminutes*60)+$Tseconds);
+            
+                $total_hours = $this->secToHR($totalSeconds);
+            }
+        }
+
+        return $total_hours;
+        
+    } 
+
+    public function total_online_hours_lastweek($driver_id)
+    {
+        $previous_week = strtotime("-1 week +1 day");
+        $start_week = strtotime("last saturday midnight",$previous_week);
+        $end_week = strtotime("next friday",$start_week);
+        $start_week = date("Y-m-d",$start_week);
+        $end_week = date("Y-m-d",$end_week);
+
+
+        $hours = DB::table('taxi_driver_online_hours')
+            ->select(DB::raw('TIMEDIFF(end_time,start_time) as time'))
+            ->where('driver_id',$driver_id)
+            ->where('end_time','!=','00:00:00')
+            ->whereBetween('created_date', [$start_week, $end_week])
+            ->value('time');
+
+        $total_hours = 0;
+        if(!empty($hours))
+        {
+            $Thours=0;
+            $Tminutes=0;
+            $Tseconds=0;
+            foreach ($hours as $hour) {
+
+                $cal_time=0;
+                $timestm=explode(':',$hour->time);
+                if($timestm[0]!=00)
+                {	      
+                    $Thours+=(int)$timestm[0];
+                }
+                $Tminutes+=(int)$timestm[1];
+                $Tseconds+=(int)$timestm[2];
+                $totalSeconds= (($Thours*(60*60))+($Tminutes*60)+$Tseconds);
+            
+                $total_hours = $this->secToHR($totalSeconds);
+            }
+        }
+
+        return $total_hours;
+        
+    }
+
+    public function total_online_hours_currentweek($driver_id)
+    {
+        //==========================================SOS 30-08-2019=============================
+        $previous_week = strtotime("0 week +1 day");
+        $start_week = strtotime("last saturday midnight",$previous_week);
+        $end_week = strtotime("next friday",$start_week);
+        $start_week = date("Y-m-d",$start_week);
+        $end_week = date("Y-m-d",$end_week);
+        
+        $hours = DB::table('taxi_driver_online_hours')
+            ->select(DB::raw('TIMEDIFF(end_time,start_time) as time'))
+            ->where('driver_id',$driver_id)
+            ->where('end_time','!=','00:00:00')
+            ->whereBetween('created_date', [$start_week, $end_week])
+            ->value('time');
+
+        $total_hours = 0;
+        if(!empty($hours))
+        {
+            $Thours=0;
+            $Tminutes=0;
+            $Tseconds=0;
+            foreach ($hours as $hour) {
+
+                $cal_time=0;
+                $timestm=explode(':',$hour->time);
+                if($timestm[0]!=00)
+                {	      
+                    $Thours+=(int)$timestm[0];
+                }
+                $Tminutes+=(int)$timestm[1];
+                $Tseconds+=(int)$timestm[2];
+                $totalSeconds= (($Thours*(60*60))+($Tminutes*60)+$Tseconds);
+            
+                $total_hours = $this->secToHR($totalSeconds);
+            }
+        }
+
+        return $total_hours;
+
+    }
+
 
 }   

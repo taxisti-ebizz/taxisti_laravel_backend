@@ -30,7 +30,7 @@ class GetDriverDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'driver_id' => 'required'
         ];
     }
 }

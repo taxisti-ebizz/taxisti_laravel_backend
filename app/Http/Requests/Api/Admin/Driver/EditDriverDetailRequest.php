@@ -31,7 +31,10 @@ class EditDriverDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'driver_id' => 'required',
+            'first_name' => 'max:255',
+            'last_name' => 'max:255',
+            // 'profile_pic' => 'mimes:jpeg,jpg,png',
         ];
     }
 }
