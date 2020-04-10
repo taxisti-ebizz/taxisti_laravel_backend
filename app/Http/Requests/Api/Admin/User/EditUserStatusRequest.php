@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Api\Admin\Driver;
+namespace App\Http\Requests\Api\Admin\User;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class EditDriverStatusRequest extends FormRequest
+class EditUserStatusRequest extends FormRequest
 {
     public $validator = null;
     protected function failedValidation($validator)
@@ -30,7 +30,7 @@ class EditDriverStatusRequest extends FormRequest
     public function rules()
     {
         return [
-            'driver_id' => 'required',
+            'user_id' => 'required',
             'verify' => 'required'
         ];
     }

@@ -28,7 +28,7 @@ class UserRepository extends Controller
             ])
             ->withCount([
                 'total_review' => function ($query) {
-                    $query->where('review_by','=','driver');
+                    $query->where('review_by','=','user');
                 }
             ])
             ->withCount([
@@ -106,6 +106,26 @@ class UserRepository extends Controller
             'status'    => true,
             'message'   => 'update successfull', 
             'data'    => $user,
+        ], 200);
+        
+    }
+
+    // edit user status
+    public function edit_user_status($request)
+    {
+        $input = $request->except(['user_id']);
+        $input['updated_date'] = date('Y-m-d H:m:s');
+
+        // update status
+        User::where('user_id',$request['user_id'])->update($input);
+        
+        // get user details
+        $get_user_detail = $this->get_user_detail($request);
+
+        return response()->json([
+            'status'    => true,
+            'message'   => 'update successfull', 
+            'data'    => $get_user_detail->original['data'],
         ], 200);
         
     }

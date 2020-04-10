@@ -18,10 +18,43 @@ class DriverRepository extends Controller
     {
         $driver_list = array();
         if($request['type'] == 'current') {
-            
+            // current driver
+            $list = 'Current';
+            $previous_week = strtotime("0 week +1 day");
+            $start_week = strtotime("last saturday midnight",$previous_week);
+            $end_week = strtotime("next friday",$start_week);
+            $start_current_week = date("Y-m-d H:i:s",$start_week);
+            $end_current_week = date("Y-m-d 23:59:00",$end_week);
+        
+            $driver_list = Driver::select('taxi_driver_detail.*','taxi_users.*')
+                ->join('taxi_users', 'taxi_driver_detail.driver_id', '=', 'taxi_users.user_id')
+                ->where('taxi_users.user_type',1)
+                // ->whereBetween('taxi_users.created_date', [$start_week, $end_week])
+                ->withCount([
+                    'rides' => function ($query) {
+                        $query->where('is_canceled',0);
+                    }])
+                ->withCount([
+                    'cancel_ride' => function ($query) {
+                        $query->where('is_canceled',1);
+                        $query->where('cancel_by',1);
+                    }])
+                ->withCount([
+                    'total_review' => function ($query) {
+                        $query->where('review_by','=','rider');
+                    }
+                ])
+                ->withCount([
+                    'avg_rating' => function ($query) {
+                        $query->select(DB::raw('coalesce(avg(ratting),0)'));
+                    }
+                ])
+                ->orderByRaw('taxi_users.user_id DESC')
+                ->paginate(10)->toArray();
         }
         else {
-            
+            // all driver
+            $list = 'All';
             $driver_list = Driver::select('taxi_driver_detail.*','taxi_users.*')
                 ->join('taxi_users', 'taxi_driver_detail.driver_id', '=', 'taxi_users.user_id')
                 ->where('taxi_users.user_type',1)
@@ -48,33 +81,44 @@ class DriverRepository extends Controller
                 ->paginate(10)->toArray();
         }
 
-
-         
-        foreach($driver_list['data'] as $driver)
+        if($driver_list['data'])
         {
-            // add base url
-            $driver['licence'] = $driver['licence'] != ''? env('AWS_S3_URL').$driver['licence'] : '';
-            $driver['profile'] = $driver['profile'] != ''? env('AWS_S3_URL').$driver['profile'] : '';
-            $driver['profile_pic'] = $driver['profile_pic'] != ''? env('AWS_S3_URL').$driver['profile_pic'] : '';
- 
-            // add calculation
-            $ratio = $this->acceptance_rejected_ratio($driver['driver_id']);
-            $driver['rejected_ratio'] = $ratio['rejected_ratio']; 
-            $driver['acceptance_ratio'] = $ratio['acceptance_ratio'];
-            $driver['online_hours_last_week'] = $this->total_online_hours_lastweek($driver['driver_id']);
-            $driver['online_hours_current_week'] = $this->total_online_hours_currentweek($driver['driver_id']);
-            $driver['total_online_hours'] = $this->total_online_hours($driver['driver_id']);
-
-            $data[] = $driver;
-
+            foreach($driver_list['data'] as $driver)
+            {
+                // add base url
+                $driver['licence'] = $driver['licence'] != ''? env('AWS_S3_URL').$driver['licence'] : '';
+                $driver['profile'] = $driver['profile'] != ''? env('AWS_S3_URL').$driver['profile'] : '';
+                $driver['profile_pic'] = $driver['profile_pic'] != ''? env('AWS_S3_URL').$driver['profile_pic'] : '';
+     
+                // add calculation
+                $ratio = $this->acceptance_rejected_ratio($driver['driver_id']);
+                $driver['rejected_ratio'] = $ratio['rejected_ratio']; 
+                $driver['acceptance_ratio'] = $ratio['acceptance_ratio'];
+                $driver['online_hours_last_week'] = $this->total_online_hours_lastweek($driver['driver_id']);
+                $driver['online_hours_current_week'] = $this->total_online_hours_currentweek($driver['driver_id']);
+                $driver['total_online_hours'] = $this->total_online_hours($driver['driver_id']);
+    
+                $data[] = $driver;
+    
+            }
+            $driver_list['data'] = $data; 
+    
+            return response()->json([
+                'status'    => true,
+                'message'   =>  $list.' driver list', 
+                'data'    => $driver_list,
+            ], 200);
         }
-        $driver_list['data'] = $data; 
+        else
+        {
+            return response()->json([
+                'status'    => true,
+                'message'   => 'No data available', 
+                'data'    => array(),
+            ], 200);
+        }
+         
 
-        return response()->json([
-            'status'    => true,
-            'message'   => 'All driver list', 
-            'data'    => $driver_list,
-        ], 200);
     }
 
     // get driver detail
@@ -241,7 +285,7 @@ class DriverRepository extends Controller
             ->get();
 
         $total_hours = 0;
-        if(!empty($hours))
+        if(is_array($hours) || is_object($hours) && !empty($hours))
         {
             $Thours=0;
             $Tminutes=0;
@@ -283,7 +327,7 @@ class DriverRepository extends Controller
             ->value('time');
 
         $total_hours = 0;
-        if(!empty($hours))
+        if(is_array($hours) || is_object($hours) && !empty($hours))
         {
             $Thours=0;
             $Tminutes=0;
@@ -325,7 +369,7 @@ class DriverRepository extends Controller
             ->value('time');
 
         $total_hours = 0;
-        if(!empty($hours))
+        if(is_array($hours) || is_object($hours) && !empty($hours))
         {
             $Thours=0;
             $Tminutes=0;
