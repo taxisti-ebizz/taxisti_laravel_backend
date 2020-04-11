@@ -52,6 +52,73 @@ class DriverRepository extends Controller
                 ->orderByRaw('taxi_users.user_id DESC')
                 ->paginate(10)->toArray();
         }
+        elseif($request['type'] == 'online')
+        {
+            // online driver
+            $list = 'Online';
+
+            $url="https://taxisti-8392c.firebaseio.com/userData1.json";
+
+            $ch = curl_init();
+            // Will return the response, if false it print the response
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            // Set the url
+            curl_setopt($ch, CURLOPT_URL,$url);
+            // Execute
+            $result=curl_exec($ch);
+            // Closing
+            curl_close($ch);
+
+                        
+            $ids = '';
+            if(!empty($result))
+            {
+                $datas = json_decode($result);
+                foreach ($datas as $key => $value) 
+                {
+                    if($ids!='')
+                    {
+                        $ids .= ',';
+                    }
+                    $ids .= $key;
+                }
+            }
+            if($ids == '')
+            {
+                $ids = 0;
+            }
+
+
+            $driver_id = $ids;
+            $driverArray = explode(',', $driver_id);
+
+            $driver_list = Driver::select('taxi_driver_detail.*','taxi_users.*')
+            ->join('taxi_users', 'taxi_driver_detail.driver_id', '=', 'taxi_users.user_id')
+            ->where('taxi_users.user_type',1)
+            ->whereIn('taxi_users.user_id', $driverArray)
+            ->withCount([
+                'rides' => function ($query) {
+                    $query->where('is_canceled',0);
+                }])
+            ->withCount([
+                'cancel_ride' => function ($query) {
+                    $query->where('is_canceled',1);
+                    $query->where('cancel_by',1);
+                }])
+            ->withCount([
+                'total_review' => function ($query) {
+                    $query->where('review_by','=','rider');
+                }
+            ])
+            ->withCount([
+                'avg_rating' => function ($query) {
+                    $query->select(DB::raw('coalesce(avg(ratting),0)'));
+                }
+            ])
+            ->orderByRaw('taxi_users.user_id DESC')
+            ->paginate(10)->toArray();
+
+        }
         else {
             // all driver
             $list = 'All';
@@ -120,8 +187,6 @@ class DriverRepository extends Controller
                 'data'    => array(),
             ], 200);
         }
-         
-
     }
 
     // get driver detail
