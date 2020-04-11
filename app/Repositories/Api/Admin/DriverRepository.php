@@ -90,6 +90,9 @@ class DriverRepository extends Controller
                 $driver['profile'] = $driver['profile'] != ''? env('AWS_S3_URL').$driver['profile'] : '';
                 $driver['profile_pic'] = $driver['profile_pic'] != ''? env('AWS_S3_URL').$driver['profile_pic'] : '';
      
+                // add car images
+                $driver['car_images'] = $this->car_images($driver['id']);
+
                 // add calculation
                 $ratio = $this->acceptance_rejected_ratio($driver['driver_id']);
                 $driver['rejected_ratio'] = $ratio['rejected_ratio']; 
@@ -136,6 +139,10 @@ class DriverRepository extends Controller
             $driver->licence = $driver->licence != ''? env('AWS_S3_URL').$driver->licence : '';
             $driver->profile = $driver->profile != ''? env('AWS_S3_URL').$driver->profile : '';
             $driver->profile_pic = $driver->profile_pic != ''? env('AWS_S3_URL').$driver->profile_pic : '';
+
+            // add car images
+            $driver->car_images = $this->car_images($driver->id);
+
                
             return response()->json([
                 'status'    => true,
@@ -235,6 +242,23 @@ class DriverRepository extends Controller
 
     // Sub Function =====================
 
+
+    public function car_images($driver_detail_id)
+    {
+        $image_list = DB::table('taxi_car_images')
+            ->select('image')
+            ->where('driver_detail_id',$driver_detail_id)
+            ->get();
+        
+        $list = [];
+        foreach ($image_list as  $value) {
+
+            $list[] = env('AWS_S3_URL').$value->image;
+        }
+
+        return $list;
+    }
+
     public function acceptance_rejected_ratio($driver_id)
     {
         $accepted = DB::table('taxi_request')
@@ -265,7 +289,6 @@ class DriverRepository extends Controller
 
     }
     
-
     public function secToHR($seconds) 
     {
 
