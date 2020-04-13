@@ -37,6 +37,11 @@ Route::group(['middleware' => 'auth:admin'], function(){
     Route::post('updateDriverStatus','Api\Admin\DriverController@edit_driver_status');
     Route::delete('deleteDriver/{driver_id}','Api\Admin\DriverController@delete_driver');
 
+    // RIDE
+    Route::post('getPendingRideList','Api\Admin\RideController@get_pending_ride_list');
+    Route::post('getRunningRideList','Api\Admin\RideController@get_running_ride_list');
+    Route::post('getCompletedRideList','Api\Admin\RideController@get_completed_ride_list');
+    Route::post('getNoResponseRideList','Api\Admin\RideController@get_no_response_ride_list');
 
 
 
