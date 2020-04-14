@@ -46,7 +46,8 @@ class DriverRepository extends Controller
                 ])
                 ->withCount([
                     'avg_rating' => function ($query) {
-                        $query->select(DB::raw('coalesce(avg(ratting),0)'));
+                        $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
+                        $query->where('review_by','=','rider');
                     }
                 ])
                 ->orderByRaw('taxi_users.user_id DESC')
@@ -112,7 +113,8 @@ class DriverRepository extends Controller
             ])
             ->withCount([
                 'avg_rating' => function ($query) {
-                    $query->select(DB::raw('coalesce(avg(ratting),0)'));
+                    $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
+                    $query->where('review_by','=','rider');
                 }
             ])
             ->orderByRaw('taxi_users.user_id DESC')
@@ -141,7 +143,8 @@ class DriverRepository extends Controller
                 ])
                 ->withCount([
                     'avg_rating' => function ($query) {
-                        $query->select(DB::raw('coalesce(avg(ratting),0)'));
+                        $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
+                        $query->where('review_by','=','rider');
                     }
                 ])
                 ->orderByRaw('taxi_users.user_id DESC')
@@ -302,7 +305,76 @@ class DriverRepository extends Controller
         ], 200);   
     }
 
+    // get driver reviews
+    public function get_driver_reviews($request)
+    {
+        $driver_reviews = User::select(
+                DB::raw('CONCAT(first_name," ",last_name) as driver_name'),
+                    'mobile_no as driver_mobile','user_id as driver_id'
+            )
+            ->withCount([
+                'driver_total_review' => function ($query) {
+                    $query->where('review_by','=','rider');
+                }
+            ])
+            ->withCount([
+                'driver_avg_rating' => function ($query) {
+                    $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
+                    $query->where('review_by','=','rider');
+                }
+            ])
+            ->where('user_type',1)
+            ->orderByRaw('user_id DESC')
+            ->paginate(10)->toArray();
 
+        if($driver_reviews['data'])
+        {
+            return response()->json([
+                'status'    => true,
+                'message'   => 'Driver reviews', 
+                'data'    => $driver_reviews,
+            ], 200);   
+        }
+        else {
+            return response()->json([
+                'status'    => true,
+                'message'   => 'No data available', 
+                'data'    => array(),
+            ], 200);
+        }
+
+    }
+
+    // view driver reviews
+    public function view_driver_reviews($request)
+    {
+        $driver_reviews = DB::table('taxi_ratting')
+            ->select('taxi_ratting.*',
+                DB::raw('CONCAT(taxi_users.first_name," ",taxi_users.last_name) as rider_name'),
+                'taxi_users.mobile_no as rider_mobile', 
+            )
+            ->join('taxi_users','taxi_ratting.rider_id','taxi_users.user_id')
+            ->where('taxi_ratting.driver_id',$request->driver_id)
+            ->where('review_by','rider')
+            ->get();
+
+        if($driver_reviews)
+        {
+            return response()->json([
+                'status'    => true,
+                'message'   => 'Driver reviews', 
+                'data'    => $driver_reviews,
+            ], 200);   
+        }
+        else {
+            return response()->json([
+                'status'    => true,
+                'message'   => 'No data available', 
+                'data'    => array(),
+            ], 200);
+        }
+
+    }
 
 
     // Sub Function =====================

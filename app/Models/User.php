@@ -66,6 +66,16 @@ class User extends Authenticatable
     {
         return $this->hasMany(Ratting::class,'rider_id','user_id');
     }
+ 
+    public function driver_total_review()
+    {
+        return $this->hasMany(Ratting::class,'driver_id','user_id');
+    }
+
+    public function driver_avg_rating()
+    {
+        return $this->hasMany(Ratting::class,'driver_id','user_id');
+    }
     
     
 }

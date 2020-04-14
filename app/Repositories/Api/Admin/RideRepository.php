@@ -16,7 +16,7 @@ class RideRepository extends Controller
                 ->select('taxi_request.*', 
                     DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
                         'rider.mobile_no as rider_mobile', 
-                    DB::raw('CONCAT(driver.first_name," ",driver.last_name) as drider_name'),
+                    DB::raw('CONCAT(driver.first_name," ",driver.last_name) as driver_name'),
                         'driver.mobile_no as driver_mobile'
                     )               
                 ->leftJoin('taxi_users as rider', 'taxi_request.rider_id', '=', 'rider.user_id')
@@ -49,7 +49,7 @@ class RideRepository extends Controller
                 ->select('taxi_request.*', 
                     DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
                         'rider.mobile_no as rider_mobile', 
-                    DB::raw('CONCAT(driver.first_name," ",driver.last_name) as drider_name'),
+                    DB::raw('CONCAT(driver.first_name," ",driver.last_name) as driver_name'),
                         'driver.mobile_no as driver_mobile'
                     )
                 ->leftJoin('taxi_users as rider', 'taxi_request.rider_id', '=', 'rider.user_id')
@@ -82,7 +82,7 @@ class RideRepository extends Controller
                 ->select('taxi_request.*', 
                     DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
                         'rider.mobile_no as rider_mobile', 
-                    DB::raw('CONCAT(driver.first_name," ",driver.last_name) as drider_name'),
+                    DB::raw('CONCAT(driver.first_name," ",driver.last_name) as driver_name'),
                         'driver.mobile_no as driver_mobile'
                     )
                 ->leftJoin('taxi_users as rider', 'taxi_request.rider_id', '=', 'rider.user_id')
@@ -188,7 +188,7 @@ class RideRepository extends Controller
                 ->select('taxi_request.*', 
                     DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
                         'rider.mobile_no as rider_mobile', 
-                    DB::raw('CONCAT(driver.first_name," ",driver.last_name) as drider_name'),
+                    DB::raw('CONCAT(driver.first_name," ",driver.last_name) as driver_name'),
                         'driver.mobile_no as driver_mobile'
                     )
                 ->leftJoin('taxi_users as rider', 'taxi_request.rider_id', '=', 'rider.user_id')
@@ -252,7 +252,7 @@ class RideRepository extends Controller
                 ->select('taxi_request.*', 
                     DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
                         'rider.mobile_no as rider_mobile', 
-                    DB::raw('CONCAT(driver.first_name," ",driver.last_name) as drider_name'),
+                    DB::raw('CONCAT(driver.first_name," ",driver.last_name) as driver_name'),
                         'driver.mobile_no as driver_mobile'
                     )
                 ->leftJoin('taxi_users as rider', 'taxi_request.rider_id', '=', 'rider.user_id')

@@ -47,6 +47,10 @@ Route::group(['middleware' => 'auth:admin'], function(){
     Route::post('getFakeRideList','Api\Admin\RideController@get_fake_ride_list');
 
     // REVIEW
+    Route::post('getDriverReviews','Api\Admin\DriverController@get_driver_reviews');
+    Route::post('viewDriverReviews','Api\Admin\DriverController@view_driver_reviews');
+    Route::post('getRiderReviews','Api\Admin\UserController@get_rider_reviews');
+    Route::post('viewRiderReviews','Api\Admin\UserController@view_rider_reviews');
 
 
 
