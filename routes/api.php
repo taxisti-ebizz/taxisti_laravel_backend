@@ -42,7 +42,11 @@ Route::group(['middleware' => 'auth:admin'], function(){
     Route::post('getRunningRideList','Api\Admin\RideController@get_running_ride_list');
     Route::post('getCompletedRideList','Api\Admin\RideController@get_completed_ride_list');
     Route::post('getNoResponseRideList','Api\Admin\RideController@get_no_response_ride_list');
+    Route::post('getCanceledRideList','Api\Admin\RideController@get_canceled_ride_list');
+    Route::post('getNoDriverAvailableList','Api\Admin\RideController@get_no_driver_available_list');
+    Route::post('getFakeRideList','Api\Admin\RideController@get_fake_ride_list');
 
+    // REVIEW
 
 
 

@@ -3,6 +3,7 @@
 
 namespace App\Repositories\Api\Admin;
 
+use App\Models\Ratting;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 
@@ -179,4 +180,116 @@ class RideRepository extends Controller
             ], 200);
         }
     }
+
+    // get canceled ride list
+    public function get_canceled_ride_list($request)
+    {
+        $canceled_ride_list = DB::table('taxi_request')
+                ->select('taxi_request.*', 
+                    DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
+                        'rider.mobile_no as rider_mobile', 
+                    DB::raw('CONCAT(driver.first_name," ",driver.last_name) as drider_name'),
+                        'driver.mobile_no as driver_mobile'
+                    )
+                ->leftJoin('taxi_users as rider', 'taxi_request.rider_id', '=', 'rider.user_id')
+                ->leftJoin('taxi_users as driver', 'taxi_request.driver_id', '=', 'driver.user_id')
+                ->where('taxi_request.status',3)
+                ->where('taxi_request.is_canceled',1)
+                ->whereIn('taxi_request.cancel_by',[1,2])
+                ->orderByRaw('taxi_request.id DESC')
+                ->paginate(10)->toArray();
+
+        if($canceled_ride_list['data'])
+        {
+            return response()->json([
+                'status'    => true,
+                'message'   => 'Canceled Rride List', 
+                'data'    => $canceled_ride_list,
+            ], 200);
+        }
+        else {
+            return response()->json([
+                'status'    => true,
+                'message'   => 'No data available', 
+                'data'    => array(),
+            ], 200);
+        }
+    }
+
+    // get no driver available list
+    public function get_no_driver_available_list($request)
+    {
+        $no_driver_available_list = DB::table('taxi_driver_notAvailable')
+                ->select('taxi_driver_notAvailable.*', 
+                    DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
+                        'rider.mobile_no as rider_mobile'
+                    )
+                ->join('taxi_users as rider', 'taxi_driver_notAvailable.rider_id', '=', 'rider.user_id')
+                ->orderByRaw('taxi_driver_notAvailable.id DESC')
+                ->paginate(10)->toArray();
+
+        if($no_driver_available_list['data'])
+        {
+            return response()->json([
+                'status'    => true,
+                'message'   => 'no driver available list', 
+                'data'    => $no_driver_available_list,
+            ], 200);
+        }
+        else {
+            return response()->json([
+                'status'    => true,
+                'message'   => 'No data available', 
+                'data'    => array(),
+            ], 200);
+        }
+    }
+
+    // get fake ride list
+    public function get_fake_ride_list($request)
+    {
+        $fake_ride_list = DB::table('taxi_request')
+                ->select('taxi_request.*', 
+                    DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
+                        'rider.mobile_no as rider_mobile', 
+                    DB::raw('CONCAT(driver.first_name," ",driver.last_name) as drider_name'),
+                        'driver.mobile_no as driver_mobile'
+                    )
+                ->leftJoin('taxi_users as rider', 'taxi_request.rider_id', '=', 'rider.user_id')
+                ->leftJoin('taxi_users as driver', 'taxi_request.driver_id', '=', 'driver.user_id')
+                ->where('taxi_request.status',4)
+                ->orderByRaw('taxi_request.id DESC')
+                ->paginate(10)->toArray();
+
+        if($fake_ride_list['data'])
+        {
+
+            foreach ($fake_ride_list['data'] as  $ride) {
+                
+                $rider_reveiw = Ratting::where('request_id',$ride->id)->where('review_by','rider')->value('ratting');
+                $driver_reveiw = Ratting::where('request_id',$ride->id)->where('review_by','driver')->value('ratting');
+                
+                $ride->rider_reveiw = $rider_reveiw != "" ? $rider_reveiw : 0;
+                $ride->driver_reveiw = $driver_reveiw != "" ? $driver_reveiw : 0;
+                
+                $ride_list[] = $ride;
+            }
+            $fake_ride_list['data'] = $ride_list;
+
+            return response()->json([
+                'status'    => true,
+                'message'   => 'Fake Rride List', 
+                'data'    => $fake_ride_list,
+            ], 200);
+        }
+        else {
+            return response()->json([
+                'status'    => true,
+                'message'   => 'No data available', 
+                'data'    => array(),
+            ], 200);
+        }
+    }
+
+
 }
