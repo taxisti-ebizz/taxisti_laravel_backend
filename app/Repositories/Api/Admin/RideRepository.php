@@ -219,13 +219,13 @@ class RideRepository extends Controller
     // get no driver available list
     public function get_no_driver_available_list($request)
     {
-        $no_driver_available_list = DB::table('taxi_driver_notAvailable')
-                ->select('taxi_driver_notAvailable.*', 
+        $no_driver_available_list = DB::table('taxi_driver_notavailable')
+                ->select('taxi_driver_notavailable.*', 
                     DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
                         'rider.mobile_no as rider_mobile'
                     )
-                ->join('taxi_users as rider', 'taxi_driver_notAvailable.rider_id', '=', 'rider.user_id')
-                ->orderByRaw('taxi_driver_notAvailable.id DESC')
+                ->join('taxi_users as rider', 'taxi_driver_notavailable.rider_id', '=', 'rider.user_id')
+                ->orderByRaw('taxi_driver_notavailable.id DESC')
                 ->paginate(10)->toArray();
 
         if($no_driver_available_list['data'])
