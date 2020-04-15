@@ -6,8 +6,10 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Repositories\Api\Admin\RideRepository;
 use App\Http\Requests\Api\Admin\Ride\GetFakeRideListRequest;
+use App\Http\Requests\Api\Admin\Ride\GetRideAreaListRequest;
 use App\Http\Requests\Api\Admin\Ride\GetPendingRideListRequest;
 use App\Http\Requests\Api\Admin\Ride\GetRunningRideListRequest;
+use App\Http\Requests\Api\Admin\Ride\ViewAreaBoundariesRequest;
 use App\Http\Requests\Api\Admin\Ride\GetCanceledRideListRequest;
 use App\Http\Requests\Api\Admin\Ride\GetCompletedRideListRequest;
 use App\Http\Requests\Api\Admin\Ride\GetNoResponseRideListRequest;
@@ -120,4 +122,31 @@ class RideController extends Controller
         return $this->ride->get_fake_ride_list($request);
     }
 
+    // get ride area list
+    public function get_ride_area_list(GetRideAreaListRequest $request)
+    {
+        if ($request->validator->fails()) {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'parameter invalid', 
+                'errors'    => $request->validator->errors(),
+            ], 200);
+        }   
+
+        return $this->ride->get_ride_area_list($request);
+    }
+
+    // view area boundaries
+    public function view_area_boundaries(ViewAreaBoundariesRequest $request)
+    {
+        if ($request->validator->fails()) {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'parameter invalid', 
+                'errors'    => $request->validator->errors(),
+            ], 200);
+        }   
+
+        return $this->ride->view_area_boundaries($request);
+    }
 }

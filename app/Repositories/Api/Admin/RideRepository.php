@@ -278,7 +278,7 @@ class RideRepository extends Controller
 
             return response()->json([
                 'status'    => true,
-                'message'   => 'Fake Rride List', 
+                'message'   => 'Fake ride list', 
                 'data'    => $fake_ride_list,
             ], 200);
         }
@@ -291,5 +291,130 @@ class RideRepository extends Controller
         }
     }
 
+    // get ride area list
+    public function get_ride_area_list($request)
+    {
+        $ride_area_list = DB::table('taxi_ride_area_coordinates')
+                ->select('id','area_name','created_date')
+                ->orderByRaw('id DESC')
+                ->paginate(10)->toArray();
 
+        if($ride_area_list['data'])
+        {
+
+            return response()->json([
+                'status'    => true,
+                'message'   => 'Rride area list', 
+                'data'    => $ride_area_list,
+            ], 200);
+        }
+        else {
+            return response()->json([
+                'status'    => true,
+                'message'   => 'No data available', 
+                'data'    => array(),
+            ], 200);
+        }
+    }
+
+    // view area boundaries
+    public function view_area_boundaries($request)
+    {
+        $view_area_boundaries = DB::table('taxi_ride_area_coordinates')
+                ->where('id',$request->id)
+                ->first();
+
+        if($view_area_boundaries)
+        {
+            $result = (array)$view_area_boundaries;
+            $areaStr = $center = '';
+            $centerLatLng = '53.7267,-127.6476';
+            $centerLatLng = explode(',', $centerLatLng);
+            $lat = $centerLatLng[0];
+            $long = $centerLatLng[1];
+            $area = (!empty($result['coordinates'])) ? $result['coordinates'] : '';
+            
+            if (!empty($area)) {
+                $areaLatLong = str_replace('"', '', $area);
+                $area = str_replace('[', '', $area);
+                $area = str_replace(']', '', $area);
+                $area = str_replace('{', '', $area);
+                $area = str_replace('}', '', $area);
+                if(strpos($area, '.')!==false)
+                {
+                    $area = explode(',', $area);
+    
+    
+                    $aa = '';
+                    
+                    $i=0;
+                    foreach ($area as $value) {
+                        $val = explode(':', $value);
+    
+                        if($aa!='')
+                        {
+                            $aa .= ',';
+    
+                        }
+                        if($i % 2 == 0)
+                        {
+                            $aa .= '{';
+                        }
+                        $aa .= $val[0].':'.$val[1];
+                        if($i % 2 != 0)
+                        {
+                            $aa .= '}';
+                        }
+                        
+                    $i++;
+                    }
+    
+                }
+    
+                $areaStr = str_replace('{', '(', $areaLatLong);
+                $areaStr = str_replace('}', ')', $areaStr);
+                $areaStr = str_replace('),(', ')|(', $areaStr);
+                $areaStr = str_replace('[', '', $areaStr);
+                $areaStr = str_replace(']', '', $areaStr);
+                
+                $center = explode('|', $areaStr);
+                if (!empty($center)) {
+                    if (!empty($center[0])) {
+    
+                        $centerLatLng = str_replace('(lat:', '', $center[0]);
+                        $centerLatLng = str_replace('lng:', '', $centerLatLng);
+                        $centerLatLng = str_replace(')', '', $centerLatLng);
+    
+                       $centerLatLng = explode(',', $centerLatLng);
+                       $lat = $centerLatLng[0];
+                       $long = $centerLatLng[1];
+                    }
+                }
+                
+                $areaStr = str_replace('lat', '', $areaStr);
+                $areaStr = str_replace('lng', '', $areaStr);
+                $areaStr = str_replace(':', '', $areaStr);
+                $areaStr = str_replace('"', '', $areaStr);
+    
+                $array['areaStr'] = $areaStr;
+                $array['lat'] = $lat;
+                $array['long'] = $long;
+                $array['area'] = $aa;
+        
+            }
+
+            return response()->json([
+                'status'    => true,
+                'message'   => 'Area Boundaries', 
+                'data'    => $array,
+            ], 200);
+        }
+        else {
+            return response()->json([
+                'status'    => true,
+                'message'   => 'No data available', 
+                'data'    => array(),
+            ], 200);
+        }
+    }
 }

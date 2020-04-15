@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Api\Admin\User;
+namespace App\Http\Requests\Api\Admin\Ride;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class ViewRiderReviewstRequest extends FormRequest
+class ViewAreaBoundariesRequest extends FormRequest
 {
     public $validator = null;
     protected function failedValidation($validator)
@@ -30,7 +30,7 @@ class ViewRiderReviewstRequest extends FormRequest
     public function rules()
     {
         return [
-            'rider_id' => 'required'
+            'id' => 'required'
         ];
     }
 }

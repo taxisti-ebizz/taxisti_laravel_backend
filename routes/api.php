@@ -52,7 +52,10 @@ Route::group(['middleware' => 'auth:admin'], function(){
     Route::post('getRiderReviews','Api\Admin\UserController@get_rider_reviews');
     Route::post('viewRiderReviews','Api\Admin\UserController@view_rider_reviews');
 
+    // RIDE AREA SETTING LIST
+    Route::post('getRideAreaList','Api\Admin\RideController@get_ride_area_list');
+    Route::post('viewAreaBoundaries','Api\Admin\RideController@view_area_boundaries');
 
-
+    
     
 });
