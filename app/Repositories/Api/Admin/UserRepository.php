@@ -187,7 +187,7 @@ class UserRepository extends Controller
         $rider_reviews = DB::table('taxi_ratting')
             ->select('taxi_ratting.*',
                 DB::raw('CONCAT(taxi_users.first_name," ",taxi_users.last_name) as driver_name'),
-                'taxi_users.mobile_no as driver_mobile', 
+                'taxi_users.mobile_no as driver_mobile' 
             )
             ->join('taxi_users','taxi_ratting.rider_id','taxi_users.user_id')
             ->where('taxi_ratting.rider_id',$request->rider_id)
