@@ -30,7 +30,7 @@ class EditUserDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            'user_id' => 'required',
+            'user_id' => 'required|exists:taxi_users,user_id',
             'first_name' => 'max:255',
             'last_name' => 'max:255',
             'mobile_no' => '',

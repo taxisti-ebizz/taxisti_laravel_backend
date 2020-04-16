@@ -57,6 +57,11 @@ Route::group(['middleware' => 'auth:admin'], function(){
     Route::post('viewAreaBoundaries','Api\Admin\RideController@view_area_boundaries');
     Route::post('addAreaBoundaries','Api\Admin\RideController@add_area_boundaries');
 
+    // PROMOTION 
+    Route::post('getPromotionList','Api\Admin\PanelController@get_promotion_list');
+    Route::post('updatePromotionDetail','Api\Admin\PanelController@update_promotion_detail');
+    Route::delete('deletePromotion/{id}','Api\Admin\PanelController@delete_promotion');
+
     
     
 });

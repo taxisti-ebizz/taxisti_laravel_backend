@@ -31,7 +31,7 @@ class EditDriverDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            'driver_id' => 'required',
+            'driver_id' => 'required|exists:taxi_users,user_id',
             'first_name' => 'max:255',
             'last_name' => 'max:255',
             // 'profile_pic' => 'mimes:jpeg,jpg,png',

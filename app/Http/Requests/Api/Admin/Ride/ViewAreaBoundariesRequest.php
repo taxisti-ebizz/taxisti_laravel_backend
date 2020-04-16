@@ -30,7 +30,7 @@ class ViewAreaBoundariesRequest extends FormRequest
     public function rules()
     {
         return [
-            'id' => 'required'
+            'id' => 'required|exists:taxi_ride_area_coordinates,id'
         ];
     }
 }

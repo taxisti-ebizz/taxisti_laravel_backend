@@ -419,9 +419,9 @@ class RideRepository extends Controller
         }
     }
 
-     // add area boundaries
-     public function add_area_boundaries($request)
-     {
+    // add area boundaries
+    public function add_area_boundaries($request)
+    {
         $input = $request->all();
         $input['created_date'] = date('Y-m-d H:i:s'); 
 
@@ -439,7 +439,7 @@ class RideRepository extends Controller
 
 
 
-    // SUB Function =================================
+    // Sub Function =================================
 
     // silent notification
     public function silentNotificationToAllUsers()

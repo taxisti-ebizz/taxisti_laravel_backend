@@ -30,7 +30,7 @@ class EditDriverStatusRequest extends FormRequest
     public function rules()
     {
         return [
-            'driver_id' => 'required',
+            'driver_id' => 'required|exists:taxi_users,user_id',
             'verify' => 'required'
         ];
     }

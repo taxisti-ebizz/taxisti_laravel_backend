@@ -31,7 +31,7 @@ class GetUserDetailRequest extends FormRequest
     public function rules()
     {
         return [
-            'user_id' => 'required',
+            'user_id' => 'required|exists:taxi_users,user_id',
         ];
     }
 }

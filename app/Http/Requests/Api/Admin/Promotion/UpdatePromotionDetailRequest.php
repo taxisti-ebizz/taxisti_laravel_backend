@@ -1,17 +1,17 @@
 <?php
 
-namespace App\Http\Requests\Api\Admin\User;
+namespace App\Http\Requests\Api\Admin\Promotion;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class EditUserStatusRequest extends FormRequest
+class UpdatePromotionDetailRequest extends FormRequest
 {
     public $validator = null;
     protected function failedValidation($validator)
     {
         $this->validator = $validator;
     }
-
+    
     /**
      * Determine if the user is authorized to make this request.
      *
@@ -30,8 +30,7 @@ class EditUserStatusRequest extends FormRequest
     public function rules()
     {
         return [
-            'user_id' => 'required|exists:taxi_users,user_id',
-            'verify' => 'required'
+            'id' => 'required|exists:taxi_promotion,id'
         ];
     }
 }
