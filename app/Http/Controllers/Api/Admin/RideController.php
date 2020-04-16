@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Repositories\Api\Admin\RideRepository;
 use App\Http\Requests\Api\Admin\Ride\GetFakeRideListRequest;
 use App\Http\Requests\Api\Admin\Ride\GetRideAreaListRequest;
+use App\Http\Requests\Api\Admin\Ride\AddAreaBoundariesRequest;
 use App\Http\Requests\Api\Admin\Ride\GetPendingRideListRequest;
 use App\Http\Requests\Api\Admin\Ride\GetRunningRideListRequest;
 use App\Http\Requests\Api\Admin\Ride\ViewAreaBoundariesRequest;
@@ -148,5 +149,19 @@ class RideController extends Controller
         }   
 
         return $this->ride->view_area_boundaries($request);
+    }
+
+    // add area boundaries
+    public function add_area_boundaries(AddAreaBoundariesRequest $request)
+    {
+        if ($request->validator->fails()) {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'parameter invalid', 
+                'errors'    => $request->validator->errors(),
+            ], 200);
+        }   
+
+        return $this->ride->add_area_boundaries($request);
     }
 }

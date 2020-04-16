@@ -55,6 +55,7 @@ Route::group(['middleware' => 'auth:admin'], function(){
     // RIDE AREA SETTING LIST
     Route::post('getRideAreaList','Api\Admin\RideController@get_ride_area_list');
     Route::post('viewAreaBoundaries','Api\Admin\RideController@view_area_boundaries');
+    Route::post('addAreaBoundaries','Api\Admin\RideController@add_area_boundaries');
 
     
     
