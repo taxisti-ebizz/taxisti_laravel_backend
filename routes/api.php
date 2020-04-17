@@ -61,6 +61,21 @@ Route::group(['middleware' => 'auth:admin'], function(){
     Route::post('getPromotionList','Api\Admin\PanelController@get_promotion_list');
     Route::post('updatePromotionDetail','Api\Admin\PanelController@update_promotion_detail');
     Route::delete('deletePromotion/{id}','Api\Admin\PanelController@delete_promotion');
+    Route::post('addPromotion','Api\Admin\PanelController@add_promotion');
+    Route::post('getUserPromotionList','Api\Admin\PanelController@get_user_promotion_list');
+    Route::post('redeemPromotionList','Api\Admin\PanelController@redeem_promotion');
+
+    // OPTIONS
+    Route::post('getOptions','Api\Admin\PanelController@get_options');
+    Route::post('updateOptions','Api\Admin\PanelController@update_options');
+
+    // CONTACT US 
+    Route::post('getContactUsList','Api\Admin\PanelController@get_contact_us_list');
+    Route::post('viewContactUsMessage','Api\Admin\PanelController@view_contact_us_message');
+    Route::delete('deleteContactUs/{id}','Api\Admin\PanelController@delete_contact_us');
+
+    
+    
 
     
     
