@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Repositories\Api\Admin\PanelRepository;
 use App\Http\Requests\Api\Admin\Options\GetOptionsRequest;
 use App\Http\Requests\Api\Admin\Options\UpdateOptionsRequest;
+use App\Http\Requests\Api\Admin\Panel\SendNotificationRequest;
 use App\Http\Requests\Api\Admin\Promotion\AddPromotionRequest;
 use App\Http\Requests\Api\Admin\ContactUs\DeleteContactUsRequest;
 use App\Http\Requests\Api\Admin\Promotion\DeletePromotionRequest;
@@ -187,4 +188,18 @@ class PanelController extends Controller
 
     }
     
+    //  send notification 
+    public function send_notification(SendNotificationRequest $request)
+    {
+        if ($request->validator->fails()) {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'parameter invalid', 
+                'errors'    => $request->validator->errors(),
+            ], 200);
+        }   
+
+        return $this->panel->send_notification($request);
+    }
+
 }

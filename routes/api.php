@@ -74,7 +74,8 @@ Route::group(['middleware' => 'auth:admin'], function(){
     Route::post('viewContactUsMessage','Api\Admin\PanelController@view_contact_us_message');
     Route::delete('deleteContactUs/{id}','Api\Admin\PanelController@delete_contact_us');
 
-    
+    // NOTIFICATION    
+    Route::post('sendNotification','Api\Admin\PanelController@send_notification');
     
 
     

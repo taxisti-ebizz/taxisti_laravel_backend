@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Api\Admin;
 
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
@@ -275,11 +276,48 @@ class PanelRepository extends Controller
 
     }
     
+    
+    // send notification
+    public function send_notification($request)
+    {
+        $path_to_firebase_cm = 'https://fcm.googleapis.com/fcm/send';
+        $msg = $request['notification_message'];
+        $type = 'admin_notification';
+        $user_id = explode(",",$request['user_id']);
+        $user_data = [];
+
+        if ($request['to'] == 'user') {
+            $user_data = User::select('user_id','device_type','device_token')->whereIn('user_id',$user_id)->get();
+        }
+        elseif ($request['to'] == 'allUser') {
+            $user_data = User::select('user_id','device_type','device_token')->where('user_type',0)->get();
+
+        }
+        elseif ($request['to'] == 'allDriver') {
+            $user_data = User::select('user_id','device_type','device_token')->where('user_type',1)->get();
+
+        }
+        elseif ($request['to'] == 'all') {
+            $user_data = User::select('user_id','device_type','device_token')->where('verify',1)->get();
+
+        }
+
+        foreach ($user_data as   $user) {
+            // $send = $this->sendNotiToUser($user->user_id,$user->device_token,$user->device_type,$msg,$type);
+        }
+
+        return response()->json([
+            'status'    => true,
+            'message'   => 'Notification send sccessfully', 
+            'data'    => array(),
+        ], 200);
+
+    }
 
     // Sub function ===========================================
 
     // send notification to user
-    public function sendNotiToUser($con,$user_id,$device_token,$device_type,$msg,$type)
+    public function sendNotiToUser($user_id,$device_token,$device_type,$msg,$type)
     {
         if($device_type=='A')
         {
@@ -309,8 +347,6 @@ class PanelRepository extends Controller
     
     
             $result = curl_exec($ch);
-    
-            // print_r($result); die;
             
             curl_close($ch);
     
@@ -318,17 +354,12 @@ class PanelRepository extends Controller
             {
                 $insertData = json_encode($fields['data']);
                 
-                $message = $insertData;
-                
-                $qry_update=$con->query("INSERT INTO taxi_notification SET user_id=".$user_id.",message='".$message."',datetime=NOW(),type='".$type."'");
-                
-                if( $qry_update ) 
-                {
-                    $notificationmsg = '1';
-    
-                } else {
-                    $notificationmsg = '1';
-                }
+                $input['user_id'] = $user_id; 
+                $input['message'] = $insertData; 
+                $input['type'] = $type; 
+                $input['datetime'] = date('Y-m-d H:m:s'); 
+
+                DB::table('taxi_notification')->insert($input);
                 $notificationmsg = '1';
             }
     
@@ -348,16 +379,6 @@ class PanelRepository extends Controller
             $connectionTimeout = 20;
             $connectionType = STREAM_CLIENT_CONNECT | STREAM_CLIENT_PERSISTENT;
             $connection = stream_socket_client($apnsServer,$errorNumber,$errorString,$connectionTimeout,$connectionType,$stream);
-    
-            // echo "stream ====>>".$stream.PHP_EOL;
-            // echo "connectionType ====>>".$connectionType.PHP_EOL;
-            // echo "connectionTimeout ====>>".$connectionTimeout.PHP_EOL;
-            // echo "errorString ====>>".$errorString.PHP_EOL;
-            // echo "errorNumber ====>>".$errorNumber.PHP_EOL;
-               // echo "apnsServer ====>>".$apnsServer.PHP_EOL;
-            // echo "connectionType ====>>".$connectionType.PHP_EOL;
-            // die;
-            
     
             if (!$connection){
                 //echo "Failed to connect to the APNS server. Error no = $errorNumber<br/>";
@@ -391,22 +412,13 @@ class PanelRepository extends Controller
             {
                 $datas = json_encode($messageBody['aps']);
                 $datas='{"alert":{"title":"Notification from Taxisti","body":"'.$message.'"},"user_id":"'.$user_id.'","type":"admin_notification","badge":1,"sound":"default"}';
-                /*
-                echo 'message:'.$message."-------";
-                echo $datas;
-                echo "insert into taxi_notification(user_id,message,datetime,type) values(".$user_id.",'".$datas."',NOW(),'".$type."')";die;
-                */        
                 
-                $qry_update=$con->query("insert into taxi_notification(user_id,message,datetime,type) values(".$user_id.",'".$datas."',NOW(),'".$type."')");
-                
-                
-                if( $qry_update ) 
-                {
-                    $notificationmsg = '1';
-                } 
-                else {
-                    $notificationmsg = '1';
-                }
+                $input['user_id'] = $user_id; 
+                $input['message'] = $datas; 
+                $input['type'] = $type; 
+                $input['datetime'] = date('Y-m-d H:m:s'); 
+
+                DB::table('taxi_notification')->insert($input);
                 $notificationmsg = '1';
             }
         }
