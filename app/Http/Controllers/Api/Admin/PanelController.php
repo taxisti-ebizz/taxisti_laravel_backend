@@ -5,6 +5,10 @@ namespace App\Http\Controllers\Api\Admin;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Repositories\Api\Admin\PanelRepository;
+use App\Http\Requests\Api\Admin\Page\AddPageRequest;
+use App\Http\Requests\Api\Admin\Page\EditPageRequest;
+use App\Http\Requests\Api\Admin\Page\DeletePageRequest;
+use App\Http\Requests\Api\Admin\Page\GetPageListRequest;
 use App\Http\Requests\Api\Admin\Options\GetOptionsRequest;
 use App\Http\Requests\Api\Admin\Options\UpdateOptionsRequest;
 use App\Http\Requests\Api\Admin\Panel\SendNotificationRequest;
@@ -202,4 +206,60 @@ class PanelController extends Controller
         return $this->panel->send_notification($request);
     }
 
+    //  get page list 
+    public function get_page_list(GetPageListRequest $request)
+    {
+        if ($request->validator->fails()) {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'parameter invalid', 
+                'errors'    => $request->validator->errors(),
+            ], 200);
+        }   
+
+        return $this->panel->get_page_list($request);
+    }
+
+    //  add page  
+    public function add_page(AddPageRequest $request)
+    {
+        if ($request->validator->fails()) {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'parameter invalid', 
+                'errors'    => $request->validator->errors(),
+            ], 200);
+        }   
+
+        return $this->panel->add_page($request);
+    }
+
+    //  edit page  
+    public function edit_page(EditPageRequest $request)
+    {
+        if ($request->validator->fails()) {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'parameter invalid', 
+                'errors'    => $request->validator->errors(),
+            ], 200);
+        }   
+
+        return $this->panel->edit_page($request);
+    }
+
+    // delete page 
+    public function delete_page(DeletePageRequest $request, $id)
+    {
+        if ($request->validator->fails()) {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'parameter invalid', 
+                'errors'    => $request->validator->errors(),
+            ], 200);
+        }   
+
+        return $this->panel->delete_page($request, $id);
+
+    }
 }

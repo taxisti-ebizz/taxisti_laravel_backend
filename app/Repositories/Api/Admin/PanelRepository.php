@@ -275,8 +275,7 @@ class PanelRepository extends Controller
         ], 200);
 
     }
-    
-    
+        
     // send notification
     public function send_notification($request)
     {
@@ -314,11 +313,78 @@ class PanelRepository extends Controller
 
     }
 
+    //  get page list 
+    public function get_page_list($request)
+    {
+        
+        $page_list = DB::table('taxi_pages')->get();
+
+        if($page_list)
+        {
+            return response()->json([
+                'status'    => true,
+                'message'   => 'Page list', 
+                'data'    => $page_list,
+            ], 200);
+        }
+        else
+        {
+            return response()->json([
+                'status'    => true,
+                'message'   => 'No data available', 
+                'data'    => array(),
+            ], 200);
+        }       
+    }
+
+    //  add page 
+    public function add_page($request)
+    {
+        $input = $request->all();
+        $input['created_date'] = date('Y-m-d H:m:s');
+        $page = DB::table('taxi_pages')->insert($input);
+
+        return response()->json([
+            'status'    => true,
+            'message'   => 'Page add successfully', 
+            'data'    => array(),
+        ], 200);
+
+    }
+
+    //  edit page 
+    public function edit_page($request)
+    {
+        $input = $request->except(['id']);
+        $page = DB::table('taxi_pages')->where('id',$request['id'])->update($input);
+
+        return response()->json([
+            'status'    => true,
+            'message'   => 'Page edit successfully', 
+            'data'    => array(),
+        ], 200);
+
+    }
+
+    //  delete page 
+    public function delete_page($request, $id)
+    {
+        $page = DB::table('taxi_pages')->where('id',$id)->delete();
+
+        return response()->json([
+            'status'    => true,
+            'message'   => 'Page delete successfully', 
+            'data'    => array(),
+        ], 200);
+
+    }
+
+
     // Sub function ===========================================
 
     // send notification to user
     public function sendNotiToUser($user_id,$device_token,$device_type,$msg,$type)
-    {
+    {   
         if($device_type=='A')
         {
             $path_to_firebase_cm = 'https://fcm.googleapis.com/fcm/send';

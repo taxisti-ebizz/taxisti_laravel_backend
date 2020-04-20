@@ -77,7 +77,11 @@ Route::group(['middleware' => 'auth:admin'], function(){
     // NOTIFICATION    
     Route::post('sendNotification','Api\Admin\PanelController@send_notification');
     
-
+    // PAGE
+    Route::post('getPageList','Api\Admin\PanelController@get_page_list');
+    Route::post('addPage','Api\Admin\PanelController@add_page');
+    Route::post('editPage','Api\Admin\PanelController@edit_page');
+    Route::delete('deletePage/{id}','Api\Admin\PanelController@delete_page');
     
     
 });
