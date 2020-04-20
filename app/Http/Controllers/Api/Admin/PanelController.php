@@ -13,11 +13,14 @@ use App\Http\Requests\Api\Admin\Options\GetOptionsRequest;
 use App\Http\Requests\Api\Admin\Options\UpdateOptionsRequest;
 use App\Http\Requests\Api\Admin\Panel\SendNotificationRequest;
 use App\Http\Requests\Api\Admin\Promotion\AddPromotionRequest;
+use App\Http\Requests\Api\Admin\SubAdmin\DeleteSubAdminRequest;
+use App\Http\Requests\Api\Admin\SubAdmin\GetSubAdminListRequest;
 use App\Http\Requests\Api\Admin\ContactUs\DeleteContactUsRequest;
 use App\Http\Requests\Api\Admin\Promotion\DeletePromotionRequest;
 use App\Http\Requests\Api\Admin\Promotion\RedeemPromotionRequest;
 use App\Http\Requests\Api\Admin\ContactUs\GetContactUsListRequest;
 use App\Http\Requests\Api\Admin\Promotion\GetPromotionListRequest;
+use App\Http\Requests\Api\Admin\SubAdmin\UpdateSubAdminStatusRequest;
 use App\Http\Requests\Api\Admin\ContactUs\ViewContactUsMessageRequest;
 use App\Http\Requests\Api\Admin\Promotion\GetUserPromotionListRequest;
 use App\Http\Requests\Api\Admin\Promotion\UpdatePromotionDetailRequest;
@@ -260,6 +263,49 @@ class PanelController extends Controller
         }   
 
         return $this->panel->delete_page($request, $id);
+
+    }
+
+    //  get sub admin list 
+    public function get_sub_admin_list(GetSubAdminListRequest $request)
+    {
+        if ($request->validator->fails()) {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'parameter invalid', 
+                'errors'    => $request->validator->errors(),
+            ], 200);
+        }   
+
+        return $this->panel->get_sub_admin_list($request);
+    }
+
+    //  update sub admin status 
+    public function update_sub_admin_status(UpdateSubAdminStatusRequest $request)
+    {
+        if ($request->validator->fails()) {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'parameter invalid', 
+                'errors'    => $request->validator->errors(),
+            ], 200);
+        }   
+
+        return $this->panel->update_sub_admin_status($request);
+    }
+
+    // delete sub admin 
+    public function delete_sub_admin(DeleteSubAdminRequest $request, $id)
+    {
+        if ($request->validator->fails()) {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'parameter invalid', 
+                'errors'    => $request->validator->errors(),
+            ], 200);
+        }   
+
+        return $this->panel->delete_sub_admin($request, $id);
 
     }
 }

@@ -36,6 +36,8 @@ Route::group(['middleware' => 'auth:admin'], function(){
     Route::post('editDriverDetail','Api\Admin\DriverController@edit_driver_detail');
     Route::post('updateDriverStatus','Api\Admin\DriverController@edit_driver_status');
     Route::delete('deleteDriver/{driver_id}','Api\Admin\DriverController@delete_driver');
+    Route::delete('deleteCarImage/{id}','Api\Admin\DriverController@delete_car_image');
+
 
     // RIDE
     Route::post('getPendingRideList','Api\Admin\RideController@get_pending_ride_list');
@@ -83,5 +85,10 @@ Route::group(['middleware' => 'auth:admin'], function(){
     Route::post('editPage','Api\Admin\PanelController@edit_page');
     Route::delete('deletePage/{id}','Api\Admin\PanelController@delete_page');
     
+    // SUBADMIN
+    Route::post('getSubAdminList','Api\Admin\PanelController@get_sub_admin_list');
+    Route::post('updateSubAdminStatus','Api\Admin\PanelController@update_sub_admin_status');
+    Route::delete('deleteSubAdmin/{id}','Api\Admin\PanelController@delete_sub_admin');
+
     
 });

@@ -2,11 +2,12 @@
 
 namespace App\Http\Controllers\Api\Admin;
 
-use Illuminate\Http\Request;
+use App\Models\Request;
 use App\Http\Controllers\Controller;
 use App\Repositories\Api\Admin\DriverRepository;
 use App\Http\Requests\Api\Admin\Driver\DeleteDriverRequest;
 use App\Http\Requests\Api\Admin\Driver\GetDriverListRequest;
+use App\Http\Requests\Api\Admin\Driver\DeleteCarImageRequest;
 use App\Http\Requests\Api\Admin\Driver\GetDriverDetailRequest;
 use App\Http\Requests\Api\Admin\Driver\EditDriverDetailRequest;
 use App\Http\Requests\Api\Admin\Driver\EditDriverStatusRequest;
@@ -93,6 +94,20 @@ class DriverController extends Controller
         }   
 
         return $this->driver->delete_driver($request,$driver_id);
+    }
+
+    // delete car image
+    protected function delete_car_image(DeleteCarImageRequest $request, $id)
+    {
+        if ($request->validator->fails()) {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'parameter invalid', 
+                'errors'    => $request->validator->errors(),
+            ], 200);
+        }   
+
+        return $this->driver->delete_car_image($request, $id);
     }
     
     // get driver reviews

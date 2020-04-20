@@ -317,9 +317,9 @@ class PanelRepository extends Controller
     public function get_page_list($request)
     {
         
-        $page_list = DB::table('taxi_pages')->get();
+        $page_list = DB::table('taxi_pages')->paginate(10)->toArray();
 
-        if($page_list)
+        if($page_list['data'])
         {
             return response()->json([
                 'status'    => true,
@@ -378,6 +378,67 @@ class PanelRepository extends Controller
         ], 200);
 
     }
+
+    //  get sub admin list 
+    public function get_sub_admin_list($request)
+    {
+        
+        $sub_admin_list = DB::table('taxi_admin')
+            ->select('user_id','name','email_id','mobile_no','type','status','lastupdated_date','lastupdated_time')
+            ->where('type',1)
+            ->paginate(10)->toArray();
+
+        if($sub_admin_list['data'])
+        {
+            return response()->json([
+                'status'    => true,
+                'message'   => 'Sub admin list', 
+                'data'    => $sub_admin_list,
+            ], 200);
+        }
+        else
+        {
+            return response()->json([
+                'status'    => true,
+                'message'   => 'No data available', 
+                'data'    => array(),
+            ], 200);
+        }       
+    }
+
+    //  update sub admin status 
+    public function update_sub_admin_status($request)
+    {
+        $input = $request->except(['user_id']);
+        $input['lastupdated_date'] = date('Y-m-d');
+        $input['lastupdated_time'] = date('H:m:s');
+
+        $sub_admin_status = DB::table('taxi_admin')->where('user_id',$request['user_id'])->update($input);
+
+        return response()->json([
+            'status'    => true,
+            'message'   => 'Status update successfully', 
+            'data'    => array(),
+        ], 200);
+               
+    }
+
+    //  delete sub admin 
+    public function delete_sub_admin($request, $id)
+    {
+        $page = DB::table('taxi_admin')->where('id',$id)->delete();
+
+        return response()->json([
+            'status'    => true,
+            'message'   => 'Sub admin delete successfully', 
+            'data'    => array(),
+        ], 200);
+
+    }
+
+
+
+
 
 
     // Sub function ===========================================

@@ -222,25 +222,66 @@ class DriverRepository extends Controller
     // edit driver detail
     public function edit_driver_detail($request)
     {
-        $input = $request->except(['driver_id']);
-        $input['updated_date'] = date('Y-m-d H:m:s');
+
+        $driver_detail = Driver::where('driver_id',$request['driver_id'])->first();
 
         // profile_pic handling 
         if($request->file('profile_pic')){
 
+            // delete files
+            Storage::disk('s3')->exists($driver_detail->profile) ? Storage::disk('s3')->delete($driver_detail->profile) : '';
+
             $profile_pic = $request->file('profile_pic');
             $imageName = 'uploads/driver_images/'.time().'.'.$profile_pic->getClientOriginalExtension();
             $img = Storage::disk('s3')->put($imageName, file_get_contents($profile_pic), 'public');
-            $input['profile_pic'] = $imageName;
 
-            // update in driver_detail table
+            $input['profile_pic'] = $imageName;
             $driver['profile'] = $imageName;
-            $driver['last_update'] = date('Y-m-d H:m:s');
-            Driver::where('driver_id',$request['driver_id'])->update($driver);
                                   
         }
 
-        // update data
+        // licence handling 
+        if($request->file('licence')){
+
+            // delete files
+            Storage::disk('s3')->exists($driver_detail->licence) ? Storage::disk('s3')->delete($driver_detail->licence) : '';
+
+            $licence = $request->file('licence');
+            $imageName = 'uploads/licence_images/'.time().'.'.$licence->getClientOriginalExtension();
+            $img = Storage::disk('s3')->put($imageName, file_get_contents($licence), 'public');
+
+            $driver['licence'] = $imageName;
+                                  
+        }
+
+        // car_image handling 
+        if($request->file('car_image')){
+
+            foreach ($request->file('car_image') as  $car_image) {
+
+                // $car_image = $request->file('car_image');
+                $imageName = 'uploads/car_images/'.time().'.'.$car_image->getClientOriginalExtension();
+                $img = Storage::disk('s3')->put($imageName, file_get_contents($car_image), 'public');
+
+                $car['driver_detail_id'] = $driver_detail->id;  
+                $car['image'] = $imageName;  
+                $car['datetime'] = date('Y-m-d H:m:s');  
+                DB::table('taxi_car_images')->insert($car);
+            }
+
+        }
+
+        // update driver detail data
+        $driver['car_brand'] = $request['car_brand'];
+        $driver['car_year'] = $request['car_year'];
+        $driver['plate_no'] = $request['plate_no'];
+        $driver['last_update'] = date('Y-m-d H:m:s');
+        Driver::where('driver_id',$request['driver_id'])->update($driver);
+
+        // update driver data
+        $input['first_name'] = $request['first_name'];
+        $input['last_name'] = $request['last_name'];
+        $input['updated_date'] = date('Y-m-d H:m:s');
         User::where('user_id',$request['driver_id'])->update($input);
         
         // get driver details
@@ -296,6 +337,26 @@ class DriverRepository extends Controller
             'data'    => '',
         ], 200);   
     }
+
+    // delete driver
+    public function delete_car_image($request ,$id)
+    {
+        $image = DB::table('taxi_car_images')->where('id',$id)->first();
+
+        $car_image_path = $image->image; 
+
+        // delete files
+        Storage::disk('s3')->exists($car_image_path) ? Storage::disk('s3')->delete($car_image_path) : '';
+
+        DB::table('taxi_car_images')->where('id',$id)->delete();
+
+        return response()->json([
+            'status'    => true,
+            'message'   => 'Car image deleted', 
+            'data'    => '',
+        ], 200);   
+    }
+
 
     // get driver reviews
     public function get_driver_reviews($request)
@@ -375,14 +436,16 @@ class DriverRepository extends Controller
     public function car_images($driver_detail_id)
     {
         $image_list = DB::table('taxi_car_images')
-            ->select('image')
+            ->select('image','id')
             ->where('driver_detail_id',$driver_detail_id)
             ->get();
         
         $list = [];
         foreach ($image_list as  $value) {
 
-            $list[] = env('AWS_S3_URL').$value->image;
+            $image['id'] = $value->id;
+            $image['image'] = env('AWS_S3_URL').$value->image;
+            $list[] = $image;
         }
 
         return $list;
