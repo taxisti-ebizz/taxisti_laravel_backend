@@ -5,6 +5,7 @@ namespace App\Repositories\Api\Admin;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 
 class PanelRepository extends Controller
@@ -317,7 +318,7 @@ class PanelRepository extends Controller
     public function get_page_list($request)
     {
         
-        $page_list = DB::table('taxi_pages')->paginate(10)->toArray();
+        $page_list = DB::table('taxi_pages')->orderByRaw('id DESC')->paginate(10)->toArray();
 
         if($page_list['data'])
         {
@@ -386,6 +387,7 @@ class PanelRepository extends Controller
         $sub_admin_list = DB::table('taxi_admin')
             ->select('user_id','name','email_id','mobile_no','type','status','lastupdated_date','lastupdated_time')
             ->where('type',1)
+            ->orderByRaw('user_id DESC')
             ->paginate(10)->toArray();
 
         if($sub_admin_list['data'])
@@ -426,7 +428,7 @@ class PanelRepository extends Controller
     //  delete sub admin 
     public function delete_sub_admin($request, $id)
     {
-        $page = DB::table('taxi_admin')->where('id',$id)->delete();
+        $page = DB::table('taxi_admin')->where('user_id',$id)->delete();
 
         return response()->json([
             'status'    => true,
@@ -437,6 +439,32 @@ class PanelRepository extends Controller
     }
 
 
+    //  add sub_admin 
+    public function add_sub_admin($request)
+    {
+        $input = $request->all();
+        $input['password'] = md5($input['password']);
+        $input['type'] = 1;
+        $input['status'] = 1;
+        
+        $sub_admin = DB::table('taxi_admin')->insert($input);
+
+        $body = "Your New email and password for Access Admin panel.<br><br> Your Email is: <strong>".$request['email_id']."</strong><br> Your Password is: <strong>".$request['password']."</strong><br><br>Please use this email and password for login.<br><br><br> Regards, <br> Taxisti Team.";
+
+        Mail::send([], [], function ($message) use ($request, $body) {
+            $message->to($request->email_id)
+            ->from('noreply@ebizzdevelopment.com', 'Taxisti')
+            ->subject('Taxisti admin panel credintial')
+            ->setBody($body, 'text/html');
+        });
+
+        return response()->json([
+            'status'    => true,
+            'message'   => 'Sub admin add successfully', 
+            'data'    => array(),
+        ], 200);
+
+    }
 
 
 

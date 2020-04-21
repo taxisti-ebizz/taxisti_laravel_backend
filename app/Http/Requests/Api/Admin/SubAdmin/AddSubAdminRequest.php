@@ -30,7 +30,10 @@ class AddSubAdminRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'name' => 'required|string|max:255',
+            // 'email_id' => 'required|string|email|unique:taxi_admin|max:255',
+            'password' => 'required|string|min:8',
+
         ];
     }
 }

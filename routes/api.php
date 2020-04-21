@@ -89,6 +89,7 @@ Route::group(['middleware' => 'auth:admin'], function(){
     Route::post('getSubAdminList','Api\Admin\PanelController@get_sub_admin_list');
     Route::post('updateSubAdminStatus','Api\Admin\PanelController@update_sub_admin_status');
     Route::delete('deleteSubAdmin/{id}','Api\Admin\PanelController@delete_sub_admin');
+    Route::post('addSubAdmin','Api\Admin\PanelController@add_sub_admin');
 
     
 });

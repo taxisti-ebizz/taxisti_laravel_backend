@@ -10,6 +10,7 @@ use App\Http\Requests\Api\Admin\Page\EditPageRequest;
 use App\Http\Requests\Api\Admin\Page\DeletePageRequest;
 use App\Http\Requests\Api\Admin\Page\GetPageListRequest;
 use App\Http\Requests\Api\Admin\Options\GetOptionsRequest;
+use App\Http\Requests\Api\Admin\SubAdmin\AddSubAdminRequest;
 use App\Http\Requests\Api\Admin\Options\UpdateOptionsRequest;
 use App\Http\Requests\Api\Admin\Panel\SendNotificationRequest;
 use App\Http\Requests\Api\Admin\Promotion\AddPromotionRequest;
@@ -308,4 +309,19 @@ class PanelController extends Controller
         return $this->panel->delete_sub_admin($request, $id);
 
     }
+
+    //  add sub_admin  
+    public function add_sub_admin(AddSubAdminRequest $request)
+    {
+        if ($request->validator->fails()) {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'parameter invalid', 
+                'errors'    => $request->validator->errors(),
+            ], 200);
+        }   
+
+        return $this->panel->add_sub_admin($request);
+    }
+
 }
