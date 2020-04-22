@@ -94,5 +94,10 @@ Route::group(['middleware' => 'auth:admin'], function(){
     // DRIVER LOG
     Route::post('getDriverOnlineLog','Api\Admin\DriverController@get_driver_online_log');
 
+    // ADMIN
+    Route::post('updateAdminProfile','Api\Admin\PanelController@update_admin_profile');
+
+    // DASHBOARD 
+    Route::post('getDashboardData','Api\Admin\PanelController@get_dashboard_data');
 
 });

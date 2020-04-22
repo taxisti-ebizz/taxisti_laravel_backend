@@ -15,6 +15,7 @@ use App\Http\Requests\Api\Admin\Options\UpdateOptionsRequest;
 use App\Http\Requests\Api\Admin\Panel\SendNotificationRequest;
 use App\Http\Requests\Api\Admin\Promotion\AddPromotionRequest;
 use App\Http\Requests\Api\Admin\SubAdmin\DeleteSubAdminRequest;
+use App\Http\Requests\Api\Admin\Panel\UpdateAdminProfileRequest;
 use App\Http\Requests\Api\Admin\SubAdmin\GetSubAdminListRequest;
 use App\Http\Requests\Api\Admin\ContactUs\DeleteContactUsRequest;
 use App\Http\Requests\Api\Admin\Promotion\DeletePromotionRequest;
@@ -322,6 +323,26 @@ class PanelController extends Controller
         }   
 
         return $this->panel->add_sub_admin($request);
+    }
+
+    //  update  admin profile 
+    public function update_admin_profile(UpdateAdminProfileRequest $request)
+    {
+        if ($request->validator->fails()) {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'parameter invalid', 
+                'errors'    => $request->validator->errors(),
+            ], 200);
+        }   
+
+        return $this->panel->update_admin_profile($request);
+    }
+
+    //  get dashboard data
+    public function get_dashboard_data()
+    {
+        return $this->panel->get_dashboard_data();
     }
 
 }

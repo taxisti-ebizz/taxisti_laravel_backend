@@ -37,7 +37,7 @@ class AdminLoginController extends Controller
         if($admin = Admin::where(['email_id' => $request->email_id,'password' => md5($request->password)])->first()){ 
 
             Auth::login($admin);
-            $success =  Admin::where('user_id',$admin->user_id)->get(['name','email_id','mobile_no'])->first();
+            $success =  Admin::where('user_id',$admin->user_id)->get(['user_id','name','email_id','mobile_no'])->first();
             $success['token'] =  $admin->createToken('Texi_App')->accessToken; 
             
             return response()->json([
