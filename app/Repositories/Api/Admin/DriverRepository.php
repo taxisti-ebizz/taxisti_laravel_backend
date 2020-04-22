@@ -17,7 +17,19 @@ class DriverRepository extends Controller
     public function get_driver_list($request)
     {
         $driver_list = array();
-        if($request['type'] == 'current') {
+        if($request['type'] == 'select') {
+            // Select driver list
+            $list = 'Select';
+        
+            $driver_list = Driver::select(
+                    DB::raw('CONCAT(taxi_users.first_name," ",taxi_users.last_name) as driver_name'),
+                    'taxi_users.mobile_no as driver_mobile','taxi_users.user_id as driver_id'
+                )
+                ->leftJoin('taxi_users', 'taxi_driver_detail.driver_id', '=', 'taxi_users.user_id')
+                ->orderByRaw('taxi_users.user_id DESC')
+                ->get();
+        }
+        elseif($request['type'] == 'current') {
             // current driver
             $list = 'Current';
         
@@ -143,7 +155,15 @@ class DriverRepository extends Controller
                 ->paginate(10)->toArray();
         }
 
-        if($driver_list['data'])
+        if($request['type'] == 'select')
+        {
+            return response()->json([
+                'status'    => true,
+                'message'   =>  $list.' driver list', 
+                'data'    => $driver_list,
+            ], 200);
+        }
+        elseif($driver_list['data'])
         {
             foreach($driver_list['data'] as $driver)
             {
@@ -424,6 +444,107 @@ class DriverRepository extends Controller
                 'status'    => true,
                 'message'   => 'No data available', 
                 'data'    => array(),
+            ], 200);
+        }
+
+    }
+
+    // get driver online_log
+    public function get_driver_online_log($request)
+    {
+
+        $driver_id = $request['driver_id'];
+        $duration = $request['duration'];
+        $time = $request['time'];
+        $driver_online_hours = [];
+
+        if($duration == 'Day')
+        {
+            $driver_online_hours = DB::table('taxi_driver_online_hours')
+                ->select('*',DB::raw('TIMEDIFF(end_time,start_time) as time'))
+                ->where('driver_id',$driver_id)
+                ->where('created_date',$time)
+                ->where('end_time','!=','00:00:00')
+                ->orderByRaw('id DESC')
+                ->get();
+        }
+        if($duration == 'Week')
+        {
+            $dates = explode(' ', $time);
+            $driver_online_hours = DB::table('taxi_driver_online_hours')
+                ->select('*',DB::raw('TIMEDIFF(end_time,start_time) as time'))
+                ->where('driver_id',$driver_id)
+                ->whereBetween('created_date',$dates)
+                ->where('end_time','!=','00:00:00')
+                ->orderByRaw('id DESC')
+                ->get();
+
+        }
+        if($duration == 'Month')
+        {
+            $month = explode('/',$time);
+            $this_month_start = date(''.$month[1].'-'.$month[0].'-01');
+            $this_month_end   = date(''.$month[1].'-'.$month[0].'-t');
+
+            $driver_online_hours = DB::table('taxi_driver_online_hours')
+                ->select('*',DB::raw('TIMEDIFF(end_time,start_time) as time'))
+                ->where('driver_id',$driver_id)
+                ->whereBetween('created_date',[trim($this_month_start),trim($this_month_end)])
+                ->where('end_time','!=','00:00:00')
+                ->orderByRaw('id DESC')
+                ->get();
+
+        }
+        if($duration == 'Year')
+        {
+            $this_year_start = date("".$time."-m-d",strtotime("first day of january this year"));
+            $this_year_end   = date("".$time."-m-d",strtotime("December 31st"));
+
+            $driver_online_hours = DB::table('taxi_driver_online_hours')
+                ->select('*',DB::raw('TIMEDIFF(end_time,start_time) as time'))
+                ->where('driver_id',$driver_id)
+                ->whereBetween('created_date',[trim($this_year_start),trim($this_year_end)])
+                ->where('end_time','!=','00:00:00')
+                ->orderByRaw('id DESC')
+                ->get();
+
+        }
+
+
+        if($driver_online_hours)
+        {
+            $Thours=0;
+			$Tminutes=0;
+			$Tseconds=0;
+
+            foreach ($driver_online_hours as $driver) {
+                $cal_time = 0;
+                if($driver->time != '00:00:00')
+                {
+                    $timestm=explode(':', $driver->time);
+                    
+                    $Thours+=(int)$timestm[0];
+                    $Tminutes+=(int)$timestm[1];
+                    $Tseconds+=(int)$timestm[2];
+                }
+            }
+
+            $totalSeconds= (($Thours*(60*60))+($Tminutes*60)+$Tseconds);
+			$driver_online_total_hour = $this->secToHR($totalSeconds);
+
+            return response()->json([
+                'status'    => true,
+                'message'   => 'Driver online log', 
+                'data'    => $driver_online_hours,
+                'total_hour'    => $driver_online_total_hour,
+            ], 200);   
+        }
+        else {
+            return response()->json([
+                'status'    => true,
+                'message'   => 'No data available', 
+                'data'    => array(),
+                'total_hour'    => 0,
             ], 200);
         }
 

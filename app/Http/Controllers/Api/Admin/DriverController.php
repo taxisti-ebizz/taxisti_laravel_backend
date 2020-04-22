@@ -12,6 +12,7 @@ use App\Http\Requests\Api\Admin\Driver\GetDriverDetailRequest;
 use App\Http\Requests\Api\Admin\Driver\EditDriverDetailRequest;
 use App\Http\Requests\Api\Admin\Driver\EditDriverStatusRequest;
 use App\Http\Requests\Api\Admin\Driver\GetDriverReviewstRequest;
+use App\Http\Requests\Api\Admin\Driver\GetDriverOnlineLogRequest;
 use App\Http\Requests\Api\Admin\Driver\ViewDriverReviewstRequest;
 
 class DriverController extends Controller
@@ -136,6 +137,20 @@ class DriverController extends Controller
         }   
 
         return $this->driver->view_driver_reviews($request);
+    }
+
+    // get driver online log
+    protected function get_driver_online_log(GetDriverOnlineLogRequest $request)
+    {
+        if ($request->validator->fails()) {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'parameter invalid', 
+                'errors'    => $request->validator->errors(),
+            ], 200);
+        }   
+
+        return $this->driver->get_driver_online_log($request);
     }
 
 }

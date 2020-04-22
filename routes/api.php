@@ -91,5 +91,8 @@ Route::group(['middleware' => 'auth:admin'], function(){
     Route::delete('deleteSubAdmin/{id}','Api\Admin\PanelController@delete_sub_admin');
     Route::post('addSubAdmin','Api\Admin\PanelController@add_sub_admin');
 
-    
+    // DRIVER LOG
+    Route::post('getDriverOnlineLog','Api\Admin\DriverController@get_driver_online_log');
+
+
 });
