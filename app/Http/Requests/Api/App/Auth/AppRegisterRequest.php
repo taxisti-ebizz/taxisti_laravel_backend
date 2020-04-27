@@ -33,7 +33,7 @@ class AppRegisterRequest extends FormRequest
             // 'name' => 'required|string|max:255',
             // 'email_id' => 'required|string|email|unique:taxi_admin|max:255',
             'password' => 'required|string|min:8',
-            // 'mobile_no' => 'required',
+            'phone' => 'required',
         ];
     }
 }

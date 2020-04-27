@@ -13,8 +13,6 @@ class AppRegistorRepository extends Controller
     // user registor
     public function create($request)
     {
-
-
         $input['first_name'] = $request['first_name']; 
         $input['last_name'] = $request['last_name']; 
         $input['password'] = bcrypt($request['password']);
@@ -27,6 +25,7 @@ class AppRegistorRepository extends Controller
         $input['device_token'] = $request['device_token']; 
         $input['status'] = 0; 
         $input['verify'] = 1; 
+        $imageName = '';
 
         // profile_pic handling 
         if ($request->file('profile_pic')) {
@@ -37,10 +36,26 @@ class AppRegistorRepository extends Controller
             $input['profile_pic'] = $imageName;
         }
 
-        $user = User::create($input); 
+        $user_data = User::where('mobile_no',$request['phone'])->first();
+        if($user_data)
+        {
+            // delete files
+            Storage::disk('s3')->exists($user_data->profile_pic) ? Storage::disk('s3')->delete($user_data->profile_pic) : '';
+
+            // update user data
+            $user = User::where('mobile_no',$request['phone'])->update($input); 
+        }
+        else {
+
+            // create user
+            $user = User::create($input); 
+        }
+
+        $user_data = User::where('mobile_no',$request['phone'])->first();
+        $user_data->profile_pic = $user_data->profile_pic != '' ? env('AWS_S3_URL').$user_data->profile_pic : '';
         
-        $success['token'] =  $user->createToken('Texi_App')->accessToken; 
-        $success['name'] =  User::where('user_id',$user->user_id)->first();
+        $success['token'] =  $user_data->createToken('Texi_App')->accessToken; 
+        $success['name'] = $user_data; 
          
         return response()->json([
             'success'    => true,
