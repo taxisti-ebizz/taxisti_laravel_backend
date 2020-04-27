@@ -15,7 +15,7 @@ class AppRegistorRepository extends Controller
     {
         $input['first_name'] = $request['first_name']; 
         $input['last_name'] = $request['last_name']; 
-        $input['password'] = bcrypt($request['password']);
+        $input['password'] = md5($request['password']);
         $input['mobile_no'] = $request['phone']; 
         $input['date_of_birth'] = $request['dob']; 
         $input['login_type'] = $request['login_type']; 
@@ -55,7 +55,7 @@ class AppRegistorRepository extends Controller
         $user_data->profile_pic = $user_data->profile_pic != '' ? env('AWS_S3_URL').$user_data->profile_pic : '';
         
         $success['token'] =  $user_data->createToken('Texi_App')->accessToken; 
-        $success['name'] = $user_data; 
+        $success['data'] = $user_data; 
          
         return response()->json([
             'success'    => true,

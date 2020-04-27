@@ -1,0 +1,41 @@
+1) ck.pem 
+-------------------
+It is iphone certificate, we need to replace it lator when we create new certificate for this app, right now keep it as it is.
+
+
+2) Config.Inc
+---------------------
+Keep it as it is.
+
+
+3)DB
+-------------------------------------
+just do connection change in this file
+
+
+4) fetchnoti
+----------------
+this file is use for remove user's device token from server, keep it as it is.
+
+
+5)GCM
+-----------------
+keep it as it is
+
+
+6)registeruser
+-----------------
+it is simple registartion api, we need to change this file as per our requirement, we use our registration webservice instead of this, we need to add two more fiels in existing registration code (1)device_id, (2)device_type
+here, device_id is unique device identifier and device_type is Android/iPhone
+
+
+7) sendpushnoti
+----------------
+this is main file, it consist logic of sending pushnotification to user device, which are register in our database.
+we need to show this page to admin side, so admin can send message.
+
+
+
+
+
+
