@@ -15,7 +15,7 @@ class AppLoginRepository extends Controller
 
     public function __construct()
     {
-        $appCommon = new AppCommonRepository;
+        $this->appCommon = new AppCommonRepository;
     }
 
     // Login
@@ -52,8 +52,8 @@ class AppLoginRepository extends Controller
 
             }
 
-            $data = $appCommon->silentNotificationToOldDevice($user->device_token,$user->device_type,$user->user_id);
-            $data = $appCommon->qb_delete_old_subscription($user->device_token);
+            $this->appCommon->silentNotificationToOldDevice($user->device_token,$user->device_type,$user->user_id);
+            $this->appCommon->qb_delete_old_subscription($user->device_token);
 
             $inpute['device_token'] = $request['device_token'];
             $inpute['device_type'] = $request['device_type'];
@@ -64,8 +64,12 @@ class AppLoginRepository extends Controller
 
 
             // get user data
-            $success =  User::where('user_id',$user->user_id)->first();
-            $success['token'] =  $user->createToken('Texi_App')->accessToken; 
+            $user_data =  User::where('user_id',$user->user_id)->first();
+            $user_data->profile_pic = $user_data->profile_pic != '' ? env('AWS_S3_URL').$user_data->profile_pic : '';
+
+            $success['token'] =  $user_data->createToken('Texi_App')->accessToken; 
+            $success['data'] = $user_data; 
+    
             
             return response()->json([
                 'status'    => true,

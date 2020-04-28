@@ -4,12 +4,75 @@
 namespace App\Repositories\Api\App;
 
 use App\Models\User;
+use App\Models\Driver;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
 
 class AppCommonRepository extends Controller
 {
+
+    // update profile
+    public function update_profile($request)
+    {
+        $input['first_name'] = $request['first_name']; 
+        $input['last_name'] = $request['last_name']; 
+        $input['mobile_no'] = $request['phone']; 
+        $input['date_of_birth'] = $request['dob']; 
+        $input['user_type'] = $request['user_type']; 
+        $input['device_type'] = $request['device_type']; 
+        $input['device_token'] = $request['device_token']; 
+        $imageName = '';
+
+        // profile_pic handling 
+        if ($request->file('profile_pic')) {
+    
+            // delete files
+            $user_data = User::where('user_id',$request['user_id'])->first();
+            Storage::disk('s3')->exists($user_data->profile_pic) ? Storage::disk('s3')->delete($user_data->profile_pic) : '';
+
+            $profile_pic = $request->file('profile_pic');
+            $imageName = 'uploads/users/' . time() . '.' . $profile_pic->getClientOriginalExtension();
+            $img = Storage::disk('s3')->put($imageName, file_get_contents($profile_pic), 'public');
+            $input['profile_pic'] = $imageName;
+        }
+
+        // update data
+        User::where('user_id',$request['user_id'])->update($input);
+
+        $user_data = User::where('user_id',$request['user_id'])->first();
+        $user_data->profile_pic = $user_data->profile_pic != '' ? env('AWS_S3_URL').$user_data->profile_pic : '';
+
+        if($user_data->user_type == 1)
+        {
+            $user_data->driver_detail = $this->get_driver_detail($user_data->user_id);
+        }
+        
+        return response()->json([
+            'status'    => true,
+            'message'   => 'Profile update successfully', 
+            'data'    => $user_data,
+        ], 200);
+    }
+
+
+    // get driver detail
+    public function get_driver_detail($user_id)
+    {
+        $driver_detail = Driver::where('driver_id',$user_id)->first();
+
+        if($driver_detail)
+        {
+            $driver_detail['profile'] = $driver_detail['profile'] != '' ? env('AWS_S3_URL').$driver_detail['profile'] : '';
+            $driver_detail['licence'] = $driver_detail['licence'] != '' ? env('AWS_S3_URL').$driver_detail['licence'] : '';
+        }
+        else {
+            $driver_detail = array();
+        }
+
+        return $driver_detail;
+
+    }
 
     // silent Notification To Old Device
     public function silentNotificationToOldDevice($device_token,$device_type,$user_id)
