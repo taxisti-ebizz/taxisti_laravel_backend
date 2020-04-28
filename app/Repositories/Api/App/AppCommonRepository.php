@@ -55,6 +55,61 @@ class AppCommonRepository extends Controller
         ], 200);
     }
 
+    // admin setting
+    public function admin_setting($request)
+    {
+
+        $setting_data = DB::table('taxi_option')->get();
+        $data = [];
+        foreach ($setting_data as $value) {
+            $data[$value->option_name] = $value->option_value;
+        }
+
+        $data['ios_app_start_time'] = $data['app_start_time'];
+        $data['ios_app_close_time'] = $data['app_close_time'];
+
+        if(isset($data['app_start_time']) && $data['app_start_time']!='' && json_encode($data['app_close_time']) && $data['app_close_time']!='')
+        {
+            $data['app_status']=false;
+            $startTime=strtotime($data['app_start_time']);
+            $endTime=strtotime($data['app_close_time']);
+            $timestamp = strtotime(date("h:i:s")) + (60*60*8);
+            $time = date('H:i:s', $timestamp);
+            $currentTime=strtotime($time);
+            if($currentTime>=$startTime && $currentTime<=$endTime){
+                $data['app_status']=true;
+            }
+        }
+        if(isset($data['status']) && $data['status']!='')
+        {
+            if($data['status']==1)
+            {
+                $data['app_status']=true;
+            }elseif($data['status']==0)
+            {
+                $data['app_status']=false;
+            }
+        }
+
+        $coordinates = DB::table('taxi_ride_area_coordinates')->get();
+        $temp_array = [];
+        foreach ($coordinates as  $value) {
+            
+            $temp = json_decode($value->coordinates);  
+            $temp_array[] = $temp;
+        
+        }
+        $data['coordinates']=$temp_array;
+
+
+        $setting_data = $data;
+        
+        return response()->json([
+            'status'    => true,
+            'message'   => 'Admin setting data', 
+            'data'    => $setting_data,
+        ], 200);
+    }
 
     // get driver detail
     public function get_driver_detail($user_id)

@@ -120,6 +120,8 @@ Route::prefix('common')->group(function () {
     // App Auth Routes
     Route::group(['middleware' => 'auth:api'], function(){
         Route::post('updateProfile','Api\App\AppCommonController@update_profile');
+        Route::post('adminSetting','Api\App\AppCommonController@admin_setting');
+
 
     });
 
