@@ -122,7 +122,6 @@ Route::prefix('common')->group(function () {
         Route::post('updateProfile','Api\App\AppCommonController@update_profile');
         Route::post('adminSetting','Api\App\AppCommonController@admin_setting');
 
-
     });
 
 });
@@ -132,12 +131,12 @@ Route::prefix('common')->group(function () {
 Route::group(['middleware' => 'auth:api'], function(){
 
     // App Drivers Routes
-    Route::prefix('drivers')->group(function () {
+    Route::prefix('drivers')->middleware('role:drivers')->group(function () {
 
     });
 
     // App Riders Routes
-    Route::prefix('riders')->group(function () {
+    Route::prefix('riders')->middleware('role:riders')->group(function () {
 
     });
 

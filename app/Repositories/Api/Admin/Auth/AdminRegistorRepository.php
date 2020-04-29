@@ -30,7 +30,7 @@ class AdminRegistorRepository extends Controller
         $admin = Admin::create($input); 
         
         $success =  Admin::where('user_id',$admin->user_id)->get(['name','email_id','mobile_no'])->first();
-        $success['token'] =  $admin->createToken('Texi_App')->accessToken; 
+        $success['token'] =  $admin->createToken('Texi_Admin')->accessToken; 
          
         return response()->json([
             'status'    => true,

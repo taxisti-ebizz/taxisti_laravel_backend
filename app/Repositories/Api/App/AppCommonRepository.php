@@ -3,6 +3,7 @@
 
 namespace App\Repositories\Api\App;
 
+use App\GCM;
 use App\Models\User;
 use App\Models\Driver;
 use Illuminate\Support\Facades\DB;
@@ -156,7 +157,7 @@ class AppCommonRepository extends Controller
             //APNS====================================================
             
             
-            include_once '../../../public/ios_notif/GCM.php';
+            // include_once '../../../public/ios_notif/GCM.php';
             
             $message = 'You logout from app.';
             $body1=json_decode('{"alert":"'.$message.'","sound":"default","badge":1,"user_id":'.$user_id.',"type":"silent_logout_notification"}');
