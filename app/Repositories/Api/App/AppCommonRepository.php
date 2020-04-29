@@ -112,6 +112,88 @@ class AppCommonRepository extends Controller
         ], 200);
     }
 
+    // add user promotion
+    public function add_user_promotion($request)
+    {
+        $msg = [];
+        $result = DB::table('taxi_promotion')
+            ->where('code',$request['code'])
+            ->where('type',$request['type'])->first();
+
+        if($result->start_date <= date('Y-m-d') && date('Y-m-d') <= $result->end_date)
+        {
+            die('test');
+            if($result->user_limit != $result->limit_usage)
+            {
+                $checkPromo = DB::table('taxi_user_promotion')
+                    ->where('user_id',$user_id)
+                    ->where('promotion_id',$result->id)->first();
+
+                if($checkPromo)
+                {	
+                    $insert = $con->query("INSERT INTO taxi_user_promotion SET user_id=".$user_id.",promotion_id=".$result->id.",type='".$result->type."',created_at=NOW() ");
+
+                    $input['user_id'] = $request['user_id'];
+                    $input['promotion_id'] = $result->id;
+                    $input['type'] = $result->type;
+                    $input['created_at'] = date('Y-m-d H:m:d');
+
+
+                    $insert = DB::table('taxi_user_promotion')->insert($input);
+                    if($insert)
+                    {
+                        $limit_usage = $result->limit_usage + 1;
+                
+                        $result->promo_image = $result->promo_image != '' ? env('AWS_S3_URL').$result->promo_image : '' ;
+                        $result->user_limit = $result->user_limit - $limit_usage;
+                    
+
+                        $update['limit_usage'] = $limit_usage;
+                        $update['updated_at'] = date('Y-m-d H:m:d');
+
+                        DB::table('taxi_promotion')->where('id',$result->id)->update($update);
+
+                        $msg['status'] = true;
+                        $msg['message'] = 'Success';
+                        $msg['data'] = $result;
+                    }
+                else
+                {
+                    $msg['status'] = false;
+                    $msg['message'] = 'Promo code already used';
+                    $msg['message_ar'] = 'لقد تم استخدام الرمز سابقا';
+                    $msg['data'] = new arrayobject();
+                }
+            }
+            else
+            {
+                $msg['status'] = false;
+                $msg['message'] = 'Promo code limit reached. Try another one!';
+                $msg['message_ar'] = 'بلغ العرض الحد الاقصى من الاستخدامات ';
+                $msg['data'] = new arrayobject();
+            }
+        }	
+        else
+        {
+            $msg['status'] = false;
+            $msg['message'] = 'Promo code is expired. Try another one!';
+            $msg['message_ar'] = 'الرمز الذي أدخلته منتهي الصلاحية';
+            $msg['data'] = new arrayobject();
+        }
+
+        return response()->json([
+            'status'    => true,
+            'message'   => 'Admin setting data', 
+            'data'    => $msg,
+        ], 200);
+    } 
+}
+
+
+
+
+    // sub function --------------------------
+
     // get driver detail
     public function get_driver_detail($user_id)
     {

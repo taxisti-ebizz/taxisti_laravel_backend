@@ -121,6 +121,7 @@ Route::prefix('common')->group(function () {
     Route::group(['middleware' => 'auth:api'], function(){
         Route::post('updateProfile','Api\App\AppCommonController@update_profile');
         Route::post('adminSetting','Api\App\AppCommonController@admin_setting');
+        Route::post('addUserPromotion','Api\App\AppCommonController@add_user_promotion');
 
     });
 

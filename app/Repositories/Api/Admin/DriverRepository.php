@@ -210,7 +210,6 @@ class DriverRepository extends Controller
         $driver = DB::table('taxi_driver_detail')
         ->select('taxi_driver_detail.*','taxi_users.*')
         ->join('taxi_users', 'taxi_driver_detail.driver_id', '=', 'taxi_users.user_id')
-        ->where('taxi_users.user_type',1)
         ->where('taxi_driver_detail.driver_id',$request->driver_id)
         ->first();
 
@@ -245,58 +244,118 @@ class DriverRepository extends Controller
 
         $driver_detail = Driver::where('driver_id',$request['driver_id'])->first();
 
-        // profile_pic handling 
-        if($request->file('profile_pic')){
+        // check driver exists 
+        if($driver_detail)
+        {
+            // profile_pic handling 
+            if($request->file('profile_pic')){
 
-            // delete files
-            Storage::disk('s3')->exists($driver_detail->profile) ? Storage::disk('s3')->delete($driver_detail->profile) : '';
+                // delete files
+                Storage::disk('s3')->exists($driver_detail->profile) ? Storage::disk('s3')->delete($driver_detail->profile) : '';
 
-            $profile_pic = $request->file('profile_pic');
-            $imageName = 'uploads/driver_images/'.time().'.'.$profile_pic->getClientOriginalExtension();
-            $img = Storage::disk('s3')->put($imageName, file_get_contents($profile_pic), 'public');
+                $profile_pic = $request->file('profile_pic');
+                $imageName = 'uploads/driver_images/'.time().'.'.$profile_pic->getClientOriginalExtension();
+                $img = Storage::disk('s3')->put($imageName, file_get_contents($profile_pic), 'public');
 
-            $input['profile_pic'] = $imageName;
-            $driver['profile'] = $imageName;
-                                  
-        }
-
-        // licence handling 
-        if($request->file('licence')){
-
-            // delete files
-            Storage::disk('s3')->exists($driver_detail->licence) ? Storage::disk('s3')->delete($driver_detail->licence) : '';
-
-            $licence = $request->file('licence');
-            $imageName = 'uploads/licence_images/'.time().'.'.$licence->getClientOriginalExtension();
-            $img = Storage::disk('s3')->put($imageName, file_get_contents($licence), 'public');
-
-            $driver['licence'] = $imageName;
-                                  
-        }
-
-        // car_image handling 
-        if($request->file('car_image')){
-
-            foreach ($request->file('car_image') as  $car_image) {
-
-                // $car_image = $request->file('car_image');
-                $imageName = 'uploads/car_images/'.time().'.'.$car_image->getClientOriginalExtension();
-                $img = Storage::disk('s3')->put($imageName, file_get_contents($car_image), 'public');
-
-                $car['driver_detail_id'] = $driver_detail->id;  
-                $car['image'] = $imageName;  
-                $car['datetime'] = date('Y-m-d H:m:s');  
-                DB::table('taxi_car_images')->insert($car);
+                $input['profile_pic'] = $imageName;
+                $driver['profile'] = $imageName;
+                                        
             }
 
+            // licence handling 
+            if($request->file('licence')){
+
+                // delete files
+                Storage::disk('s3')->exists($driver_detail->licence) ? Storage::disk('s3')->delete($driver_detail->licence) : '';
+
+                $licence = $request->file('licence');
+                $imageName = 'uploads/licence_images/'.time().'.'.$licence->getClientOriginalExtension();
+                $img = Storage::disk('s3')->put($imageName, file_get_contents($licence), 'public');
+
+                $driver['licence'] = $imageName;
+                                        
+            }
+
+            // car_image handling 
+            if($request->file('car_image')){
+
+                foreach ($request->file('car_image') as  $car_image) {
+
+                    // $car_image = $request->file('car_image');
+                    $imageName = 'uploads/car_images/'.time().'.'.$car_image->getClientOriginalExtension();
+                    $img = Storage::disk('s3')->put($imageName, file_get_contents($car_image), 'public');
+
+                    $car['driver_detail_id'] = $driver_detail->id;  
+                    $car['image'] = $imageName;  
+                    $car['datetime'] = date('Y-m-d H:m:s');  
+                    DB::table('taxi_car_images')->insert($car);
+                }
+
+            }
+
+            // update driver detail data
+            $driver['car_brand'] = $request['car_brand'];
+            $driver['car_year'] = $request['car_year'];
+            $driver['plate_no'] = $request['plate_no'];
+            $driver['last_update'] = date('Y-m-d H:m:s');
+            Driver::where('driver_id',$request['driver_id'])->update($driver);
+        }
+        else
+        {
+            // insert driver detail data
+            $driver['driver_id'] = $request['driver_id'];
+            $driver['car_brand'] = $request['car_brand'];
+            $driver['car_year'] = $request['car_year'];
+            $driver['plate_no'] = $request['plate_no'];
+            $driver['last_update'] = date('Y-m-d H:m:s');
+            Driver::where('driver_id',$request['driver_id'])->insert($driver);
+
+            $driver_detail = Driver::where('driver_id',$request['driver_id'])->first();
+
+            // profile_pic handling 
+            if($request->file('profile_pic')){
+                
+                $profile_pic = $request->file('profile_pic');
+                $imageName = 'uploads/driver_images/'.time().'.'.$profile_pic->getClientOriginalExtension();
+                $img = Storage::disk('s3')->put($imageName, file_get_contents($profile_pic), 'public');
+
+                $input['profile_pic'] = $imageName;
+                $driver['profile'] = $imageName;
+                                    
+            }
+
+            // licence handling 
+            if($request->file('licence')){
+
+                $licence = $request->file('licence');
+                $imageName = 'uploads/licence_images/'.time().'.'.$licence->getClientOriginalExtension();
+                $img = Storage::disk('s3')->put($imageName, file_get_contents($licence), 'public');
+
+                $driver['licence'] = $imageName;
+                                    
+            }
+
+            // car_image handling 
+            if($request->file('car_image')){
+
+                foreach ($request->file('car_image') as  $car_image) {
+
+                    // $car_image = $request->file('car_image');
+                    $imageName = 'uploads/car_images/'.time().'.'.$car_image->getClientOriginalExtension();
+                    $img = Storage::disk('s3')->put($imageName, file_get_contents($car_image), 'public');
+
+                    $car['driver_detail_id'] = $driver_detail->id;  
+                    $car['image'] = $imageName;  
+                    $car['datetime'] = date('Y-m-d H:m:s');  
+                    DB::table('taxi_car_images')->insert($car);
+                }
+
+            }
+
+            Driver::where('driver_id',$request['driver_id'])->update($driver);
+
         }
 
-        // update driver detail data
-        $driver['car_brand'] = $request['car_brand'];
-        $driver['car_year'] = $request['car_year'];
-        $driver['plate_no'] = $request['plate_no'];
-        $driver['last_update'] = date('Y-m-d H:m:s');
-        Driver::where('driver_id',$request['driver_id'])->update($driver);
 
         // update driver data
         $input['first_name'] = $request['first_name'];

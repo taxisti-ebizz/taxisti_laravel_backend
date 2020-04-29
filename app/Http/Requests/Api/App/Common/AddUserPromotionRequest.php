@@ -4,7 +4,7 @@ namespace App\Http\Requests\Api\App\Common;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateProfileRequest extends FormRequest
+class AddUserPromotionRequest extends FormRequest
 {
     public $validator = null;
     protected function failedValidation($validator)
@@ -22,6 +22,7 @@ class UpdateProfileRequest extends FormRequest
         return true;
     }
 
+
     /**
      * Get the validation rules that apply to the request.
      *
@@ -31,6 +32,9 @@ class UpdateProfileRequest extends FormRequest
     {
         return [
             'user_id' => 'required|exists:taxi_users',
+            'code' => 'required|exists:taxi_promotion',
+            'type' => 'required',
+
         ];
     }
-}   
+}
