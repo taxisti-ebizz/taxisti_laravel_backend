@@ -122,17 +122,14 @@ class AppCommonRepository extends Controller
 
         if($result->start_date <= date('Y-m-d') && date('Y-m-d') <= $result->end_date)
         {
-            die('test');
             if($result->user_limit != $result->limit_usage)
             {
                 $checkPromo = DB::table('taxi_user_promotion')
-                    ->where('user_id',$user_id)
+                    ->where('user_id',$request['user_id'])
                     ->where('promotion_id',$result->id)->first();
 
-                if($checkPromo)
+                if(!$checkPromo)
                 {	
-                    $insert = $con->query("INSERT INTO taxi_user_promotion SET user_id=".$user_id.",promotion_id=".$result->id.",type='".$result->type."',created_at=NOW() ");
-
                     $input['user_id'] = $request['user_id'];
                     $input['promotion_id'] = $result->id;
                     $input['type'] = $result->type;
@@ -157,12 +154,13 @@ class AppCommonRepository extends Controller
                         $msg['message'] = 'Success';
                         $msg['data'] = $result;
                     }
+                }
                 else
                 {
                     $msg['status'] = false;
                     $msg['message'] = 'Promo code already used';
                     $msg['message_ar'] = 'لقد تم استخدام الرمز سابقا';
-                    $msg['data'] = new arrayobject();
+                    $msg['data'] = array();
                 }
             }
             else
@@ -170,7 +168,7 @@ class AppCommonRepository extends Controller
                 $msg['status'] = false;
                 $msg['message'] = 'Promo code limit reached. Try another one!';
                 $msg['message_ar'] = 'بلغ العرض الحد الاقصى من الاستخدامات ';
-                $msg['data'] = new arrayobject();
+                $msg['data'] = array();
             }
         }	
         else
@@ -178,19 +176,61 @@ class AppCommonRepository extends Controller
             $msg['status'] = false;
             $msg['message'] = 'Promo code is expired. Try another one!';
             $msg['message_ar'] = 'الرمز الذي أدخلته منتهي الصلاحية';
-            $msg['data'] = new arrayobject();
+            $msg['data'] = array();
         }
 
-        return response()->json([
-            'status'    => true,
-            'message'   => 'Admin setting data', 
-            'data'    => $msg,
-        ], 200);
+        return response()->json($msg, 200);
     } 
-}
 
+    // apply promotion
+    public function apply_promotion($request)
+    {
+        $promotion_data = DB::table('taxi_promotion')
+            ->where('code',$request['code'])
+            ->where('type',$request['type'])->first();
 
+        if($promotion_data)
+        {
+            $promotion_data->promo_image = $promotion_data->promo_image != '' ? env('AWS_S3_URL').$promotion_data->promo_image : '' ;
 
+            return response()->json([
+                'status'    => true,
+                'message'   => 'Promotion data', 
+                'data'    => $promotion_data,
+            ], 200);
+        }
+        else{
+
+            return response()->json([
+                'status'    => false,
+                'message'   => 'No data found', 
+                'data'    => array(),
+            ], 200);
+        }
+    }
+
+    // apply promotion
+    public function auto_logout($request)
+    {
+        $auto_logout = User::where('user_id',$request['user_id'])->where('device_token',$request['device_token'])->first();
+
+        if($auto_logout)
+        {
+            return response()->json([
+                'status'    => true,
+                'message'   => 'Logged In', 
+                'login_flag'    => 1,
+            ], 200);
+        }
+        else
+        {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'Not Logged In', 
+                'login_flag'    => 2,
+            ], 200);
+        }
+    }
 
     // sub function --------------------------
 

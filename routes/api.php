@@ -122,6 +122,9 @@ Route::prefix('common')->group(function () {
         Route::post('updateProfile','Api\App\AppCommonController@update_profile');
         Route::post('adminSetting','Api\App\AppCommonController@admin_setting');
         Route::post('addUserPromotion','Api\App\AppCommonController@add_user_promotion');
+        Route::post('applyPromotion','Api\App\AppCommonController@apply_promotion');
+        Route::post('autoLogout','Api\App\AppCommonController@auto_logout');
+
 
     });
 

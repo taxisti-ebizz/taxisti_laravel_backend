@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Api\App;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Repositories\Api\App\AppCommonRepository;
+use App\Http\Requests\Api\App\Common\AutoLogoutRequest;
 use App\Http\Requests\Api\App\Common\AdminSettingRequest;
 use App\Http\Requests\Api\App\Common\UpdateProfileRequest;
+use App\Http\Requests\Api\App\Common\ApplyPromotionRequest;
 use App\Http\Requests\Api\App\Common\AddUserPromotionRequest;
 
 class AppCommonController extends Controller
@@ -64,5 +66,33 @@ class AppCommonController extends Controller
 
     }
 
-    
+    // apply promotion
+    public function apply_promotion(ApplyPromotionRequest $request)
+    {
+        if ($request->validator->fails()) {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'parameter invalid', 
+                'errors'    => $request->validator->errors(),
+            ], 200);
+        }   
+
+        return $this->appCommon->apply_promotion($request);
+
+    }
+
+    // auto logout
+    public function auto_logout(AutoLogoutRequest $request)
+    {
+        if ($request->validator->fails()) {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'parameter invalid', 
+                'errors'    => $request->validator->errors(),
+            ], 200);
+        }   
+
+        return $this->appCommon->auto_logout($request);
+
+    }
 }
