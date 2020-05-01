@@ -209,7 +209,7 @@ class AppCommonRepository extends Controller
         }
     }
 
-    // apply promotion
+    // auto logout
     public function auto_logout($request)
     {
         $auto_logout = User::where('user_id',$request['user_id'])->where('device_token',$request['device_token'])->first();
@@ -231,6 +231,175 @@ class AppCommonRepository extends Controller
             ], 200);
         }
     }
+
+    // check phone
+    public function check_phone($request)
+    {
+        $check_phone = User::where('mobile_no',$request['phone'])->first();
+        if($check_phone)
+        {
+            if($check_phone->password != '')
+            {
+                $msg['status']=true;
+                $msg['message']='Phone already exist.';
+                $msg['message_ar'] = "رقم الهاتف مسجل";
+                $msg['set_password'] = 1;
+            }
+            else
+            {
+                $msg['status']=true;
+                $msg['message']='Phone already exist.';
+                $msg['message_ar'] = "رقم الهاتف مسجل";
+                $msg['set_password'] = 0;
+            }
+        }	
+        else{
+            $msg['status']=false;
+            $msg['message']='Phone Number do Not Exist.';
+            $msg['message_ar'] = "رقم الهاتف غير مسجل";
+        }
+
+        return response()->json($msg, 200);
+
+    }
+
+    // check promotion status
+    public function check_promotion_status($request)
+    {
+        $promotion_data = DB::table('taxi_user_promotion')
+            ->join('taxi_promotion','taxi_promotion.id','taxi_user_promotion.promotion_id')
+            ->where('taxi_user_promotion.user_id',$request['user_id'])
+            ->where('taxi_user_promotion.type',$request['type'])
+            ->where('taxi_user_promotion.is_deleted',0)
+            ->where('taxi_user_promotion.redeem',0)->first();
+
+
+        if($promotion_data)
+        {
+            $promotion_data->promo_image = $promotion_data->promo_image != '' ? env('AWS_S3_URL').$promotion_data->promo_image : '' ;
+
+            return response()->json([
+                'status'    => true,
+                'message'   => 'Promotion data', 
+                'data'    => $promotion_data,
+            ], 200);
+        }
+        else{
+
+            return response()->json([
+                'status'    => false,
+                'message'   => 'No data found', 
+                'data'    => array(),
+            ], 200);
+        }
+    }
+
+    // check login
+    public function check_login($request)
+    {
+        $old_device_token = User::where('user_id',$request['user_id'])->first();
+
+        if($old_device_token)
+        {
+            if($old_device_token->device_token != '')
+            {
+                if($request['fcm'] != $old_device_token->device_token)
+                {
+                    User::where('user_id',$request['user_id'])->update(['device_token'=>'']);
+    
+                    $msg['status']=true;
+                    $msg['message']='You are logout';
+                    $msg['data']['user_id'] = $request['user_id'];
+                }
+                else
+                {
+                    $update['device_token'] = $request['fcm'];
+                    $update['device_type'] = $request['device_type'];
+                    User::where('user_id',$request['user_id'])->update($update);
+                    
+                    $msg['status']=false;
+                    $msg['message']='You login successfully';
+                    $msg['data'] = array();
+                }
+            }
+            else
+            {
+                $update['device_token'] = $request['fcm'];
+                $update['device_type'] = $request['device_type'];
+                User::where('user_id',$request['user_id'])->update($update);
+    
+                $msg['status']=false;
+                $msg['message']='You login successfully';
+                $msg['data'] = array();
+            }
+        }
+        else
+        {
+            $msg['status']=true;
+            $msg['message']='User not exist';
+            $msg['data'] = array();
+        }
+
+        return response()->json($msg, 200);
+
+    }
+
+    // contact us
+    public function contact_us($request)
+    {
+        date_default_timezone_set("Africa/Tripoli");
+
+        $input['user_id'] =  $request['user_id'];
+        $input['message'] =  $request['message'];
+        $input['status'] =  1;
+        $input['created_date'] =  date('Y-m-d H:i:s');
+
+        $contact_us = DB::table('taxi_contact_us')->insert($input);
+        
+        if($contact_us)
+        {
+            return response()->json([
+                'status'    => true,
+                'message'   => 'Success', 
+                'data'    => array(),
+            ], 200);
+        }
+        else
+        {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'Faild', 
+                'data'    => array(),
+            ], 200);
+        }
+    }
+
+    // delete promotion
+    public function delete_promotion($request, $id)
+    {
+        if($id != '')
+        {
+            $input['is_deleted'] = 1;
+            $input['updated_at'] = date('Y-m-d H:i:s');
+            $update = DB::table('taxi_user_promotion')->where('id',$id)->update($input);
+            if($update)
+            {
+                $msg['status'] = true;
+                $msg['message'] = 'Promo code deleted successfully';
+                $msg['message_ar'] = 'تم مسح العرض بنجاح';
+            }
+            else
+            {
+                $msg['status'] = false;
+                $msg['message'] = 'Failed to deleted promo code';
+                $msg['message_ar'] = 'حدث خطأ في مسح العرض';
+            }
+        }
+
+        return response()->json($msg, 200);
+
+    }
+
 
     // sub function --------------------------
 

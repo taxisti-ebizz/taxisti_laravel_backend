@@ -124,6 +124,13 @@ Route::prefix('common')->group(function () {
         Route::post('addUserPromotion','Api\App\AppCommonController@add_user_promotion');
         Route::post('applyPromotion','Api\App\AppCommonController@apply_promotion');
         Route::post('autoLogout','Api\App\AppCommonController@auto_logout');
+        Route::post('checkPhone','Api\App\AppCommonController@check_phone');
+        Route::post('checkPromotionStatus','Api\App\AppCommonController@check_promotion_status');
+        Route::post('checkLogin','Api\App\AppCommonController@check_login');
+        Route::post('contactUs','Api\App\AppCommonController@contact_us');
+        Route::delete('deletePromotion/{id}','Api\App\AppCommonController@delete_promotion');
+
+
 
 
     });

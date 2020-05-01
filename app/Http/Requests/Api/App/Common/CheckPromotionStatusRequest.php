@@ -4,7 +4,7 @@ namespace App\Http\Requests\Api\App\Common;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class AutoLogoutRequest extends FormRequest
+class CheckPromotionStatusRequest extends FormRequest
 {
     public $validator = null;
     protected function failedValidation($validator)
@@ -22,6 +22,7 @@ class AutoLogoutRequest extends FormRequest
         return true;
     }
 
+
     /**
      * Get the validation rules that apply to the request.
      *
@@ -31,8 +32,9 @@ class AutoLogoutRequest extends FormRequest
     {
         return [
             'user_id' => 'required|exists:taxi_users',
-            'device_token' => 'required',
+            'type' => 'required',
 
         ];
     }
 }
+

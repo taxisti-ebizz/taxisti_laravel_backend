@@ -13,6 +13,8 @@ class AppRegistorRepository extends Controller
     // user registor
     public function create($request)
     {
+        date_default_timezone_set("Africa/Tripoli");
+
         $input['first_name'] = $request['first_name']; 
         $input['last_name'] = $request['last_name']; 
         $input['password'] = md5($request['password']);

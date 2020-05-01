@@ -6,6 +6,7 @@ namespace App\Repositories\Api\Admin;
 use File;
 use App\Models\User;
 use App\Models\Driver;
+use App\Models\Ratting;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
@@ -182,6 +183,11 @@ class DriverRepository extends Controller
                 $driver['licence'] = $driver['licence'] != ''? env('AWS_S3_URL').$driver['licence'] : '';
                 $driver['profile'] = $driver['profile'] != ''? env('AWS_S3_URL').$driver['profile'] : '';
                 $driver['profile_pic'] = $driver['profile_pic'] != ''? env('AWS_S3_URL').$driver['profile_pic'] : '';
+
+                if($request['type'] == 'online')
+                {
+                    $driver['reviews'] = $this->getDriverRatRevData($driver['user_id']);
+                }
     
                 $data[] = $driver;
     
@@ -787,6 +793,40 @@ class DriverRepository extends Controller
 
         return $total_hours;
 
+    }
+
+    // get Driver Ratting Review Data
+    public function getDriverRatRevData($driver_id)
+    {
+        $ratting_data = Ratting::where('driver_id',$driver_id)->where('review_by','rider')->get();
+        if($ratting_data)
+        {
+            $data = [];
+            foreach($ratting_data as $ratting)
+            {
+
+                $user_data = User::where('user_id',$ratting['rider_id'])->first();
+                if($user_data)
+                {
+                    $ratting['user_name'] = $user_data->first_name." ".$user_data->last_name;
+                    $ratting['profile_pic'] = $user_data->profile_pic != ''? env('AWS_S3_URL').$user_data->profile_pic : '';
+                }
+                else
+                {
+                    $ratting['user_name'] = 'Anonymous User';
+                    $ratting['profile_pic'] = '';
+                }
+
+                $data[] = $ratting;
+            }
+
+            return $data;
+
+        }
+        else
+        {
+            return array();
+        }
     }
 
 

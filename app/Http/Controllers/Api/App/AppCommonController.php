@@ -5,11 +5,17 @@ namespace App\Http\Controllers\Api\App;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Repositories\Api\App\AppCommonRepository;
+use App\Http\Requests\Api\App\Common\ContactUsRequest;
 use App\Http\Requests\Api\App\Common\AutoLogoutRequest;
+use App\Http\Requests\Api\App\Common\CheckLoginRequest;
+use App\Http\Requests\Api\App\Common\CheckPhoneRequest;
 use App\Http\Requests\Api\App\Common\AdminSettingRequest;
+use App\Http\Requests\Api\App\Common\CheckPromotionStatus;
 use App\Http\Requests\Api\App\Common\UpdateProfileRequest;
 use App\Http\Requests\Api\App\Common\ApplyPromotionRequest;
+use App\Http\Requests\Api\App\Common\DeletePromotionRequest;
 use App\Http\Requests\Api\App\Common\AddUserPromotionRequest;
+use App\Http\Requests\Api\App\Common\CheckPromotionStatusRequest;
 
 class AppCommonController extends Controller
 {
@@ -95,4 +101,80 @@ class AppCommonController extends Controller
         return $this->appCommon->auto_logout($request);
 
     }
+
+    // check phone
+    public function check_phone(CheckPhoneRequest $request)
+    {
+        if ($request->validator->fails()) {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'parameter invalid', 
+                'errors'    => $request->validator->errors(),
+            ], 200);
+        }   
+
+        return $this->appCommon->check_phone($request);
+
+    }
+
+    // check promotion status
+    public function check_promotion_status(CheckPromotionStatusRequest $request)
+    {
+        if ($request->validator->fails()) {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'parameter invalid', 
+                'errors'    => $request->validator->errors(),
+            ], 200);
+        }   
+
+        return $this->appCommon->check_promotion_status($request);
+
+    }
+
+    // check login
+    public function check_login(CheckLoginRequest $request)
+    {
+        if ($request->validator->fails()) {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'parameter invalid', 
+                'errors'    => $request->validator->errors(),
+            ], 200);
+        }   
+
+        return $this->appCommon->check_login($request);
+
+    }
+
+    // contact us
+    public function contact_us(ContactUsRequest $request)
+    {
+        if ($request->validator->fails()) {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'parameter invalid', 
+                'errors'    => $request->validator->errors(),
+            ], 200);
+        }   
+
+        return $this->appCommon->contact_us($request);
+
+    }
+
+    // delete promotion
+    public function delete_promotion(DeletePromotionRequest $request, $id)
+    {
+        if ($request->validator->fails()) {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'parameter invalid', 
+                'errors'    => $request->validator->errors(),
+            ], 200);
+        }   
+
+        return $this->appCommon->delete_promotion($request, $id);
+
+    }
+    
 }
