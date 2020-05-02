@@ -5,16 +5,20 @@ namespace App\Http\Controllers\Api\App;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Repositories\Api\App\AppCommonRepository;
+use App\Http\Requests\Api\App\Common\LogoutRequest;
 use App\Http\Requests\Api\App\Common\ContactUsRequest;
 use App\Http\Requests\Api\App\Common\AutoLogoutRequest;
 use App\Http\Requests\Api\App\Common\CheckLoginRequest;
 use App\Http\Requests\Api\App\Common\CheckPhoneRequest;
+use App\Http\Requests\Api\App\Common\GetCmsPageRequest;
+use App\Http\Requests\Api\App\Common\GetRattingRequest;
 use App\Http\Requests\Api\App\Common\AdminSettingRequest;
 use App\Http\Requests\Api\App\Common\CheckPromotionStatus;
 use App\Http\Requests\Api\App\Common\UpdateProfileRequest;
 use App\Http\Requests\Api\App\Common\ApplyPromotionRequest;
 use App\Http\Requests\Api\App\Common\DeletePromotionRequest;
 use App\Http\Requests\Api\App\Common\AddUserPromotionRequest;
+use App\Http\Requests\Api\App\Common\GetRequestDetailRequest;
 use App\Http\Requests\Api\App\Common\CheckPromotionStatusRequest;
 
 class AppCommonController extends Controller
@@ -174,6 +178,66 @@ class AppCommonController extends Controller
         }   
 
         return $this->appCommon->delete_promotion($request, $id);
+
+    }
+
+    // get cms page
+    public function get_cms_page(GetCmsPageRequest $request)
+    {
+        if ($request->validator->fails()) {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'parameter invalid', 
+                'errors'    => $request->validator->errors(),
+            ], 200);
+        }   
+
+        return $this->appCommon->get_cms_page($request);
+
+    }
+
+    // get ratting
+    public function get_ratting(GetRattingRequest $request)
+    {
+        if ($request->validator->fails()) {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'parameter invalid', 
+                'errors'    => $request->validator->errors(),
+            ], 200);
+        }   
+
+        return $this->appCommon->get_ratting($request);
+
+    }
+
+    // get request detail
+    public function get_request_detail(GetRequestDetailRequest $request)
+    {
+        if ($request->validator->fails()) {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'parameter invalid', 
+                'errors'    => $request->validator->errors(),
+            ], 200);
+        }   
+
+        return $this->appCommon->get_request_detail($request);
+
+    }
+
+    // logout
+    public function logout(LogoutRequest $request)
+    {
+        if ($request->validator->fails()) {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'parameter invalid', 
+                'errors'    => $request->validator->errors(),
+            ], 200);
+        }   
+
+        return $this->appCommon->logout($request);
 
     }
     

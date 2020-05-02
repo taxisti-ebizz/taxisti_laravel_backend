@@ -6,6 +6,8 @@ namespace App\Repositories\Api\App;
 use App\GCM;
 use App\Models\User;
 use App\Models\Driver;
+use App\Models\Ratting;
+use App\Models\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
@@ -400,18 +402,176 @@ class AppCommonRepository extends Controller
 
     }
 
+    // get cms page
+    public function get_cms_page($request)
+    {
+
+        $taxi_pages = DB::table('taxi_pages')->where('page_title',$request['page_title'])->first();
+        
+        if($taxi_pages)
+        {
+            return response()->json([
+                'status'    => true,
+                'message'   => 'Success', 
+                'data'    => $taxi_pages,
+            ], 200);
+        }
+        else
+        {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'No data found', 
+                'data'    => array(),
+            ], 200);
+        }
+    }
+
+    // get ratting
+    public function get_ratting($request)
+    {
+
+        if($request['type'] == 'rider')
+        {
+            $ratting = Ratting::select(
+                DB::raw('coalesce(AVG(ratting),0) as avgrating, count(review) as countreview'))
+            ->where('review_by','driver')
+            ->where('rider_id',$request['id'])->first();
+
+        }
+        elseif($request['type'] == 'driver')
+        {
+            $ratting = Ratting::select(
+                DB::raw('coalesce(AVG(ratting),0) as avgrating, count(review) as countreview'))
+            ->where('review_by','rider')
+            ->where('driver_id',$request['id'])->first();
+
+        }
+        
+            
+        if($ratting)
+        {
+            return response()->json([
+                'status'    => true,
+                'message'   => 'Success', 
+                'data'    => $ratting,
+            ], 200);
+        }
+        else
+        {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'No data found', 
+                'data'    => array(),
+            ], 200);
+        }
+    }
+
+
+    // get request_detail
+    public function get_request_detail($request)
+    {
+
+        $request_detail = Request::where('id',$request['request_id'])->first();
+            
+        if($request_detail)
+        {
+            $request_detail['driver_detail'] = $this->get_driver($request_detail['driver_id']);
+            $request_detail['rider_detail'] = $this->get_rider($request_detail['rider_id']);
+
+            return response()->json([
+                'status'    => true,
+                'message'   => 'Success', 
+                'data'    => $request_detail,
+            ], 200);
+        }
+        else
+        {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'No data found', 
+                'data'    => array(),
+            ], 200);
+        }
+    }
+
+    // logout
+    public function logout($request)
+    {
+
+        $user_data = User::where('user_id',$request['user_id'])->first();
+            
+        if($user_data)
+        {
+            $update['device_type'] = '';
+            $update['device_token'] = '';
+            $update['updated_date'] = date('Y-m-d H:m:s');
+
+            User::where('user_id',$request['user_id'])->update($update);
+
+            return response()->json([
+                'status'    => true,
+                'message'   => 'Logout successfully', 
+                'data'    => array(),
+            ], 200);
+        }
+        else
+        {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'Logout unsuccessfully', 
+                'data'    => array(),
+            ], 200);
+        }
+    }
+
+
 
     // sub function --------------------------
 
-    // get driver detail
-    public function get_driver_detail($user_id)
+
+    // get rider 
+    public function get_rider($rider_id)
     {
-        $driver_detail = Driver::where('driver_id',$user_id)->first();
+        $rider  = User::where('user_id',$rider_id)->first();
+        $ratting = Ratting::select(
+            DB::raw('coalesce(AVG(ratting),0) as avgrating, count(review) as countreview'))
+        ->where('review_by','driver')
+        ->where('rider_id',$rider_id)->first();
+        $rider['ratting'] = $ratting;
+
+        $rider['profile_pic'] = $rider['profile_pic'] != '' ? env('AWS_S3_URL').$rider['profile_pic'] : '';
+
+
+        return $rider; 
+    }
+
+    // get driver 
+    public function get_driver($driver_id)
+    {
+        $driver  = User::where('user_id',$driver_id)->first();
+        $driver_detail = $this->get_driver_detail($driver_id); 
+        $driver['driver_detail'] = $driver_detail;
+
+        return $driver; 
+    }
+
+    // get driver detail
+    public function get_driver_detail($driver_id)
+    {
+        $driver_detail = Driver::where('driver_id',$driver_id)->first();
 
         if($driver_detail)
         {
             $driver_detail['profile'] = $driver_detail['profile'] != '' ? env('AWS_S3_URL').$driver_detail['profile'] : '';
             $driver_detail['licence'] = $driver_detail['licence'] != '' ? env('AWS_S3_URL').$driver_detail['licence'] : '';
+
+            $ratting = Ratting::select(
+                DB::raw('coalesce(AVG(ratting),0) as avgrating, count(review) as countreview'))
+            ->where('review_by','rider')
+            ->where('driver_id',$driver_id)->first();
+
+            $driver_detail['ratting'] = $ratting;
+
         }
         else {
             $driver_detail = array();
