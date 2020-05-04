@@ -16,6 +16,7 @@ use App\Http\Requests\Api\App\Common\AdminSettingRequest;
 use App\Http\Requests\Api\App\Common\CheckPromotionStatus;
 use App\Http\Requests\Api\App\Common\UpdateProfileRequest;
 use App\Http\Requests\Api\App\Common\ApplyPromotionRequest;
+use App\Http\Requests\Api\App\Common\GetRequestListRequest;
 use App\Http\Requests\Api\App\Common\DeletePromotionRequest;
 use App\Http\Requests\Api\App\Common\AddUserPromotionRequest;
 use App\Http\Requests\Api\App\Common\GetRequestDetailRequest;
@@ -238,6 +239,21 @@ class AppCommonController extends Controller
         }   
 
         return $this->appCommon->logout($request);
+
+    }
+
+    // get request list
+    public function get_request_list(GetRequestListRequest $request)
+    {
+        if ($request->validator->fails()) {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'parameter invalid', 
+                'errors'    => $request->validator->errors(),
+            ], 200);
+        }   
+
+        return $this->appCommon->get_request_list($request);
 
     }
     

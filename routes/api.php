@@ -133,6 +133,7 @@ Route::prefix('common')->group(function () {
         Route::post('getRatting','Api\App\AppCommonController@get_ratting');
         Route::post('getRequestDetail','Api\App\AppCommonController@get_request_detail');
         Route::post('logout','Api\App\AppCommonController@logout');
+        Route::post('getRequestList','Api\App\AppCommonController@get_request_list');
 
 
 

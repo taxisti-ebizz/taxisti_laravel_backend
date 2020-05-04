@@ -524,8 +524,81 @@ class AppCommonRepository extends Controller
         }
     }
 
+    // get request list
+    public function get_request_list($request)
+    {
+        $request_list = [];
+        if($request['rider_id'] != '')
+        {
+            $request_list = Request::where('rider_id',$request['rider_id'])->where('status','!=',4)->where('ride_status_text','Ride Completed')->get();
+
+        }
+        elseif($request['driver_id'] != '')
+        {
+            $request_list = Request::where('driver_id',$request['driver_id'])->where('status','!=',4)->where('ride_status_text','Ride Completed')->get();
+
+        }
+        else
+        {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'driver_id or rider_id is required', 
+                'data'    => array(),
+            ], 200);            
+        }
+
+            
+        if($request_list)
+        {
+            $list = [];
+            foreach ($request_list as  $value) {
+                
+                if($request['rider_id'] != '')
+                {
+                    $user_detail = $this->get_driver($value['driver_id']);
+                }
+                elseif($request['driver_id'] != '')
+                {
+                    $user_detail = $this->get_driver($value['driver_id']);
+                }
+                
+                $value['request_id'] = $value['id'];   
+                $value['profile_pic'] = $user_detail['profile_pic'];  
+                $value['first_name'] = $user_detail['first_name'];   
+                $value['last_name'] = $user_detail['last_name'];   
+                $value['ratting'] = $user_detail['ratting'];
+                $list[] = $value; 
+
+            }
+
+            $request_list = $list;
+
+            return response()->json([
+                'status'    => true,
+                'message'   => 'Success', 
+                'data'    => $request_list,
+            ], 200);
+        }
+        else
+        {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'No data found', 
+                'data'    => array(),
+            ], 200);
+        }
+    }
 
 
+
+
+
+
+
+
+
+
+    
     // sub function --------------------------
 
 
@@ -533,14 +606,8 @@ class AppCommonRepository extends Controller
     public function get_rider($rider_id)
     {
         $rider  = User::where('user_id',$rider_id)->first();
-        $ratting = Ratting::select(
-            DB::raw('coalesce(AVG(ratting),0) as avgrating, count(review) as countreview'))
-        ->where('review_by','driver')
-        ->where('rider_id',$rider_id)->first();
-        $rider['ratting'] = $ratting;
-
         $rider['profile_pic'] = $rider['profile_pic'] != '' ? env('AWS_S3_URL').$rider['profile_pic'] : '';
-
+        $rider['ratting'] = $this->get_rider_ratting($rider_id);
 
         return $rider; 
     }
@@ -549,8 +616,8 @@ class AppCommonRepository extends Controller
     public function get_driver($driver_id)
     {
         $driver  = User::where('user_id',$driver_id)->first();
-        $driver_detail = $this->get_driver_detail($driver_id); 
-        $driver['driver_detail'] = $driver_detail;
+        $driver['ratting'] = $this->get_driver_ratting($driver_id);
+        $driver['driver_detail'] = $this->get_driver_detail($driver_id);
 
         return $driver; 
     }
@@ -565,13 +632,6 @@ class AppCommonRepository extends Controller
             $driver_detail['profile'] = $driver_detail['profile'] != '' ? env('AWS_S3_URL').$driver_detail['profile'] : '';
             $driver_detail['licence'] = $driver_detail['licence'] != '' ? env('AWS_S3_URL').$driver_detail['licence'] : '';
 
-            $ratting = Ratting::select(
-                DB::raw('coalesce(AVG(ratting),0) as avgrating, count(review) as countreview'))
-            ->where('review_by','rider')
-            ->where('driver_id',$driver_id)->first();
-
-            $driver_detail['ratting'] = $ratting;
-
         }
         else {
             $driver_detail = array();
@@ -579,6 +639,28 @@ class AppCommonRepository extends Controller
 
         return $driver_detail;
 
+    }
+
+    // get driver ratting
+    public function get_driver_ratting($driver_id)
+    {
+        $ratting = Ratting::select(
+            DB::raw('coalesce(AVG(ratting),0) as avgrating, count(review) as countreview'))
+        ->where('review_by','rider')
+        ->where('driver_id',$driver_id)->first();
+
+        return $ratting;
+    }
+
+    // get rider ratting
+    public function get_rider_ratting($rider_id)
+    {
+        $ratting =  Ratting::select(
+            DB::raw('coalesce(AVG(ratting),0) as avgrating, count(review) as countreview'))
+        ->where('review_by','driver')
+        ->where('rider_id',$rider_id)->first();
+
+        return $ratting;
     }
 
     // silent Notification To Old Device
