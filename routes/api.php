@@ -137,9 +137,6 @@ Route::prefix('common')->group(function () {
         Route::post('addReview','Api\App\AppCommonController@add_review');
 
 
-
-
-
     });
 
 });
@@ -150,9 +147,11 @@ Route::group(['middleware' => 'auth:api'], function(){
 
     // App Drivers Routes
     Route::prefix('drivers')->middleware('role:drivers')->group(function () {
-
+        Route::delete('deleteCarImage/{id}','Api\App\DriverController@delete_car_image');
+        Route::post('getCarImage','Api\App\DriverController@get_car_image');
+        
     });
-
+    
     // App Riders Routes
     Route::prefix('riders')->middleware('role:riders')->group(function () {
 
