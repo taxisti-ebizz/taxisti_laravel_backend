@@ -134,6 +134,7 @@ Route::prefix('common')->group(function () {
         Route::post('getRequestDetail','Api\App\AppCommonController@get_request_detail');
         Route::post('logout','Api\App\AppCommonController@logout');
         Route::post('getRequestList','Api\App\AppCommonController@get_request_list');
+        Route::post('addReview','Api\App\AppCommonController@add_review');
 
 
 

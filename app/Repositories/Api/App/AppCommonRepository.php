@@ -589,7 +589,41 @@ class AppCommonRepository extends Controller
         }
     }
 
+    // add review
+    public function add_review($request)
+    {
 
+        $input = $request->except(['review_type']);
+        $input['created_date'] = date('Y-m-d H:m:d');
+            
+        if($request['review_type'] == 'byrider')
+        {
+            $input['review_by'] = 'rider';
+        }
+        else
+        {
+            $input['review_by'] = 'driver';
+        }
+
+        $review = Ratting::insert($input);
+
+        if($review)
+        {
+            return response()->json([
+                'status'    => true,
+                'message'   => 'Review add successfully', 
+                'data'    => array(),
+            ], 200);
+        }
+        else
+        {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'Review add Failed', 
+                'data'    => array(),
+            ], 200);
+        }
+    }
 
 
 

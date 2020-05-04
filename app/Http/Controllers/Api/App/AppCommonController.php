@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Repositories\Api\App\AppCommonRepository;
 use App\Http\Requests\Api\App\Common\LogoutRequest;
+use App\Http\Requests\Api\App\Common\AddReviewRequest;
 use App\Http\Requests\Api\App\Common\ContactUsRequest;
 use App\Http\Requests\Api\App\Common\AutoLogoutRequest;
 use App\Http\Requests\Api\App\Common\CheckLoginRequest;
@@ -257,4 +258,18 @@ class AppCommonController extends Controller
 
     }
     
+    // add review
+    public function add_review(AddReviewRequest $request)
+    {
+        if ($request->validator->fails()) {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'parameter invalid', 
+                'errors'    => $request->validator->errors(),
+            ], 200);
+        }   
+
+        return $this->appCommon->add_review($request);
+
+    }
 }
