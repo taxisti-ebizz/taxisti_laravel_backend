@@ -84,7 +84,176 @@ class DriverRepository extends Controller
         }
     }
 
+    // driver detail
+    public function driver_detail($request)
+    {
+        if($request['type'] =='add_driver')
+        {
+            $driver_id = $request['user_id'];
 
+            $check_driver = Driver::find($request['user_id']);
+            if($check_driver)
+            {
+            // profile_pic handling 
+            if($request->file('profile_pic')){
+
+                // delete files
+                Storage::disk('s3')->exists($driver_detail->profile) ? Storage::disk('s3')->delete($driver_detail->profile) : '';
+
+                $profile_pic = $request->file('profile_pic');
+                $imageName = 'uploads/driver_images/'.time().'.'.$profile_pic->getClientOriginalExtension();
+                $img = Storage::disk('s3')->put($imageName, file_get_contents($profile_pic), 'public');
+
+                $input['profile_pic'] = $imageName;
+                $driver['profile'] = $imageName;
+                                        
+            }
+
+            // licence handling 
+            if($request->file('licence')){
+
+                // delete files
+                Storage::disk('s3')->exists($driver_detail->licence) ? Storage::disk('s3')->delete($driver_detail->licence) : '';
+
+                $licence = $request->file('licence');
+                $imageName = 'uploads/licence_images/'.time().'.'.$licence->getClientOriginalExtension();
+                $img = Storage::disk('s3')->put($imageName, file_get_contents($licence), 'public');
+
+                $driver['licence'] = $imageName;
+                                        
+            }
+
+        
+                //
+                $car_brand=$request['car_brand']!=''?$request['car_brand']:"";
+                $car_year=$request['car_year']!=''?$request['car_year']:"";
+                $plate_no=$request['plate_no']!=''?$request['plate_no']:"";
+                $availability=$request['availability']!=""?$request['availability']:0;
+                $current_location=$request['current_location']!=""?$request['current_location']:"";
+                $lat=$request['lat']!=""?$request['lat']:"";
+                $long=$request['long']!=""?$request['long']:"";
+        
+                if($driver_id!='' && $licence!='')
+                {
+                    
+                    $qry_add_driver=$con->query("INSERT INTO `taxi_driver_detail` (`id`, `driver_id`, `licence`, `car_brand`, `car_year`, `plate_no`, `car_pic`, `availability`, `current_location`, `latitude`, `longitude`, `created_datetime`, `profile`) VALUES ('', ".$driver_id.", '".$licence."', '".$car_brand."', '".$car_year."', '".$plate_no."', '', ".$availability.", '".$current_location."', '".$lat."', '".$long."', '".$current_dateTIme."','".$profile."')");
+                    
+                    $lst_id=$con->insert_id;
+        
+        
+                    if($qry_add_driver)
+                    {
+        
+                        $msg['data']['user_id']=$driver_id;
+        
+                        
+                        $msg['data']['driver_detail_id']=$lst_id;
+                        $qry_get_driver_details=$con->query("select * from taxi_driver_detail where id=".$lst_id);
+                        if($qry_get_driver_details->num_rows>0)
+                        {
+                            $up_qry="update taxi_users set user_type=1,status=0";
+                        
+                            if(isset($_REQUEST['dob']))
+                            {
+                                $dob=$_REQUEST['dob'];
+                                $up_qry.=" ,date_of_birth='".$dob."'";
+        
+                            }
+                            if(isset($_REQUEST['first_name']) && $_REQUEST['first_name']!='')
+                            {
+                                $first_name=$_REQUEST['first_name'];
+                                $up_qry.=" ,first_name='".$first_name."'";
+        
+                            }
+                            if(isset($_REQUEST['last_name']) && $_REQUEST['last_name']!='')
+                            {
+                                $last_name=$_REQUEST['last_name'];
+                                $up_qry.=" ,last_name='".$last_name."'";
+        
+                            }
+                            if(isset($_REQUEST['password']) && $_REQUEST['password']!='')
+                            {
+                                $password=$_REQUEST['password'];
+                                $up_qry.=" ,password='".$password."'";
+        
+                            }	
+        
+        
+                            $up_qry.="where user_id=".$driver_id;
+        
+        
+                            $qry_update_user=$con->query($up_qry);
+                            
+                            $row_driver=$qry_get_driver_details->fetch_assoc();
+                            
+                            $qry_user=$con->query("select * from taxi_users where user_id=".$driver_id);
+                            
+                            if($qry_user->num_rows>0)
+                            {
+                                $row_user=$qry_user->fetch_assoc();
+                                $row_driver['dob']=$row_user['date_of_birth'];
+                                $row_driver['first_name']=$row_user['first_name'];
+                                $row_driver['last_name']=$row_user['last_name'];
+                                $row_driver['driver_ratting']=(string)round($driver_ratting['avgrating'],1);
+        
+                            }
+        
+                            if($row_driver['licence']!='')
+                            {
+                                $row_driver['licence']=$server_path.$row_driver['licence'];
+                            }
+        
+                            if($row_driver['profile']!='')
+                            {
+                                $row_driver['profile']=$server_path.$row_driver['profile'];					
+                            }
+                            $msg['data']=$row_driver;
+        
+                        }
+                        
+                        
+        
+                        $msg['message']="Driver Details Added Successfully.";
+                        $msg['message_ar'] = "تم إضافة معلومات السائق بنجاح";
+                        $msg['status']=1;
+                    }
+                    else
+                    {
+                        $msg['message']="Failed.";
+                        $msg['status']=2;
+                    }
+                }
+                else{
+        
+                    $msg['message']="Failed.";
+                    $msg['status']=2;
+                }
+                
+            }
+            else{
+                $msg['message']="User Allready Exists.";
+                $msg['message_ar'] = "تم تسجيل السائق مسبقا";
+                $msg['status']=2;
+            }
+        
+        }
+        if($driver)
+        {
+            return response()->json([
+                'status'    => true,
+                'message'   => 'Success', 
+                'data'    => $driver['verify'],
+            ], 200);
+        }
+        else
+        {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'Driver not exist', 
+                'data'    => array(),
+            ], 200);
+        }
+    }
 
 
 

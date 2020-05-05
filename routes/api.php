@@ -49,6 +49,8 @@ Route::prefix('management')->group(function () {
         Route::post('getCanceledRideList','Api\Admin\RideController@get_canceled_ride_list');
         Route::post('getNoDriverAvailableList','Api\Admin\RideController@get_no_driver_available_list');
         Route::post('getFakeRideList','Api\Admin\RideController@get_fake_ride_list');
+        Route::post('deleteRide','Api\Admin\RideController@delete_ride');
+
 
         // REVIEW
         Route::post('getDriverReviews','Api\Admin\DriverController@get_driver_reviews');
@@ -150,6 +152,7 @@ Route::group(['middleware' => 'auth:api'], function(){
         Route::delete('deleteCarImage/{id}','Api\App\DriverController@delete_car_image');
         Route::post('getCarImage','Api\App\DriverController@get_car_image');
         Route::post('driverStatus','Api\App\DriverController@get_driver_status');
+        Route::post('driverDetail','Api\App\DriverController@driver_detail');
         
     });
     

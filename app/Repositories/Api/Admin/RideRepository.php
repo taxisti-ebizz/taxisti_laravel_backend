@@ -6,6 +6,7 @@ namespace App\Repositories\Api\Admin;
 use ArrayObject;
 use App\Models\User;
 use App\Models\Ratting;
+use App\Models\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 
@@ -437,7 +438,28 @@ class RideRepository extends Controller
         ], 200);
     }
 
+    // delete_ride
+    public function delete_ride($request)
+    {
+        $id = explode(',',$request->id);
+        $delete_ride = Request::whereIn('id',$id)->delete();
 
+        if($delete_ride)
+        {
+            return response()->json([
+                'status'    => true,
+                'message'   => 'Ride delete successfully', 
+                'data'    => array(),
+            ], 200);
+        }
+        else {
+            return response()->json([
+                'status'    => true,
+                'message'   => 'Failed', 
+                'data'    => array(),
+            ], 200);
+        }
+    }
 
 
     // Sub Function =================================
