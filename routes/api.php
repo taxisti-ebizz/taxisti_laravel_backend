@@ -149,6 +149,7 @@ Route::group(['middleware' => 'auth:api'], function(){
     Route::prefix('drivers')->middleware('role:drivers')->group(function () {
         Route::delete('deleteCarImage/{id}','Api\App\DriverController@delete_car_image');
         Route::post('getCarImage','Api\App\DriverController@get_car_image');
+        Route::post('driverStatus','Api\App\DriverController@get_driver_status');
         
     });
     

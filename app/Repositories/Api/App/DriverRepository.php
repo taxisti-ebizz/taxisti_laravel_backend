@@ -61,6 +61,28 @@ class DriverRepository extends Controller
         }
     }
 
+    // get driver status
+    public function get_driver_status($request)
+    {
+        $driver = User::where('user_type',1)->where('user_id',$request['driver_id'])->first();
+
+        if($driver)
+        {
+            return response()->json([
+                'status'    => true,
+                'message'   => 'Success', 
+                'data'    => $driver['verify'],
+            ], 200);
+        }
+        else
+        {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'Driver not exist', 
+                'data'    => array(),
+            ], 200);
+        }
+    }
 
 
 
