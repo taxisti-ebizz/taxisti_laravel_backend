@@ -4,6 +4,7 @@
 namespace App\Repositories\Api\Admin;
 
 use File;
+use ArrayObject;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
@@ -71,7 +72,7 @@ class UserRepository extends Controller
             return response()->json([
                 'status'    => false,
                 'message'   => 'No user found',
-                'error'    => '',
+                'data'    => new ArrayObject,
             ], 200);
         }
     }
@@ -175,7 +176,7 @@ class UserRepository extends Controller
             return response()->json([
                 'status'    => true,
                 'message'   => 'No data available',
-                'data'    => array(),
+                'data'    => new ArrayObject,
             ], 200);
         }
     }

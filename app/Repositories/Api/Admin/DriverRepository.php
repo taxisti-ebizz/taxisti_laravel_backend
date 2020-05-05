@@ -4,6 +4,7 @@
 namespace App\Repositories\Api\Admin;
 
 use File;
+use ArrayObject;
 use App\Models\User;
 use App\Models\Driver;
 use App\Models\Ratting;
@@ -205,7 +206,7 @@ class DriverRepository extends Controller
             return response()->json([
                 'status'    => true,
                 'message'   => 'No data available', 
-                'data'    => array(),
+                'data'    => new ArrayObject,
             ], 200);
         }
     }
@@ -423,7 +424,7 @@ class DriverRepository extends Controller
         ], 200);   
     }
 
-    // delete driver
+    // delete driver image
     public function delete_car_image($request ,$id)
     {
         $image = DB::table('taxi_car_images')->where('id',$id)->first();
@@ -477,7 +478,7 @@ class DriverRepository extends Controller
             return response()->json([
                 'status'    => true,
                 'message'   => 'No data available', 
-                'data'    => array(),
+                'data'    => new ArrayObject,
             ], 200);
         }
 

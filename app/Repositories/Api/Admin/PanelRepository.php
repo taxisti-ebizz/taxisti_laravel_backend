@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Api\Admin;
 
+use ArrayObject;
 use App\Models\User;
 use App\Models\Driver;
 use App\Models\Request;
@@ -42,7 +43,7 @@ class PanelRepository extends Controller
             return response()->json([
                 'status'    => true,
                 'message'   => 'No data available', 
-                'data'    => array(),
+                'data'    => new ArrayObject,
             ], 200);
         }        
     }
@@ -160,7 +161,7 @@ class PanelRepository extends Controller
             return response()->json([
                 'status'    => true,
                 'message'   => 'No data available', 
-                'data'    => array(),
+                'data'    => new ArrayObject,
             ], 200);
         }        
     }
@@ -249,7 +250,7 @@ class PanelRepository extends Controller
             return response()->json([
                 'status'    => true,
                 'message'   => 'No data available', 
-                'data'    => array(),
+                'data'    => new ArrayObject,
             ], 200);
         }        
 
@@ -335,7 +336,7 @@ class PanelRepository extends Controller
             return response()->json([
                 'status'    => true,
                 'message'   => 'No data available', 
-                'data'    => array(),
+                'data'    => new ArrayObject,
             ], 200);
         }       
     }
@@ -405,7 +406,7 @@ class PanelRepository extends Controller
             return response()->json([
                 'status'    => true,
                 'message'   => 'No data available', 
-                'data'    => array(),
+                'data'    => new ArrayObject,
             ], 200);
         }       
     }

@@ -3,6 +3,7 @@
 
 namespace App\Repositories\Api\Admin;
 
+use ArrayObject;
 use App\Models\User;
 use App\Models\Ratting;
 use Illuminate\Support\Facades\DB;
@@ -38,7 +39,7 @@ class RideRepository extends Controller
             return response()->json([
                 'status'    => true,
                 'message'   => 'No data available', 
-                'data'    => array(),
+                'data'    => new ArrayObject,
             ], 200);
         }
     }
@@ -71,7 +72,7 @@ class RideRepository extends Controller
             return response()->json([
                 'status'    => true,
                 'message'   => 'No data available', 
-                'data'    => array(),
+                'data'    => new ArrayObject,
             ], 200);
         }
     }
@@ -105,7 +106,7 @@ class RideRepository extends Controller
             return response()->json([
                 'status'    => true,
                 'message'   => 'No data available', 
-                'data'    => array(),
+                'data'    => new ArrayObject,
             ], 200);
         }
     }
@@ -177,7 +178,7 @@ class RideRepository extends Controller
             return response()->json([
                 'status'    => true,
                 'message'   => 'No data available', 
-                'data'    => array(),
+                'data'    => new ArrayObject,
             ], 200);
         }
     }
@@ -212,7 +213,7 @@ class RideRepository extends Controller
             return response()->json([
                 'status'    => true,
                 'message'   => 'No data available', 
-                'data'    => array(),
+                'data'    => new ArrayObject,
             ], 200);
         }
     }
@@ -241,7 +242,7 @@ class RideRepository extends Controller
             return response()->json([
                 'status'    => true,
                 'message'   => 'No data available', 
-                'data'    => array(),
+                'data'    => new ArrayObject,
             ], 200);
         }
     }
@@ -287,7 +288,7 @@ class RideRepository extends Controller
             return response()->json([
                 'status'    => true,
                 'message'   => 'No data available', 
-                'data'    => array(),
+                'data'    => new ArrayObject,
             ], 200);
         }
     }
@@ -313,7 +314,7 @@ class RideRepository extends Controller
             return response()->json([
                 'status'    => true,
                 'message'   => 'No data available', 
-                'data'    => array(),
+                'data'    => new ArrayObject,
             ], 200);
         }
     }
