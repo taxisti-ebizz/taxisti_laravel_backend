@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Repositories\Api\Admin\RideRepository;
 use App\Http\Requests\Api\Admin\Ride\DeleteRideRequest;
+use App\Http\Requests\Api\Admin\Ride\CompleteRideRequest;
 use App\Http\Requests\Api\Admin\Ride\GetFakeRideListRequest;
 use App\Http\Requests\Api\Admin\Ride\GetRideAreaListRequest;
 use App\Http\Requests\Api\Admin\Ride\AddAreaBoundariesRequest;
@@ -178,5 +179,19 @@ class RideController extends Controller
         }   
 
         return $this->ride->delete_ride($request);
+    }
+
+    // complete ride 
+    public function complete_ride(CompleteRideRequest $request)
+    {
+        if ($request->validator->fails()) {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'parameter invalid', 
+                'errors'    => $request->validator->errors(),
+            ], 200);
+        }   
+
+        return $this->ride->complete_ride($request);
     }
 }

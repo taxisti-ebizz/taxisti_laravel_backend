@@ -473,6 +473,33 @@ class RideRepository extends Controller
         }
     }
 
+    // complete ride
+    public function complete_ride($request)
+    {
+
+        $update['updated_date'] = date('Y-m-d H:i:s');
+        $update['status'] = 3;
+        $update['ride_status'] = 3;
+
+        $complete_ride = Request::where('id',$request->id)->update($update);
+
+        if($complete_ride)
+        {
+            return response()->json([
+                'status'    => true,
+                'message'   => 'Ride completed successfully', 
+                'data'    => array(),
+            ], 200);
+        }
+        else {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'Failed', 
+                'data'    => array(),
+            ], 200);
+        }
+    }
+
 
     // Sub Function =================================
 

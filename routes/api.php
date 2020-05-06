@@ -50,6 +50,7 @@ Route::prefix('management')->group(function () {
         Route::post('getNoDriverAvailableList','Api\Admin\RideController@get_no_driver_available_list');
         Route::post('getFakeRideList','Api\Admin\RideController@get_fake_ride_list');
         Route::post('deleteRide','Api\Admin\RideController@delete_ride');
+        Route::post('completeRide','Api\Admin\RideController@complete_ride');
 
 
         // REVIEW
