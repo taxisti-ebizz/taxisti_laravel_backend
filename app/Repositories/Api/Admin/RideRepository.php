@@ -97,6 +97,18 @@ class RideRepository extends Controller
 
         if($completed_ride_list['data'])
         {
+            $list = [];
+            foreach($completed_ride_list['data'] as $ride)
+            {
+                $driver_ratting = $this->get_driver_ratting($ride->id);
+                $rider_ratting = $this->get_rider_ratting($ride->id);
+
+                $ride->driver_ratting = $driver_ratting ? $driver_ratting->ratting : 0;
+                $ride->rider_ratting = $rider_ratting ? $rider_ratting->ratting : 0;
+
+                $list[] = $ride;
+            }
+            $completed_ride_list['data'] = $list;
             return response()->json([
                 'status'    => true,
                 'message'   => 'Completed Rride List', 
@@ -454,7 +466,7 @@ class RideRepository extends Controller
         }
         else {
             return response()->json([
-                'status'    => true,
+                'status'    => false,
                 'message'   => 'Failed', 
                 'data'    => array(),
             ], 200);
@@ -580,6 +592,21 @@ class RideRepository extends Controller
         curl_close($curl);
     
         return $responce;
+    }
+
+    // get driver ratting
+    public function get_driver_ratting($request_id)
+    {
+
+        $ratting =  Ratting::where('review_by','driver')->where('request_id',$request_id)->first();
+        return $ratting;
+    }
+
+    // get rider ratting
+    public function get_rider_ratting($request_id)
+    {
+        $ratting =  Ratting::where('review_by','rider')->where('request_id',$request_id)->first();
+        return $ratting;
     }
 }
 
