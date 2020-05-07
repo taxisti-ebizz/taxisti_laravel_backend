@@ -454,7 +454,15 @@ class RideRepository extends Controller
     public function delete_ride($request)
     {
         $id = explode(',',$request->id);
-        $delete_ride = Request::whereIn('id',$id)->delete();
+        $delete_ride = 0;
+        if($request['type'] == 'driver_notavailable')
+        {
+            $delete_ride = DB::table('taxi_driver_notavailable')->whereIn('id',$id)->delete();
+        }
+        else
+        {
+            $delete_ride = Request::whereIn('id',$id)->delete();
+        }
 
         if($delete_ride)
         {
