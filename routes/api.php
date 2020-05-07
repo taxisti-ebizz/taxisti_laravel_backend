@@ -154,6 +154,7 @@ Route::group(['middleware' => 'auth:api'], function(){
         Route::post('getCarImage','Api\App\DriverController@get_car_image');
         Route::post('driverStatus','Api\App\DriverController@get_driver_status');
         Route::post('driverDetail','Api\App\DriverController@driver_detail');
+        Route::post('requestAction','Api\App\DriverController@request_action');
         
     });
     

@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Repositories\Api\App\DriverRepository;
 use App\Http\Requests\Api\App\Driver\GetCarImageRequest;
 use App\Http\Requests\Api\App\Driver\DriverDetailRequest;
+use App\Http\Requests\Api\App\Driver\RequestActionRequest;
 use App\Http\Requests\Api\App\Driver\DeleteCarImageRequest;
 use App\Http\Requests\Api\App\Driver\GetDriverDtatusRequest;
 
@@ -76,6 +77,21 @@ class DriverController extends Controller
         }   
 
         return $this->driver->driver_detail($request);
+
+    }
+
+    // request action
+    public function request_action(RequestActionRequest $request)
+    {
+        if ($request->validator->fails()) {
+            return response()->json([
+                'detail'    => false,
+                'message'   => 'parameter invalid', 
+                'errors'    => $request->validator->errors(),
+            ], 200);
+        }   
+
+        return $this->driver->request_action($request);
 
     }
 
