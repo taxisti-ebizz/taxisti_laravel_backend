@@ -450,7 +450,7 @@ class DriverRepository extends Controller
                         $update_status = Request::where('id',$request['request_id'])->update($update);
         
 
-                        $driver_data = $this->get_driver($driver_id);
+                        $driver_data = $this->get_driver($request['driver_id']);
                         $this->send_request_notification_to_driver($driver_data['device_token'],$request['request_id'],$new_driver,$request_data['rider_id'],$driver_data['device_type']);
 
                         $msg['status']=true;
@@ -698,7 +698,7 @@ class DriverRepository extends Controller
         );
         $a = json_encode($ttt);             // QuickBlox allow only string so conver it into json
         $msggg = base64_encode($a);         // QuickBlox allow base64 encoded string 
-
+        define("environment","production");
         curl_setopt($ch, CURLOPT_URL, "https://api.quickblox.com/events.json");
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, "{\"event\": {\"notification_type\": \"push\", \"environment\": \"".environment."\", \"user\": { \"ids\": \"$device_token\"}, \"message\": \"$msggg\"}}");
