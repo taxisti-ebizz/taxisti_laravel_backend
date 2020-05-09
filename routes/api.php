@@ -161,6 +161,8 @@ Route::group(['middleware' => 'auth:api'], function(){
     // App Riders Routes
     Route::prefix('riders')->middleware('role:riders')->group(function () {
         Route::post('getDriver','Api\App\RiderController@get_driver');
+        Route::post('requestRide','Api\App\RiderController@request_ride');
+
 
     });
 

@@ -53,7 +53,7 @@ class PanelRepository extends Controller
     {
 
         $input = $request->except(['id']);
-        $input['updated_at'] = date('Y-m-d H:m:s');
+        $input['updated_at'] = date('Y-m-d H:i:s');
 
         // promo_image handling 
         if ($request->file('promo_image')) {
@@ -103,7 +103,7 @@ class PanelRepository extends Controller
     {
 
         $input = $request->all();
-        $input['created_at'] = date('Y-m-d H:m:s');
+        $input['created_at'] = date('Y-m-d H:i:s');
 
         // promo_image handling 
         if ($request->file('promo_image')) {
@@ -172,7 +172,7 @@ class PanelRepository extends Controller
 
         $input = $request->except(['id']);
         $input['redeem'] = 1; 
-        $input['updated_at'] = date('Y-m-d H:m:s');
+        $input['updated_at'] = date('Y-m-d H:i:s');
 
         $redeem = DB::table('taxi_user_promotion')->where('id',$request['id'])->update($input);
 
@@ -345,7 +345,7 @@ class PanelRepository extends Controller
     public function add_page($request)
     {
         $input = $request->all();
-        $input['created_date'] = date('Y-m-d H:m:s');
+        $input['created_date'] = date('Y-m-d H:i:s');
         $page = DB::table('taxi_pages')->insert($input);
 
         return response()->json([
@@ -416,7 +416,7 @@ class PanelRepository extends Controller
     {
         $input = $request->except(['user_id']);
         $input['lastupdated_date'] = date('Y-m-d');
-        $input['lastupdated_time'] = date('H:m:s');
+        $input['lastupdated_time'] = date('H:i:s');
 
         $sub_admin_status = DB::table('taxi_admin')->where('user_id',$request['user_id'])->update($input);
 
@@ -478,7 +478,7 @@ class PanelRepository extends Controller
             $input['password'] = md5($request['password']);
         }
         $input['lastupdated_date'] = date('Y-m-d');
-        $input['lastupdated_time'] = date('H:m:s');
+        $input['lastupdated_time'] = date('H:i:s');
 
         $admin_profile = DB::table('taxi_admin')->where('user_id',$request['user_id'])->update($input);
 
@@ -515,7 +515,7 @@ class PanelRepository extends Controller
         $previous_week = strtotime("0 week +1 day");
         $start_week = strtotime("last saturday midnight",$previous_week);
         $end_week = strtotime("next friday",$start_week);
-        $start_current_week = date("Y-m-d H:i:s",$start_week);
+        $start_current_week = date('Y-m-d H:i:s',$start_week);
         $end_current_week = date("Y-m-d 23:59:00",$end_week);
 
         $dashboard_data['current_week_users_count'] = User::where('user_type',0)->whereBetween('created_date',[$start_current_week,$end_current_week])->count();
@@ -532,7 +532,7 @@ class PanelRepository extends Controller
         $previous_week1 = strtotime("-1 week +1 day");
         $start_week = strtotime("last saturday midnight",$previous_week1);
         $end_week = strtotime("next friday",$start_week);
-        $start_last_week = date("Y-m-d H:i:s",$start_week);
+        $start_last_week = date('Y-m-d H:i:s',$start_week);
         $end_last_week = date("Y-m-d 23:59:00",$end_week);
 
         $dashboard_data['last_week_users_count'] = User::where('user_type',0)->whereBetween('created_date',[$start_last_week,$end_last_week])->count();
@@ -596,7 +596,7 @@ class PanelRepository extends Controller
                 $input['user_id'] = $user_id; 
                 $input['message'] = $insertData; 
                 $input['type'] = $type; 
-                $input['datetime'] = date('Y-m-d H:m:s'); 
+                $input['datetime'] = date('Y-m-d H:i:s'); 
 
                 DB::table('taxi_notification')->insert($input);
                 $notificationmsg = '1';
@@ -655,7 +655,7 @@ class PanelRepository extends Controller
                 $input['user_id'] = $user_id; 
                 $input['message'] = $datas; 
                 $input['type'] = $type; 
-                $input['datetime'] = date('Y-m-d H:m:s'); 
+                $input['datetime'] = date('Y-m-d H:i:s'); 
 
                 DB::table('taxi_notification')->insert($input);
                 $notificationmsg = '1';

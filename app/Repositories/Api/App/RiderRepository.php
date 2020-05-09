@@ -11,9 +11,17 @@ use App\Models\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
+use App\Repositories\Api\App\AppCommonRepository;
 
 class RiderRepository extends Controller
 {
+    protected $appCommon;
+
+    public function __construct()
+    {
+        $this->appCommon = new AppCommonRepository;
+    }
+
     // get driver
     public function get_driver($request)
     {
@@ -106,8 +114,6 @@ class RiderRepository extends Controller
                 $msg['message'] = 'No data found';
                 $msg['driver_id'] = '';
             }
-
-
         } else {
 
             $input['rider_id'] = $user_id;
@@ -120,6 +126,121 @@ class RiderRepository extends Controller
             $msg['message'] = 'No data found';
             $msg['driver_id'] = '';
         }
+
+        return response()->json($msg, 200);
+    }
+
+    // request ride
+    public function request_ride($request)
+    {
+        $msg = [];
+        if (isset($request['rider_id']) && isset($request['driver_id'])) {
+            $rider_id = $request['rider_id'];
+            $driver_id = $request['driver_id'];
+
+            //comma seprated driver ids
+            $driver_ids = $request['driver_id'];
+
+            if (explode(",", $driver_ids)) {
+                $did = explode(",", $driver_ids);
+            } else {
+                $did[] = $driver_ids;
+                $driver_id = $driver_ids;
+            }
+
+
+            $new_driver_array = array();
+            $new_driver_ids = '';
+            foreach ($did as $ids) {
+
+                if ($this->appCommon->check_driver_availablity($ids)) {
+                    if ($new_driver_ids != '') {
+                        $new_driver_ids .= ',';
+                    }
+                    $new_driver_array[] = $ids;
+                }
+            }
+
+            $rejected_by_ids = [];
+            foreach ($new_driver_array as $cur_driver_id) {
+                if ($this->appCommon->check_driver_availablity($cur_driver_id)) {
+                    $driver_id = $cur_driver_id;
+
+                    break;
+                } else {
+                    array_push($rejected_by_ids, $cur_driver_id);
+                }
+            }
+
+            $new_driver_array = array_diff($new_driver_array, $rejected_by_ids);
+
+            $rejected_ids = implode(',', $rejected_by_ids);
+            $new_driver_ids = implode(',', $new_driver_array);
+
+            $start_location = $request['start_location'];
+            $start_latitude = $request['start_latitude'];
+            $start_longitude = $request['start_longitude'];
+
+            $end_location = $request['end_location'];
+            $end_latitude = $request['end_latitude'];
+            $end_longitude = $request['end_longitude'];
+
+            $passengers = $request['passengers'];
+            $note = $request['note'] != '' ? $request['note'] : '';
+            $amount = $request['amount'];
+            $distance = $request['distance'];
+
+
+            $input['rider_id'] = $rider_id;
+            $input['driver_id'] = $request['driver_id'];
+            $input['start_datetime'] = date("Y-m-d H:i:s");
+            $input['start_location'] = $start_location;
+            $input['start_latitude'] = $start_latitude;
+            $input['start_longitude'] = $start_longitude;
+            $input['end_location'] = $end_location;
+            $input['end_latitude'] = $end_latitude;
+            $input['end_longitude'] = $end_longitude;
+            $input['passenger'] = $passengers;
+            $input['created_date'] = date("Y-m-d H:i:s");
+            $input['updated_date'] = date("Y-m-d H:i:s");
+            $input['is_canceled'] = 0;
+            $input['amount'] = $amount;
+            $input['distance'] = $distance;
+            $input['rejected_by'] = $rejected_ids;
+            $input['all_driver'] = $request['driver_id'];
+            $input['note'] = $note;
+
+            $add_request = Request::create($input);
+            $req_id = $add_request->id;
+            if ($add_request) {
+
+                //send notification to driver based on driver Id.
+                $driver_data = $this->appCommon->get_driver($driver_id);
+                $device_type = $driver_data['device_type'];
+
+                $msg['status'] = true;
+                $msg['message'] = 'Request submitted Successfully';
+                $msg['req_id'] = $req_id;
+                $msg['all_derives'] = $new_driver_ids;
+
+                if ($this->appCommon->send_request_notification_to_driver($driver_data['device_token'], $req_id, $driver_id, $rider_id, $device_type)) {
+                    $msg['status'] = true;
+                    $msg['req_id'] = $req_id;
+                    $msg['message'] = 'Request submitted Successfully';
+                }
+
+                $rider = $this->appCommon->get_rider($rider_id);
+                $data['first_name'] = $rider['first_name'];
+                $data['last_name'] = $rider['last_name'];
+                $data['req_id'] = $req_id;
+                $data['all_drivers'] = $request['driver_id'];
+                $msg['data'] = $data;
+            } else {
+                $msg['status'] = false;
+                $msg['message'] = 'We are sorry, all our drivers are busy now. Please try again later.';
+            }
+        }
+
 
         return response()->json($msg, 200);
     }

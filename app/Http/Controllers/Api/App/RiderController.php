@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Repositories\Api\App\RiderRepository;
 use App\Http\Requests\Api\App\Rider\GetDriverRequest;
+use App\Http\Requests\Api\App\Rider\RequestRideRequest;
 
 class RiderController extends Controller
 {
@@ -28,6 +29,21 @@ class RiderController extends Controller
         }   
 
         return $this->rider->get_driver($request);
+
+    }
+
+    // request ride 
+    protected function request_ride(RequestRideRequest $request)
+    {
+        if ($request->validator->fails()) {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'parameter invalid', 
+                'errors'    => $request->validator->errors(),
+            ], 200);
+        }   
+
+        return $this->rider->request_ride($request);
 
     }
 

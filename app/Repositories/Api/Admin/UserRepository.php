@@ -81,7 +81,7 @@ class UserRepository extends Controller
     public function edit_user_detail($request)
     {
         $input = $request->except(['user_id']);
-        $input['updated_date'] = date('Y-m-d H:m:s');
+        $input['updated_date'] = date('Y-m-d H:i:s');
 
         // profile_pic handling 
         if ($request->file('profile_pic')) {
@@ -111,7 +111,7 @@ class UserRepository extends Controller
     public function edit_user_status($request)
     {
         $input = $request->except(['user_id']);
-        $input['updated_date'] = date('Y-m-d H:m:s');
+        $input['updated_date'] = date('Y-m-d H:i:s');
 
         // update status
         User::where('user_id', $request['user_id'])->update($input);

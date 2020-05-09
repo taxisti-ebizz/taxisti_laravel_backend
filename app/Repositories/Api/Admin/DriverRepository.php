@@ -294,7 +294,7 @@ class DriverRepository extends Controller
 
                     $car['driver_detail_id'] = $driver_detail->id;  
                     $car['image'] = $imageName;  
-                    $car['datetime'] = date('Y-m-d H:m:s');  
+                    $car['datetime'] = date('Y-m-d H:i:s');  
                     DB::table('taxi_car_images')->insert($car);
                 }
 
@@ -304,7 +304,7 @@ class DriverRepository extends Controller
             $driver['car_brand'] = $request['car_brand'];
             $driver['car_year'] = $request['car_year'];
             $driver['plate_no'] = $request['plate_no'];
-            $driver['last_update'] = date('Y-m-d H:m:s');
+            $driver['last_update'] = date('Y-m-d H:i:s');
             Driver::where('driver_id',$request['driver_id'])->update($driver);
         }
         else
@@ -314,7 +314,7 @@ class DriverRepository extends Controller
             $driver['car_brand'] = $request['car_brand'];
             $driver['car_year'] = $request['car_year'];
             $driver['plate_no'] = $request['plate_no'];
-            $driver['last_update'] = date('Y-m-d H:m:s');
+            $driver['last_update'] = date('Y-m-d H:i:s');
             Driver::where('driver_id',$request['driver_id'])->insert($driver);
 
             $driver_detail = Driver::where('driver_id',$request['driver_id'])->first();
@@ -353,7 +353,7 @@ class DriverRepository extends Controller
 
                     $car['driver_detail_id'] = $driver_detail->id;  
                     $car['image'] = $imageName;  
-                    $car['datetime'] = date('Y-m-d H:m:s');  
+                    $car['datetime'] = date('Y-m-d H:i:s');  
                     DB::table('taxi_car_images')->insert($car);
                 }
 
@@ -367,7 +367,7 @@ class DriverRepository extends Controller
         // update driver data
         $input['first_name'] = $request['first_name'];
         $input['last_name'] = $request['last_name'];
-        $input['updated_date'] = date('Y-m-d H:m:s');
+        $input['updated_date'] = date('Y-m-d H:i:s');
         User::where('user_id',$request['driver_id'])->update($input);
         
         // get driver details
@@ -385,7 +385,7 @@ class DriverRepository extends Controller
     public function edit_driver_status($request)
     {
         $input = $request->except(['driver_id']);
-        $input['updated_date'] = date('Y-m-d H:m:s');
+        $input['updated_date'] = date('Y-m-d H:i:s');
 
         // update status
         User::where('user_id',$request['driver_id'])->update($input);
