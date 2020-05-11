@@ -625,7 +625,49 @@ class AppCommonRepository extends Controller
         }
     }
 
-
+    // ride request automation
+    public function ride_request_automation($request)
+    {
+        $timer=0;
+        $admin_settings = DB::table('taxi_option')->where('option_name','Timer')->first();
+        if($admin_settings)
+        {
+            $timer = $admin_settings->option_value;
+            if($timer == 0)
+            {
+                $timer = 15;
+            }   
+        }
+        else{
+            $timer = 15;
+        }
+        $cur_date_a=date("Y-m-d H:i:s");
+        echo $cur_date_a."<br/>";
+        $cur_date=strtotime($cur_date_a);
+        $cur_date_time=date("Y-m-d H:i:s",$cur_date + $timer);
+        echo $cur_date_time."<br/>";
+        
+        $taxi_request = Request::where('status',0)->get();
+        if($taxi_request)
+        {
+            foreach($taxi_request as $req_f_cron)
+            {
+                echo $req_f_cron['last_cron']."<=".$cur_date_time.PHP_EOL;
+                if($req_f_cron['status'] == 0 && $req_f_cron['last_cron'] != $cur_date_time)
+                {
+                    $request_id = $req_f_cron['id'];
+            
+                    $update['last_cron'] = $cur_date_time;
+                    $update_request = Request::where('id',$request_id)->update($update);
+                    if($update_request)
+                    {
+                        echo "update taxi_request set last_cron='".$cur_date_time."' where id=".$request_id."<br/>";
+                        echo $request_id."<br/>";
+                    }
+                }
+            }
+        }
+    }
 
 
 

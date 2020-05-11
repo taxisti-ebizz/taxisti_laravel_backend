@@ -22,6 +22,7 @@ use App\Http\Requests\Api\App\Common\DeletePromotionRequest;
 use App\Http\Requests\Api\App\Common\AddUserPromotionRequest;
 use App\Http\Requests\Api\App\Common\GetRequestDetailRequest;
 use App\Http\Requests\Api\App\Common\CheckPromotionStatusRequest;
+use App\Http\Requests\Api\Admin\Ride\RideRequestAutomationRequest;
 
 class AppCommonController extends Controller
 {
@@ -270,6 +271,21 @@ class AppCommonController extends Controller
         }   
 
         return $this->appCommon->add_review($request);
+
+    }
+
+    // ride request automation
+    public function ride_request_automation(RideRequestAutomationRequest $request)
+    {
+        if ($request->validator->fails()) {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'parameter invalid', 
+                'errors'    => $request->validator->errors(),
+            ], 200);
+        }   
+
+        return $this->appCommon->ride_request_automation($request);
 
     }
 }
