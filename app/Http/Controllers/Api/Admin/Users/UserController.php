@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api\Admin;
+namespace App\Http\Controllers\Api\Admin\Users;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -10,8 +10,6 @@ use App\Http\Requests\Api\Admin\User\GetUserListRequest;
 use App\Http\Requests\Api\Admin\User\GetUserDetailRequest;
 use App\Http\Requests\Api\Admin\User\EditUserDetailRequest;
 use App\Http\Requests\Api\Admin\User\EditUserStatusRequest;
-use App\Http\Requests\Api\Admin\User\GetRiderReviewstRequest;
-use App\Http\Requests\Api\Admin\User\ViewRiderReviewstRequest;
 
 class UserController extends Controller
 {
@@ -81,7 +79,6 @@ class UserController extends Controller
 
     }
 
-
     // delete user
     protected function delete_user(DeleteUserRequest $request, $user_id)
     {
@@ -96,31 +93,5 @@ class UserController extends Controller
         return $this->user->delete_user($request,$user_id);
     }
     
-    // get rider reviews
-    protected function get_rider_reviews(GetRiderReviewstRequest $request)
-    {
-        if ($request->validator->fails()) {
-            return response()->json([
-                'status'    => false,
-                'message'   => 'parameter invalid', 
-                'errors'    => $request->validator->errors(),
-            ], 200);
-        }   
 
-        return $this->user->get_rider_reviews($request);
-    }
-
-    // view rider reviews
-    protected function view_rider_reviews(ViewRiderReviewstRequest $request)
-    {
-        if ($request->validator->fails()) {
-            return response()->json([
-                'status'    => false,
-                'message'   => 'parameter invalid', 
-                'errors'    => $request->validator->errors(),
-            ], 200);
-        }   
-
-        return $this->user->view_rider_reviews($request);
-    }
 }

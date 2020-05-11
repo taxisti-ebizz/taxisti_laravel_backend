@@ -26,86 +26,86 @@ Route::prefix('management')->group(function () {
     Route::group(['middleware' => 'auth:admin'], function(){
     
         // USER
-        Route::post('getUserList','Api\Admin\UserController@get_user_list');
-        Route::post('getUserDetail','Api\Admin\UserController@get_user_detail');
-        Route::post('editUserDetail','Api\Admin\UserController@edit_user_detail');
-        Route::post('updateUserStatus','Api\Admin\UserController@edit_user_status');
-        Route::delete('deleteUser/{user_id}','Api\Admin\UserController@delete_user');
+        Route::post('getUserList','Api\Admin\Users\UserController@get_user_list');
+        Route::post('getUserDetail','Api\Admin\Users\UserController@get_user_detail');
+        Route::post('editUserDetail','Api\Admin\Users\UserController@edit_user_detail');
+        Route::post('updateUserStatus','Api\Admin\Users\UserController@edit_user_status');
+        Route::delete('deleteUser/{user_id}','Api\Admin\Users\UserController@delete_user');
 
         // DRIVER
-        Route::post('getDriverList','Api\Admin\DriverController@get_driver_list');
-        Route::post('getDriverDetail','Api\Admin\DriverController@get_driver_detail');
-        Route::post('editDriverDetail','Api\Admin\DriverController@edit_driver_detail');
-        Route::post('updateDriverStatus','Api\Admin\DriverController@edit_driver_status');
-        Route::delete('deleteDriver/{driver_id}','Api\Admin\DriverController@delete_driver');
-        Route::delete('deleteCarImage/{id}','Api\Admin\DriverController@delete_car_image');
+        Route::post('getDriverList','Api\Admin\Driver\DriverController@get_driver_list');
+        Route::post('getDriverDetail','Api\Admin\Driver\DriverController@get_driver_detail');
+        Route::post('editDriverDetail','Api\Admin\Driver\DriverController@edit_driver_detail');
+        Route::post('updateDriverStatus','Api\Admin\Driver\DriverController@edit_driver_status');
+        Route::delete('deleteDriver/{driver_id}','Api\Admin\Driver\DriverController@delete_driver');
+        Route::delete('deleteCarImage/{id}','Api\Admin\Driver\DriverController@delete_car_image');
 
 
         // RIDE
-        Route::post('getPendingRideList','Api\Admin\RideController@get_pending_ride_list');
-        Route::post('getRunningRideList','Api\Admin\RideController@get_running_ride_list');
-        Route::post('getCompletedRideList','Api\Admin\RideController@get_completed_ride_list');
-        Route::post('getNoResponseRideList','Api\Admin\RideController@get_no_response_ride_list');
-        Route::post('getCanceledRideList','Api\Admin\RideController@get_canceled_ride_list');
-        Route::post('getNoDriverAvailableList','Api\Admin\RideController@get_no_driver_available_list');
-        Route::post('getFakeRideList','Api\Admin\RideController@get_fake_ride_list');
-        Route::post('deleteRide','Api\Admin\RideController@delete_ride');
-        Route::post('completeRide','Api\Admin\RideController@complete_ride');
+        Route::post('getPendingRideList','Api\Admin\Ride\PendingRideController@get_pending_ride_list');
+        Route::post('getRunningRideList','Api\Admin\Ride\RunningRideController@get_running_ride_list');
+        Route::post('getCompletedRideList','Api\Admin\Ride\CompleteRideController@get_completed_ride_list');
+        Route::post('getNoResponseRideList','Api\Admin\Ride\NoResponseRideController@get_no_response_ride_list');
+        Route::post('getCanceledRideList','Api\Admin\Ride\CanceledRideController@get_canceled_ride_list');
+        Route::post('getNoDriverAvailableList','Api\Admin\Ride\NoDriverAvailableRideController@get_no_driver_available_list');
+        Route::post('getFakeRideList','Api\Admin\Ride\FakeRideController@get_fake_ride_list');
+        Route::post('deleteRide','Api\Admin\Ride\RideCommonController@delete_ride');
+        Route::post('completeRide','Api\Admin\Ride\RideCommonController@complete_ride');
 
 
         // REVIEW
-        Route::post('getDriverReviews','Api\Admin\DriverController@get_driver_reviews');
-        Route::post('viewDriverReviews','Api\Admin\DriverController@view_driver_reviews');
-        Route::post('getRiderReviews','Api\Admin\UserController@get_rider_reviews');
-        Route::post('viewRiderReviews','Api\Admin\UserController@view_rider_reviews');
+        Route::post('getDriverReviews','Api\Admin\Review\DriverReviewController@get_driver_reviews');
+        Route::post('viewDriverReviews','Api\Admin\Review\DriverReviewController@view_driver_reviews');
+        Route::post('getRiderReviews','Api\Admin\Review\UserReviewController@get_rider_reviews');
+        Route::post('viewRiderReviews','Api\Admin\Review\UserReviewController@view_rider_reviews');
 
         // RIDE AREA SETTING LIST
-        Route::post('getRideAreaList','Api\Admin\RideController@get_ride_area_list');
-        Route::post('viewAreaBoundaries','Api\Admin\RideController@view_area_boundaries');
-        Route::post('addAreaBoundaries','Api\Admin\RideController@add_area_boundaries');
-        Route::delete('deleteAreaBoundaries/{id}','Api\Admin\RideController@delete_area_boundaries');
+        Route::post('getRideAreaList','Api\Admin\RideArea\RideAreaController@get_ride_area_list');
+        Route::post('viewAreaBoundaries','Api\Admin\RideArea\RideAreaController@view_area_boundaries');
+        Route::post('addAreaBoundaries','Api\Admin\RideArea\AddRideAreaController@add_area_boundaries');
+        Route::delete('deleteAreaBoundaries/{id}','Api\Admin\RideArea\RideAreaController@delete_area_boundaries');
         
 
         // PROMOTION 
-        Route::post('getPromotionList','Api\Admin\PanelController@get_promotion_list');
-        Route::post('updatePromotionDetail','Api\Admin\PanelController@update_promotion_detail');
-        Route::delete('deletePromotion/{id}','Api\Admin\PanelController@delete_promotion');
-        Route::post('addPromotion','Api\Admin\PanelController@add_promotion');
-        Route::post('getUserPromotionList','Api\Admin\PanelController@get_user_promotion_list');
-        Route::post('redeemPromotionList','Api\Admin\PanelController@redeem_promotion');
+        Route::post('getPromotionList','Api\Admin\Promotion\PromotionController@get_promotion_list');
+        Route::post('updatePromotionDetail','Api\Admin\Promotion\PromotionController@update_promotion_detail');
+        Route::delete('deletePromotion/{id}','Api\Admin\Promotion\PromotionController@delete_promotion');
+        Route::post('addPromotion','Api\Admin\Promotion\AddPromotionController@add_promotion');
+        Route::post('getUserPromotionList','Api\Admin\Promotion\PromotionUserController@get_user_promotion_list');
+        Route::post('redeemPromotionList','Api\Admin\Promotion\PromotionUserController@redeem_promotion');
 
         // OPTIONS
-        Route::post('getOptions','Api\Admin\PanelController@get_options');
-        Route::post('updateOptions','Api\Admin\PanelController@update_options');
+        Route::post('getOptions','Api\Admin\Options\OptionsController@get_options');
+        Route::post('updateOptions','Api\Admin\Options\OptionsController@update_options');
 
         // CONTACT US 
-        Route::post('getContactUsList','Api\Admin\PanelController@get_contact_us_list');
-        Route::post('viewContactUsMessage','Api\Admin\PanelController@view_contact_us_message');
-        Route::delete('deleteContactUs/{id}','Api\Admin\PanelController@delete_contact_us');
+        Route::post('getContactUsList','Api\Admin\ContactUs\ContactUsController@get_contact_us_list');
+        Route::post('viewContactUsMessage','Api\Admin\ContactUs\ContactUsController@view_contact_us_message');
+        Route::delete('deleteContactUs/{id}','Api\Admin\ContactUs\ContactUsController@delete_contact_us');
 
         // NOTIFICATION    
-        Route::post('sendNotification','Api\Admin\PanelController@send_notification');
+        Route::post('sendNotification','Api\Admin\Notification\NotificationController@send_notification');
         
         // PAGE
-        Route::post('getPageList','Api\Admin\PanelController@get_page_list');
-        Route::post('addPage','Api\Admin\PanelController@add_page');
-        Route::post('editPage','Api\Admin\PanelController@edit_page');
-        Route::delete('deletePage/{id}','Api\Admin\PanelController@delete_page');
+        Route::post('getPageList','Api\Admin\Page\PageController@get_page_list');
+        Route::post('addPage','Api\Admin\Page\AddPageController@add_page');
+        Route::post('editPage','Api\Admin\Page\PageController@edit_page');
+        Route::delete('deletePage/{id}','Api\Admin\Page\PageController@delete_page');
         
         // SUBADMIN
-        Route::post('getSubAdminList','Api\Admin\PanelController@get_sub_admin_list');
-        Route::post('updateSubAdminStatus','Api\Admin\PanelController@update_sub_admin_status');
-        Route::delete('deleteSubAdmin/{id}','Api\Admin\PanelController@delete_sub_admin');
-        Route::post('addSubAdmin','Api\Admin\PanelController@add_sub_admin');
+        Route::post('getSubAdminList','Api\Admin\SubAdmin\SubAdminController@get_sub_admin_list');
+        Route::post('updateSubAdminStatus','Api\Admin\SubAdmin\SubAdminController@update_sub_admin_status');
+        Route::delete('deleteSubAdmin/{id}','Api\Admin\SubAdmin\SubAdminController@delete_sub_admin');
+        Route::post('addSubAdmin','Api\Admin\SubAdmin\AddSubAdminController@add_sub_admin');
 
         // DRIVER LOG
-        Route::post('getDriverOnlineLog','Api\Admin\DriverController@get_driver_online_log');
+        Route::post('getDriverOnlineLog','Api\Admin\DriverOnlineLog\DriverOnlineLogController@get_driver_online_log');
 
         // ADMIN
-        Route::post('updateAdminProfile','Api\Admin\PanelController@update_admin_profile');
+        Route::post('updateAdminProfile','Api\Admin\AdminProfile\AdminProfileController@update_admin_profile');
 
         // DASHBOARD 
-        Route::post('getDashboardData','Api\Admin\PanelController@get_dashboard_data');
+        Route::post('getDashboardData','Api\Admin\Dashboard\DashboardController@get_dashboard_data');
     
     });
     

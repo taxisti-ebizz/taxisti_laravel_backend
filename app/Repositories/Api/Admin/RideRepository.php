@@ -348,6 +348,7 @@ class RideRepository extends Controller
             $lat = $centerLatLng[0];
             $long = $centerLatLng[1];
             $area = (!empty($result['coordinates'])) ? $result['coordinates'] : '';
+            $coordinates = $result['coordinates'];
             
             if (!empty($area)) {
                 $areaLatLong = str_replace('"', '', $area);
@@ -415,6 +416,7 @@ class RideRepository extends Controller
                 $array['lat'] = $lat;
                 $array['long'] = $long;
                 $array['area'] = $aa;
+                $array['coordinates'] = $coordinates;
         
             }
 
@@ -543,7 +545,7 @@ class RideRepository extends Controller
         $all_device_token 	= array_column($result, 'device_token');
         $device_tokens 		= str_replace(' ', '', implode(',',$all_device_token));
 
-        $session_user = qb_create_session_with_user();
+        $session_user = $this->qb_create_session_with_user();
         $session_data = json_decode($session_user);
         $token = $session_data->session->token;
 
