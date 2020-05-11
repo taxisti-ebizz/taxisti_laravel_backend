@@ -14,6 +14,7 @@ use App\Http\Requests\Api\Admin\Ride\GetPendingRideListRequest;
 use App\Http\Requests\Api\Admin\Ride\GetRunningRideListRequest;
 use App\Http\Requests\Api\Admin\Ride\ViewAreaBoundariesRequest;
 use App\Http\Requests\Api\Admin\Ride\GetCanceledRideListRequest;
+use App\Http\Requests\Api\Admin\Ride\DeleteAreaBoundariesRequest;
 use App\Http\Requests\Api\Admin\Ride\GetCompletedRideListRequest;
 use App\Http\Requests\Api\Admin\Ride\GetNoResponseRideListRequest;
 use App\Http\Requests\Api\Admin\Ride\GetNoDriverAvailableListRequest;
@@ -165,6 +166,20 @@ class RideController extends Controller
         }   
 
         return $this->ride->add_area_boundaries($request);
+    }
+
+    // delete area boundaries
+    public function delete_area_boundaries(DeleteAreaBoundariesRequest $request, $id)
+    {
+        if ($request->validator->fails()) {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'parameter invalid', 
+                'errors'    => $request->validator->errors(),
+            ], 200);
+        }   
+
+        return $this->ride->delete_area_boundaries($request, $id);
     }
    
     // delete ride 

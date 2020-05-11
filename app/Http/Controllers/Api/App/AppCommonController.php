@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Api\App;
 
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Repositories\Api\App\AppCommonRepository;
 use App\Http\Requests\Api\App\Common\LogoutRequest;
@@ -22,7 +21,7 @@ use App\Http\Requests\Api\App\Common\DeletePromotionRequest;
 use App\Http\Requests\Api\App\Common\AddUserPromotionRequest;
 use App\Http\Requests\Api\App\Common\GetRequestDetailRequest;
 use App\Http\Requests\Api\App\Common\CheckPromotionStatusRequest;
-use App\Http\Requests\Api\Admin\Ride\RideRequestAutomationRequest;
+use App\Http\Requests\Api\App\Common\RideRequestAutomationRequest;
 
 class AppCommonController extends Controller
 {

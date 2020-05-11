@@ -450,6 +450,30 @@ class RideRepository extends Controller
         ], 200);
     }
 
+
+    // delete area boundaries
+    public function delete_area_boundaries($request, $id)
+    {
+        $delete_area_boundaries = DB::table('taxi_ride_area_coordinates')->where('id',$id)->delete();
+
+        // $notif = $this->silentNotificationToAllUsers();  // Send Notification To ALL Drivers && Riders        
+        if($delete_area_boundaries)
+        {
+            return response()->json([
+                'status'    => true,
+                'message'   => 'Area boundaries delete successfully', 
+                'data'    => array(),
+            ], 200);
+        }
+        else {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'Failed', 
+                'data'    => array(),
+            ], 200);
+        }
+    }
+
     // delete_ride
     public function delete_ride($request)
     {

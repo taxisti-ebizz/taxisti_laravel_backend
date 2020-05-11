@@ -63,6 +63,8 @@ Route::prefix('management')->group(function () {
         Route::post('getRideAreaList','Api\Admin\RideController@get_ride_area_list');
         Route::post('viewAreaBoundaries','Api\Admin\RideController@view_area_boundaries');
         Route::post('addAreaBoundaries','Api\Admin\RideController@add_area_boundaries');
+        Route::delete('deleteAreaBoundaries/{id}','Api\Admin\RideController@delete_area_boundaries');
+        
 
         // PROMOTION 
         Route::post('getPromotionList','Api\Admin\PanelController@get_promotion_list');
