@@ -217,7 +217,7 @@ class UserRepository extends Controller
     public function get_specific_user_list($request)
     {
         $user_list = User::select('user_id as id',
-            DB::raw('CONCAT(first_name," ",last_name) as user_name',),
+            DB::raw('CONCAT(first_name," ",last_name) as user_name'),
             'user_type','mobile_no as mobile'
         )
         ->where('verify', 1)
