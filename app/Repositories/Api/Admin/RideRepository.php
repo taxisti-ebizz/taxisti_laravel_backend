@@ -32,7 +32,7 @@ class RideRepository extends Controller
         {
             return response()->json([
                 'status'    => true,
-                'message'   => 'Pending Rride List', 
+                'message'   => 'Pending Ride List', 
                 'data'    => $pending_ride_list,
             ], 200);
         }
@@ -65,7 +65,7 @@ class RideRepository extends Controller
         {
             return response()->json([
                 'status'    => true,
-                'message'   => 'Running Rride List', 
+                'message'   => 'Running Ride List', 
                 'data'    => $running_ride_list,
             ], 200);
         }
@@ -111,7 +111,7 @@ class RideRepository extends Controller
             $completed_ride_list['data'] = $list;
             return response()->json([
                 'status'    => true,
-                'message'   => 'Completed Rride List', 
+                'message'   => 'Completed Ride List', 
                 'data'    => $completed_ride_list,
             ], 200);
         }
@@ -183,7 +183,7 @@ class RideRepository extends Controller
 
             return response()->json([
                 'status'    => true,
-                'message'   => 'No Response Rride List', 
+                'message'   => 'No Response Ride List', 
                 'data'    => $no_response_ride_list,
             ], 200);
         }
@@ -218,7 +218,7 @@ class RideRepository extends Controller
         {
             return response()->json([
                 'status'    => true,
-                'message'   => 'Canceled Rride List', 
+                'message'   => 'Canceled Ride List', 
                 'data'    => $canceled_ride_list,
             ], 200);
         }
@@ -319,7 +319,7 @@ class RideRepository extends Controller
 
             return response()->json([
                 'status'    => true,
-                'message'   => 'Rride area list', 
+                'message'   => 'Ride area list', 
                 'data'    => $ride_area_list,
             ], 200);
         }
