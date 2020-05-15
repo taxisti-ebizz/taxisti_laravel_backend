@@ -85,6 +85,8 @@ Route::prefix('management')->group(function () {
 
         // NOTIFICATION    
         Route::post('sendNotification','Api\Admin\Notification\NotificationController@send_notification');
+        Route::post('getSpecificUserList','Api\Admin\Notification\NotificationController@get_specific_user_list');
+
         
         // PAGE
         Route::post('getPageList','Api\Admin\Page\PageController@get_page_list');

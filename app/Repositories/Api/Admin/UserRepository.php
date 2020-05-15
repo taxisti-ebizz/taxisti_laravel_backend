@@ -212,5 +212,24 @@ class UserRepository extends Controller
         }
 
     }
+
+    //get specific user list
+    public function get_specific_user_list($request)
+    {
+        $user_list = User::select('user_id as id',
+            DB::raw('CONCAT(first_name," ",last_name) as user_name',),
+            'user_type','mobile_no as mobile'
+        )
+        ->where('verify', 1)
+        ->orderBy('user_id', 'DESC')
+        ->paginate(10)->toArray();
+
+
+        return response()->json([
+            'status'    => true,
+            'message'   => 'All user list',
+            'data'    => $user_list,
+        ], 200);
+    }
     
 }
