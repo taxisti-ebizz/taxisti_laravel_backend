@@ -306,7 +306,7 @@ class PanelRepository extends Controller
         }
 
         foreach ($user_data as   $user) {
-            // $send = $this->sendNotiToUser($user->user_id,$user->device_token,$user->device_type,$msg,$type);
+            $send = $this->sendNotiToUser($user->user_id,$user->device_token,$user->device_type,$msg,$type);
         }
 
         return response()->json([

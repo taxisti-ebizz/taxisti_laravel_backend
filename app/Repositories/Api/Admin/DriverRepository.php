@@ -406,13 +406,14 @@ class DriverRepository extends Controller
     {
         $driver = Driver::where('driver_id',$driver_id)->first();
         $user = User::where('user_id',$driver_id)->first();
-
+        
         $licence_image_path = $driver['licence']; 
         $profile_pic_image_path = $user['profile_pic']; 
-
+        
         // delete files
         Storage::disk('s3')->exists($licence_image_path) ? Storage::disk('s3')->delete($licence_image_path) : '';
         Storage::disk('s3')->exists($profile_pic_image_path) ? Storage::disk('s3')->delete($profile_pic_image_path) : '';
+        $this->delete_car_images($driver['id']);
 
         Driver::where('driver_id',$driver_id)->delete();
         User::where('user_id',$driver_id)->delete();
@@ -636,6 +637,24 @@ class DriverRepository extends Controller
         }
 
         return $list;
+    }
+
+    public function delete_car_images($driver_detail_id)
+    {
+        $image_list = DB::table('taxi_car_images')
+            ->select('image','id')
+            ->where('driver_detail_id',$driver_detail_id)
+            ->get();
+        
+        foreach ($image_list as  $value) {
+
+            $image_path = $value->image; 
+    
+            // delete files
+            Storage::disk('s3')->exists($image_path) ? Storage::disk('s3')->delete($image_path) : '';
+            $delete = DB::table('taxi_car_images')->where('id',$value->id)->delete();
+        }
+
     }
 
     public function acceptance_rejected_ratio($driver_id)
