@@ -438,7 +438,7 @@ class DriverRepository extends Controller
                 $data[] = $driver;
     
             }
-            $driver_list['data'] = $data; 
+            $driver_reviews['data'] = $data; 
 
             return response()->json([
                 'status'    => true,
