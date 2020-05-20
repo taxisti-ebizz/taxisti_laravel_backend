@@ -27,17 +27,6 @@ class UserRepository extends Controller
                 $query->where('cancel_by', 2);
             }
         ])
-        ->withCount([
-            'total_review' => function ($query) {
-                $query->where('review_by', '=', 'driver');
-            }
-        ])
-        ->withCount([
-            'avg_rating' => function ($query) {
-                $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
-                $query->where('review_by', '=', 'driver');
-            }
-        ])
         ->where('user_type', 0)
         ->orderBy('user_id', 'DESC')
         ->paginate(10)->toArray();
@@ -46,6 +35,11 @@ class UserRepository extends Controller
         // add base url in profile_pic
         foreach ($user_list['data'] as $user) {
             $user['profile_pic'] = $user['profile_pic'] != '' ? env('AWS_S3_URL') . $user['profile_pic'] : '';
+
+            $ratting_review = $this->user_ratting_review($user['user_id']);
+            $user['total_review_count'] = $ratting_review->total_review;
+            $user['avg_rating_count'] = $ratting_review->avg_ratting;
+
             $data[] = $user;
         }
         $user_list['data'] = $data;
@@ -151,22 +145,22 @@ class UserRepository extends Controller
             DB::raw('CONCAT(first_name," ",last_name) as rider_name'),
             'mobile_no as rider_mobile','user_id as rider_id'
         )
-        ->withCount([
-            'total_review' => function ($query) {
-                $query->where('review_by', '=', 'driver');
-            }
-        ])
-        ->withCount([
-            'avg_rating' => function ($query) {
-                $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
-                $query->where('review_by', '=', 'driver');
-            }
-        ])
         ->where('user_type', 0)
         ->orderBy('user_id', 'DESC')
         ->paginate(10)->toArray();
 
         if ($rider_reviews['data']) {
+
+            foreach ($rider_reviews['data'] as $user) {
+    
+                $ratting_review = $this->user_ratting_review($user['rider_id']);
+                $user['total_review_count'] = $ratting_review->total_review;
+                $user['avg_rating_count'] = $ratting_review->avg_ratting;
+    
+                $data[] = $user;
+            }
+            $rider_reviews['data'] = $data;
+    
             return response()->json([
                 'status'    => true,
                 'message'   => 'Rider reviews',
@@ -186,12 +180,13 @@ class UserRepository extends Controller
     public function view_rider_reviews($request)
     {
         $rider_reviews = DB::table('taxi_ratting')
-            ->select('taxi_ratting.*',
+            ->select('taxi_ratting.*','driver_id','rider_id',
                 DB::raw('CONCAT(taxi_users.first_name," ",taxi_users.last_name) as driver_name'),
                 'taxi_users.mobile_no as driver_mobile' 
             )
-            ->join('taxi_users','taxi_ratting.rider_id','taxi_users.user_id')
-            ->where('taxi_ratting.rider_id',$request->rider_id)
+            ->join('taxi_request','taxi_ratting.request_id','taxi_request.id')
+            ->join('taxi_users','taxi_request.rider_id','taxi_users.user_id')
+            ->where('taxi_request.rider_id',$request->rider_id)
             ->where('review_by','driver')
             ->get();
 
@@ -231,5 +226,25 @@ class UserRepository extends Controller
             'data'    => $user_list,
         ], 200);
     }
+
+    
+
+    // Sub Function
+
+    // user ratting review
+    public function user_ratting_review($user_id)
+    {
+        $ratting_review = DB::table('taxi_ratting')->select(
+                DB::raw('count(taxi_ratting.id) as total_review, ROUND(coalesce(avg(ratting),0),1) as avg_ratting')
+            )
+            ->join('taxi_request','taxi_ratting.request_id','taxi_request.id')
+            ->where('taxi_request.rider_id',$user_id)
+            ->where('taxi_ratting.review_by','driver')
+            ->first();
+
+        return $ratting_review;
+
+    }
+
     
 }

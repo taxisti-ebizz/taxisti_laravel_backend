@@ -432,18 +432,12 @@ class AppCommonRepository extends Controller
 
         if($request['type'] == 'rider')
         {
-            $ratting = Ratting::select(
-                DB::raw('coalesce(AVG(ratting),0) as avgrating, count(review) as countreview'))
-            ->where('review_by','driver')
-            ->where('rider_id',$request['id'])->first();
+            $ratting = $this->get_rider_ratting($request['id']);
 
         }
         elseif($request['type'] == 'driver')
         {
-            $ratting = Ratting::select(
-                DB::raw('coalesce(AVG(ratting),0) as avgrating, count(review) as countreview'))
-            ->where('review_by','rider')
-            ->where('driver_id',$request['id'])->first();
+            $ratting = $this->get_driver_ratting($request['id']);
 
         }
         
@@ -592,23 +586,27 @@ class AppCommonRepository extends Controller
     // add review
     public function add_review($request)
     {
+        $where['request_id'] = $request->request_id;
+        $where['review_by'] = $request['review_type'] == 'byrider' ? 'rider' : 'driver' ;
 
-        $input = $request->except(['review_type']);
-        $input['created_date'] = date('Y-m-d H:m:d');
-            
-        if($request['review_type'] == 'byrider')
-        {
-            $input['review_by'] = 'rider';
-        }
-        else
-        {
-            $input['review_by'] = 'driver';
-        }
+        $check  = Ratting::where($where)->get();
 
-        $review = Ratting::insert($input);
-
-        if($review)
+        if(!$check)
         {
+            $input = $request->except(['review_type']);
+            $input['created_date'] = date('Y-m-d H:m:d');
+                
+            if($request['review_type'] == 'byrider')
+            {
+                $input['review_by'] = 'rider';
+            }
+            else
+            {
+                $input['review_by'] = 'driver';
+            }
+    
+            $review = Ratting::insert($input);
+
             return response()->json([
                 'status'    => true,
                 'message'   => 'Review add successfully', 
@@ -617,11 +615,15 @@ class AppCommonRepository extends Controller
         }
         else
         {
+            $error['request_id'] = ['The request id name has already been taken.'];
+            $error['review_by'] = ['The review by has already been taken.'];
+
             return response()->json([
                 'status'    => false,
-                'message'   => 'Review add Failed', 
-                'data'    => array(),
-            ], 200);
+                'message'   => 'Duplicate values', 
+                'errors'    => $error,
+            ], 200);            
+ 
         }
     }
 
@@ -722,8 +724,10 @@ class AppCommonRepository extends Controller
     {
         $ratting = Ratting::select(
             DB::raw('coalesce(AVG(ratting),0) as avgrating, count(review) as countreview'))
-        ->where('review_by','rider')
-        ->where('driver_id',$driver_id)->first();
+            ->join('taxi_request','taxi_ratting.request_id','taxi_request.id')
+            ->where('taxi_request.driver_id',$driver_id)
+            ->where('taxi_ratting.review_by','rider')
+            ->first();
 
         return $ratting;
     }
@@ -733,8 +737,10 @@ class AppCommonRepository extends Controller
     {
         $ratting =  Ratting::select(
             DB::raw('coalesce(AVG(ratting),0) as avgrating, count(review) as countreview'))
-        ->where('review_by','driver')
-        ->where('rider_id',$rider_id)->first();
+            ->join('taxi_request','taxi_ratting.request_id','taxi_request.id')
+            ->where('taxi_request.rider_id',$rider_id)
+            ->where('taxi_ratting.review_by','driver')
+            ->first();
 
         return $ratting;
     }

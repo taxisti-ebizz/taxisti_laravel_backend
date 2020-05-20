@@ -57,16 +57,6 @@ class User extends Authenticatable
         return $this->hasMany(Request::class,'rider_id','user_id');
     }
 
-    public function total_review()
-    {
-        return $this->hasMany(Ratting::class,'rider_id','user_id');
-    }
-
-    public function avg_rating()
-    {
-        return $this->hasMany(Ratting::class,'rider_id','user_id');
-    }
- 
     public function driver_rides()
     {
         return $this->hasMany(Request::class,'driver_id','user_id');
@@ -75,16 +65,6 @@ class User extends Authenticatable
     public function driver_cancel_ride()
     {
         return $this->hasMany(Request::class,'driver_id','user_id');
-    }
-    
-    public function driver_total_review()
-    {
-        return $this->hasMany(Ratting::class,'driver_id','user_id');
-    }
-
-    public function driver_avg_rating()
-    {
-        return $this->hasMany(Ratting::class,'driver_id','user_id');
     }
     
     

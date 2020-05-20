@@ -438,18 +438,36 @@ class RideRepository extends Controller
     // add area boundaries
     public function add_area_boundaries($request)
     {
-        $input = $request->all();
-        $input['created_date'] = date('Y-m-d H:i:s'); 
 
-        $insert = DB::table('taxi_ride_area_coordinates')->insert($input);
+        $check = DB::table('taxi_ride_area_coordinates')->where($request->all())->get();
 
-        // $notif = $this->silentNotificationToAllUsers();  // Send Notification To ALL Drivers && Riders
+        if($check)
+        {
+            $error['area_name'] = ['The area name has already been taken.'];
+            $error['coordinates'] = ['The coordinates has already been taken.'];
 
-        return response()->json([
-            'status'    => true,
-            'message'   => 'Area boundaries add successfully', 
-            'data'    => $insert,
-        ], 200);
+            return response()->json([
+                'status'    => false,
+                'message'   => 'Duplicate values', 
+                'errors'    => $error,
+            ], 200);            
+        } 
+        else
+        {
+            $input = $request->all();
+            $input['created_date'] = date('Y-m-d H:i:s'); 
+    
+            $insert = DB::table('taxi_ride_area_coordinates')->insert($input);
+    
+            // $notif = $this->silentNotificationToAllUsers();  // Send Notification To ALL Drivers && Riders
+    
+            return response()->json([
+                'status'    => true,
+                'message'   => 'Area boundaries add successfully', 
+                'data'    => $insert,
+            ], 200);
+        }
+
     }
 
 

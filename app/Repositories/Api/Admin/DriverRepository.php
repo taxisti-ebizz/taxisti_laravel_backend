@@ -46,17 +46,6 @@ class DriverRepository extends Controller
                         $query->where('is_canceled',1);
                         $query->where('cancel_by',1);
                     }])
-                ->withCount([
-                    'driver_total_review' => function ($query) {
-                        $query->where('review_by','=','rider');
-                    }
-                ])
-                ->withCount([
-                    'driver_avg_rating' => function ($query) {
-                        $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
-                        $query->where('review_by','=','rider');
-                    }
-                ])
                 ->orderByRaw('taxi_users.user_id DESC')
                 ->paginate(10)->toArray();
         }
@@ -112,17 +101,6 @@ class DriverRepository extends Controller
                     $query->where('is_canceled',1);
                     $query->where('cancel_by',1);
                 }])
-            ->withCount([
-                'driver_total_review' => function ($query) {
-                    $query->where('review_by','=','rider');
-                }
-            ])
-            ->withCount([
-                'driver_avg_rating' => function ($query) {
-                    $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
-                    $query->where('review_by','=','rider');
-                }
-            ])
             ->orderByRaw('taxi_users.user_id DESC')
             ->paginate(10)->toArray();
 
@@ -142,17 +120,6 @@ class DriverRepository extends Controller
                         $query->where('is_canceled',1);
                         $query->where('cancel_by',1);
                     }])
-                ->withCount([
-                    'driver_total_review' => function ($query) {
-                        $query->where('review_by','=','rider');
-                    }
-                ])
-                ->withCount([
-                    'driver_avg_rating' => function ($query) {
-                        $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
-                        $query->where('review_by','=','rider');
-                    }
-                ])
                 ->orderByRaw('taxi_users.user_id DESC')
                 ->paginate(10)->toArray();
         }
@@ -169,7 +136,11 @@ class DriverRepository extends Controller
         {
             foreach($driver_list['data'] as $driver)
             {
+                
                 // add calculation
+                $ratting_review = $this->driver_ratting_review($driver['user_id']);
+                $driver['driver_total_review_count'] = $ratting_review->total_review;
+                $driver['driver_avg_rating_count'] = $ratting_review->avg_ratting;
                 $ratio = $this->acceptance_rejected_ratio($driver['user_id']);
                 $driver['rejected_ratio'] = $ratio['rejected_ratio']; 
                 $driver['acceptance_ratio'] = $ratio['acceptance_ratio'];
@@ -452,23 +423,23 @@ class DriverRepository extends Controller
                 DB::raw('CONCAT(first_name," ",last_name) as driver_name'),
                     'mobile_no as driver_mobile','user_id as driver_id'
             )
-            ->withCount([
-                'driver_total_review' => function ($query) {
-                    $query->where('review_by','=','rider');
-                }
-            ])
-            ->withCount([
-                'driver_avg_rating' => function ($query) {
-                    $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
-                    $query->where('review_by','=','rider');
-                }
-            ])
             ->where('user_type',1)
             ->orderByRaw('user_id DESC')
             ->paginate(10)->toArray();
 
         if($driver_reviews['data'])
         {
+            foreach($driver_reviews['data'] as $driver )
+            {
+                $ratting_review = $this->driver_ratting_review($driver['driver_id']);
+                $driver['driver_total_review_count'] = $ratting_review->total_review;
+                $driver['driver_avg_rating_count'] = $ratting_review->avg_ratting;
+
+                $data[] = $driver;
+    
+            }
+            $driver_list['data'] = $data; 
+
             return response()->json([
                 'status'    => true,
                 'message'   => 'Driver reviews', 
@@ -489,12 +460,13 @@ class DriverRepository extends Controller
     public function view_driver_reviews($request)
     {
         $driver_reviews = DB::table('taxi_ratting')
-            ->select('taxi_ratting.*',
+            ->select('taxi_ratting.*','driver_id','rider_id',
                 DB::raw('CONCAT(taxi_users.first_name," ",taxi_users.last_name) as rider_name'),
                 'taxi_users.mobile_no as rider_mobile' 
             )
-            ->join('taxi_users','taxi_ratting.rider_id','taxi_users.user_id')
-            ->where('taxi_ratting.driver_id',$request->driver_id)
+            ->join('taxi_request','taxi_ratting.request_id','taxi_request.id')
+            ->join('taxi_users','taxi_request.rider_id','taxi_users.user_id')
+            ->where('taxi_request.driver_id',$request->driver_id)
             ->where('review_by','rider')
             ->get();
 
@@ -818,7 +790,11 @@ class DriverRepository extends Controller
     // get Driver Ratting Review Data
     public function getDriverRatRevData($driver_id)
     {
-        $ratting_data = Ratting::where('driver_id',$driver_id)->where('review_by','rider')->get();
+        $ratting_data = Ratting::select('taxi_ratting.*','driver_id','rider_id')
+            ->join('taxi_request','taxi_ratting.request_id','taxi_request.id')
+            ->where('taxi_request.driver_id',$driver_id)
+            ->where('taxi_ratting.review_by','rider')
+            ->get();
         if($ratting_data)
         {
             $data = [];
@@ -847,6 +823,20 @@ class DriverRepository extends Controller
         {
             return array();
         }
+    }
+
+    public function driver_ratting_review($driver_id)
+    {
+        $ratting_review = DB::table('taxi_ratting')->select(
+                DB::raw('count(taxi_ratting.id) as total_review, ROUND(coalesce(avg(ratting),0),1) as avg_ratting')
+            )
+            ->join('taxi_request','taxi_ratting.request_id','taxi_request.id')
+            ->where('taxi_request.driver_id',$driver_id)
+            ->where('taxi_ratting.review_by','rider')
+            ->first();
+
+        return $ratting_review;
+
     }
 
 

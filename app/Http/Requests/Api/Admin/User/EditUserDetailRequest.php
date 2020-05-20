@@ -33,7 +33,7 @@ class EditUserDetailRequest extends FormRequest
             'user_id' => 'required|exists:taxi_users,user_id',
             'first_name' => 'max:255',
             'last_name' => 'max:255',
-            'mobile_no' => '',
+            'mobile_no' => 'unique:taxi_users,mobile_no'
             // 'profile_pic' => 'mimes:jpeg,jpg,png',
         ];
     }

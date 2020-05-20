@@ -31,6 +31,7 @@ class UpdateProfileRequest extends FormRequest
     {
         return [
             'user_id' => 'required|exists:taxi_users',
+            'phone' => 'unique:taxi_users,mobile_no'
         ];
     }
 }   

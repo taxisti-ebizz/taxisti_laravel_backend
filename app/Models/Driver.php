@@ -36,14 +36,4 @@ class Driver extends Model
         return $this->hasMany(Request::class,'driver_id','driver_id');
     }
 
-    public function driver_total_review()
-    {
-        return $this->hasMany(Ratting::class,'driver_id','driver_id');
-    }
-
-    public function driver_avg_rating()
-    {
-        return $this->hasMany(Ratting::class,'driver_id','driver_id');
-    }
-
 }
