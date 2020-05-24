@@ -15,40 +15,108 @@ class UserRepository extends Controller
 
     //get user list
     public function get_user_list($request)
-    {
-        $user_list = User::withCount([
-            'complate_ride' => function ($query) {
-                $query->where('ride_status', 3);
-            }
-        ])
-        ->withCount([
-            'cancel_ride' => function ($query) {
-                $query->where('is_canceled', 1);
-                $query->where('cancel_by', 2);
-            }
-        ])
-        ->where('user_type', 0)
-        ->orderBy('user_id', 'DESC')
-        ->paginate(10)->toArray();
+    { 
+        $user_list = array();
 
+        if($request['type'] == 'currentWeek')
+        {
+            $list = 'CurrentWeek';
 
-        // add base url in profile_pic
-        foreach ($user_list['data'] as $user) {
-            $user['profile_pic'] = $user['profile_pic'] != '' ? env('AWS_S3_URL') . $user['profile_pic'] : '';
+            $previous_week = strtotime("0 week +1 day");
+            $start_week = strtotime("last saturday midnight",$previous_week);
+            $end_week = strtotime("next friday",$start_week);
+            $start_current_week = date("Y-m-d H:i:s",$start_week);
+            $end_current_week = date("Y-m-d 23:59:00",$end_week);
 
-            $ratting_review = $this->user_ratting_review($user['user_id']);
-            $user['total_review_count'] = $ratting_review->total_review;
-            $user['avg_rating_count'] = $ratting_review->avg_ratting;
-
-            $data[] = $user;
+            $user_list = User::withCount([
+                'complate_ride' => function ($query) {
+                    $query->where('ride_status', 3);
+                }
+            ])
+            ->withCount([
+                'cancel_ride' => function ($query) {
+                    $query->where('is_canceled', 1);
+                    $query->where('cancel_by', 2);
+                }
+            ])
+            ->where('user_type', 0)
+            ->whereBetween('created_date', [$start_current_week, $end_current_week])
+            ->orderBy('user_id', 'DESC')
+            ->paginate(10)->toArray();
         }
-        $user_list['data'] = $data;
+        elseif($request['type'] == 'lastWeek')
+        {
+            $list = 'LastWeek';
 
-        return response()->json([
-            'status'    => true,
-            'message'   => 'All user list',
-            'data'    => $user_list,
-        ], 200);
+            $previous_week1 = strtotime("-1 week +1 day");
+            $start_week = strtotime("last saturday midnight",$previous_week1);
+            $end_week = strtotime("next friday",$start_week);
+            $start_last_week = date("Y-m-d H:i:s",$start_week);
+            $end_last_week = date("Y-m-d 23:59:00",$end_week);
+
+            $user_list = User::withCount([
+                'complate_ride' => function ($query) {
+                    $query->where('ride_status', 3);
+                }
+            ])
+            ->withCount([
+                'cancel_ride' => function ($query) {
+                    $query->where('is_canceled', 1);
+                    $query->where('cancel_by', 2);
+                }
+            ])
+            ->where('user_type', 0)
+            ->whereBetween('created_date', [$start_last_week, $end_last_week])
+            ->orderBy('user_id', 'DESC')
+            ->paginate(10)->toArray();
+        }
+        else{
+            
+            $list = 'All';
+            $user_list = User::withCount([
+                'complate_ride' => function ($query) {
+                    $query->where('ride_status', 3);
+                }
+            ])
+            ->withCount([
+                'cancel_ride' => function ($query) {
+                    $query->where('is_canceled', 1);
+                    $query->where('cancel_by', 2);
+                }
+            ])
+            ->where('user_type', 0)
+            ->orderBy('user_id', 'DESC')
+            ->paginate(10)->toArray();
+        }
+
+        if($user_list['data'])
+        {
+            // add base url in profile_pic
+            foreach ($user_list['data'] as $user) {
+                $user['profile_pic'] = $user['profile_pic'] != '' ? env('AWS_S3_URL') . $user['profile_pic'] : '';
+
+                $ratting_review = $this->user_ratting_review($user['user_id']);
+                $user['total_review_count'] = $ratting_review->total_review;
+                $user['avg_rating_count'] = $ratting_review->avg_ratting;
+
+                $data[] = $user;
+            }
+            $user_list['data'] = $data;
+
+            return response()->json([
+                'status'    => true,
+                'message'   => $list.' user list',
+                'data'    => $user_list,
+            ], 200);
+
+        } 
+        else {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'No user found',
+                'data'    => new ArrayObject,
+            ], 200);
+        }
     }
 
     // get user detail

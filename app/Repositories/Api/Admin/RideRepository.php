@@ -12,10 +12,78 @@ use App\Http\Controllers\Controller;
 
 class RideRepository extends Controller
 {
+
+    protected $start_current_week;
+    protected $end_current_week;
+    protected $start_last_week;
+    protected $end_last_week;
+
+    public function __construct()
+    {
+        // Current week data 
+        $previous_week = strtotime("0 week +1 day");
+        $start_week = strtotime("last saturday midnight",$previous_week);
+        $end_week = strtotime("next friday",$start_week);
+        $this->start_current_week = date("Y-m-d H:i:s",$start_week);
+        $this->end_current_week = date("Y-m-d 23:59:00",$end_week);
+
+
+        // Last week date 
+        $previous_week1 = strtotime("-1 week +1 day");
+        $start_week = strtotime("last saturday midnight",$previous_week1);
+        $end_week = strtotime("next friday",$start_week);
+        $this->start_last_week = date("Y-m-d H:i:s",$start_week);
+        $this->end_last_week = date("Y-m-d 23:59:00",$end_week);
+
+    }
+
+
     // get pending ride list
     public function get_pending_ride_list($request)
     {
-        $pending_ride_list = DB::table('taxi_request')
+        $pending_ride_list = array();
+
+        if($request['type'] == 'currentWeek')
+        {
+            $list = 'CurrentWeek ';
+
+            $pending_ride_list = DB::table('taxi_request')
+                ->select('taxi_request.*', 
+                    DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
+                        'rider.mobile_no as rider_mobile', 
+                    DB::raw('CONCAT(driver.first_name," ",driver.last_name) as driver_name'),
+                        'driver.mobile_no as driver_mobile'
+                    )               
+                ->leftJoin('taxi_users as rider', 'taxi_request.rider_id', '=', 'rider.user_id')
+                ->leftJoin('taxi_users as driver', 'taxi_request.driver_id', '=', 'driver.user_id')
+                ->whereBetween('taxi_request.created_date', [$this->start_current_week, $this->end_current_week])
+                ->where('taxi_request.status',0)
+                ->orderByRaw('taxi_request.id DESC')
+                ->paginate(10)->toArray();
+        }
+        elseif($request['type'] == 'lastWeek')
+        {
+            $list = 'LastWeek';
+
+            $pending_ride_list = DB::table('taxi_request')
+                ->select('taxi_request.*', 
+                    DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
+                        'rider.mobile_no as rider_mobile', 
+                    DB::raw('CONCAT(driver.first_name," ",driver.last_name) as driver_name'),
+                        'driver.mobile_no as driver_mobile'
+                    )               
+                ->leftJoin('taxi_users as rider', 'taxi_request.rider_id', '=', 'rider.user_id')
+                ->leftJoin('taxi_users as driver', 'taxi_request.driver_id', '=', 'driver.user_id')
+                ->whereBetween('taxi_request.created_date', [$this->start_last_week, $this->end_last_week])
+                ->where('taxi_request.status',0)
+                ->orderByRaw('taxi_request.id DESC')
+                ->paginate(10)->toArray();
+        }
+        else
+        {
+            $list = 'All';
+
+            $pending_ride_list = DB::table('taxi_request')
                 ->select('taxi_request.*', 
                     DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
                         'rider.mobile_no as rider_mobile', 
@@ -27,12 +95,13 @@ class RideRepository extends Controller
                 ->where('taxi_request.status',0)
                 ->orderByRaw('taxi_request.id DESC')
                 ->paginate(10)->toArray();
+        }
 
         if($pending_ride_list['data'])
         {
             return response()->json([
                 'status'    => true,
-                'message'   => 'Pending Ride List', 
+                'message'   => $list.' Pending Ride List', 
                 'data'    => $pending_ride_list,
             ], 200);
         }
@@ -48,7 +117,50 @@ class RideRepository extends Controller
     // get running ride list
     public function get_running_ride_list($request)
     {
-        $running_ride_list = DB::table('taxi_request')
+        $running_ride_list = array();
+
+        if($request['type'] == 'currentWeek')
+        {
+            $list = 'CurrentWeek ';
+            
+            $running_ride_list = DB::table('taxi_request')
+                ->select('taxi_request.*', 
+                    DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
+                        'rider.mobile_no as rider_mobile', 
+                    DB::raw('CONCAT(driver.first_name," ",driver.last_name) as driver_name'),
+                        'driver.mobile_no as driver_mobile'
+                    )
+                ->leftJoin('taxi_users as rider', 'taxi_request.rider_id', '=', 'rider.user_id')
+                ->leftJoin('taxi_users as driver', 'taxi_request.driver_id', '=', 'driver.user_id')
+                ->whereBetween('taxi_request.created_date', [$this->start_current_week, $this->start_current_week])
+                ->where('taxi_request.status',1)
+                ->orderByRaw('taxi_request.id DESC')
+                ->paginate(10)->toArray();
+
+        }
+        elseif($request['type'] == 'lastWeek')
+        {
+            $list = 'LastWeek';
+
+            $running_ride_list = DB::table('taxi_request')
+                ->select('taxi_request.*', 
+                    DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
+                        'rider.mobile_no as rider_mobile', 
+                    DB::raw('CONCAT(driver.first_name," ",driver.last_name) as driver_name'),
+                        'driver.mobile_no as driver_mobile'
+                    )
+                ->leftJoin('taxi_users as rider', 'taxi_request.rider_id', '=', 'rider.user_id')
+                ->leftJoin('taxi_users as driver', 'taxi_request.driver_id', '=', 'driver.user_id')
+                ->whereBetween('taxi_request.created_date', [$this->start_last_week, $this->end_last_week])
+                ->where('taxi_request.status',1)
+                ->orderByRaw('taxi_request.id DESC')
+                ->paginate(10)->toArray();
+        }
+        else
+        {
+            $list = 'All';
+            
+            $running_ride_list = DB::table('taxi_request')
                 ->select('taxi_request.*', 
                     DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
                         'rider.mobile_no as rider_mobile', 
@@ -60,12 +172,14 @@ class RideRepository extends Controller
                 ->where('taxi_request.status',1)
                 ->orderByRaw('taxi_request.id DESC')
                 ->paginate(10)->toArray();
+        }
+        
 
         if($running_ride_list['data'])
         {
             return response()->json([
                 'status'    => true,
-                'message'   => 'Running Ride List', 
+                'message'   => $list.' Running Ride List', 
                 'data'    => $running_ride_list,
             ], 200);
         }
@@ -81,7 +195,52 @@ class RideRepository extends Controller
     // get completed ride list
     public function get_completed_ride_list($request)
     {
-        $completed_ride_list = DB::table('taxi_request')
+        $completed_ride_list = array();
+        if($request['type'] == 'currentWeek')
+        {
+            $listOf = 'CurrentWeek ';
+
+            $completed_ride_list = DB::table('taxi_request')
+                ->select('taxi_request.*', 
+                    DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
+                        'rider.mobile_no as rider_mobile', 
+                    DB::raw('CONCAT(driver.first_name," ",driver.last_name) as driver_name'),
+                        'driver.mobile_no as driver_mobile'
+                    )
+                ->leftJoin('taxi_users as rider', 'taxi_request.rider_id', '=', 'rider.user_id')
+                ->leftJoin('taxi_users as driver', 'taxi_request.driver_id', '=', 'driver.user_id')
+                ->whereBetween('taxi_request.created_date', [$this->start_current_week, $this->end_current_week])
+                ->where('taxi_request.status',3)
+                ->where('taxi_request.ride_status',3)
+                ->orderByRaw('taxi_request.id DESC')
+                ->paginate(10)->toArray();
+
+        }
+        elseif($request['type'] == 'lastWeek')
+        {
+            $listOf = 'LastWeek';
+
+            $completed_ride_list = DB::table('taxi_request')
+                ->select('taxi_request.*', 
+                    DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
+                        'rider.mobile_no as rider_mobile', 
+                    DB::raw('CONCAT(driver.first_name," ",driver.last_name) as driver_name'),
+                        'driver.mobile_no as driver_mobile'
+                    )
+                ->leftJoin('taxi_users as rider', 'taxi_request.rider_id', '=', 'rider.user_id')
+                ->leftJoin('taxi_users as driver', 'taxi_request.driver_id', '=', 'driver.user_id')
+                ->whereBetween('taxi_request.created_date', [$this->start_last_week, $this->end_last_week])
+                ->where('taxi_request.status',3)
+                ->where('taxi_request.ride_status',3)
+                ->orderByRaw('taxi_request.id DESC')
+                ->paginate(10)->toArray();
+
+        }
+        else
+        {
+            $listOf = 'All';
+    
+            $completed_ride_list = DB::table('taxi_request')
                 ->select('taxi_request.*', 
                     DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
                         'rider.mobile_no as rider_mobile', 
@@ -94,6 +253,7 @@ class RideRepository extends Controller
                 ->where('taxi_request.ride_status',3)
                 ->orderByRaw('taxi_request.id DESC')
                 ->paginate(10)->toArray();
+        }
 
         if($completed_ride_list['data'])
         {
@@ -111,7 +271,7 @@ class RideRepository extends Controller
             $completed_ride_list['data'] = $list;
             return response()->json([
                 'status'    => true,
-                'message'   => 'Completed Ride List', 
+                'message'   => $listOf.' Completed Ride List', 
                 'data'    => $completed_ride_list,
             ], 200);
         }
@@ -127,17 +287,61 @@ class RideRepository extends Controller
     // get no response ride list
     public function get_no_response_ride_list($request)
     {
-        $no_response_ride_list = DB::table('taxi_request')
-                ->select('taxi_request.*', 
-                        DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
-                            'rider.mobile_no as rider_mobile'
-                    )
-                ->leftJoin('taxi_users as rider', 'taxi_request.rider_id', '=', 'rider.user_id')
-                ->where('taxi_request.status',3)
-                ->where('taxi_request.is_canceled',1)
-                ->where('taxi_request.cancel_by',0)
-                ->orderByRaw('taxi_request.id DESC')
-                ->paginate(10)->toArray();
+        $no_response_ride_list = array();
+
+        if($request['type'] == 'currentWeek')
+        {
+            $list = 'CurrentWeek';
+
+            $no_response_ride_list = DB::table('taxi_request')
+            ->select('taxi_request.*', 
+                    DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
+                        'rider.mobile_no as rider_mobile'
+                )
+            ->leftJoin('taxi_users as rider', 'taxi_request.rider_id', '=', 'rider.user_id')
+            ->whereBetween('taxi_request.created_date', [$this->start_current_week, $this->end_current_week])
+            ->where('taxi_request.status',3)
+            ->where('taxi_request.is_canceled',1)
+            ->where('taxi_request.cancel_by',0)
+            ->orderByRaw('taxi_request.id DESC')
+            ->paginate(10)->toArray();
+
+        }
+        elseif($request['type'] == 'lastWeek')
+        {
+            $list = 'LastWeek';
+
+            $no_response_ride_list = DB::table('taxi_request')
+            ->select('taxi_request.*', 
+                    DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
+                        'rider.mobile_no as rider_mobile'
+                )
+            ->leftJoin('taxi_users as rider', 'taxi_request.rider_id', '=', 'rider.user_id')
+            ->whereBetween('taxi_request.created_date', [$this->start_last_week, $this->end_last_week])
+            ->where('taxi_request.status',3)
+            ->where('taxi_request.is_canceled',1)
+            ->where('taxi_request.cancel_by',0)
+            ->orderByRaw('taxi_request.id DESC')
+            ->paginate(10)->toArray();
+
+        }
+        else
+        {
+            $list = 'All';
+            
+            $no_response_ride_list = DB::table('taxi_request')
+                    ->select('taxi_request.*', 
+                            DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
+                                'rider.mobile_no as rider_mobile'
+                        )
+                    ->leftJoin('taxi_users as rider', 'taxi_request.rider_id', '=', 'rider.user_id')
+                    ->where('taxi_request.status',3)
+                    ->where('taxi_request.is_canceled',1)
+                    ->where('taxi_request.cancel_by',0)
+                    ->orderByRaw('taxi_request.id DESC')
+                    ->paginate(10)->toArray();
+        }
+
 
         if($no_response_ride_list['data'])
         {
@@ -183,7 +387,7 @@ class RideRepository extends Controller
 
             return response()->json([
                 'status'    => true,
-                'message'   => 'No Response Ride List', 
+                'message'   => $list.' No Response Ride List', 
                 'data'    => $no_response_ride_list,
             ], 200);
         }
@@ -199,26 +403,73 @@ class RideRepository extends Controller
     // get canceled ride list
     public function get_canceled_ride_list($request)
     {
-        $canceled_ride_list = DB::table('taxi_request')
-                ->select('taxi_request.*', 
-                    DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
-                        'rider.mobile_no as rider_mobile', 
-                    DB::raw('CONCAT(driver.first_name," ",driver.last_name) as driver_name'),
-                        'driver.mobile_no as driver_mobile'
-                    )
-                ->leftJoin('taxi_users as rider', 'taxi_request.rider_id', '=', 'rider.user_id')
-                ->leftJoin('taxi_users as driver', 'taxi_request.driver_id', '=', 'driver.user_id')
-                ->where('taxi_request.status',3)
-                ->where('taxi_request.is_canceled',1)
-                ->whereIn('taxi_request.cancel_by',[1,2])
-                ->orderByRaw('taxi_request.id DESC')
-                ->paginate(10)->toArray();
+        $canceled_ride_list = array();
+
+        if($request['type'] == 'currentWeek')
+        {
+            $list  = 'CurrentWeek';
+
+            $canceled_ride_list = DB::table('taxi_request')
+                    ->select('taxi_request.*', 
+                        DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
+                            'rider.mobile_no as rider_mobile', 
+                        DB::raw('CONCAT(driver.first_name," ",driver.last_name) as driver_name'),
+                            'driver.mobile_no as driver_mobile'
+                        )
+                    ->leftJoin('taxi_users as rider', 'taxi_request.rider_id', '=', 'rider.user_id')
+                    ->leftJoin('taxi_users as driver', 'taxi_request.driver_id', '=', 'driver.user_id')
+                    ->whereBetween('taxi_request.created_date', [$this->start_current_week, $this->end_current_week])
+                    ->where('taxi_request.status',3)
+                    ->where('taxi_request.is_canceled',1)
+                    ->whereIn('taxi_request.cancel_by',[1,2])
+                    ->orderByRaw('taxi_request.id DESC')
+                    ->paginate(10)->toArray();
+        }
+        elseif($request['type'] == 'lastWeek')
+        {
+            $list = 'lastWeek';
+
+            $canceled_ride_list = DB::table('taxi_request')
+                    ->select('taxi_request.*', 
+                        DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
+                            'rider.mobile_no as rider_mobile', 
+                        DB::raw('CONCAT(driver.first_name," ",driver.last_name) as driver_name'),
+                            'driver.mobile_no as driver_mobile'
+                        )
+                    ->leftJoin('taxi_users as rider', 'taxi_request.rider_id', '=', 'rider.user_id')
+                    ->leftJoin('taxi_users as driver', 'taxi_request.driver_id', '=', 'driver.user_id')
+                    ->whereBetween('taxi_request.created_date', [$this->start_last_week, $this->end_last_week])
+                    ->where('taxi_request.status',3)
+                    ->where('taxi_request.is_canceled',1)
+                    ->whereIn('taxi_request.cancel_by',[1,2])
+                    ->orderByRaw('taxi_request.id DESC')
+                    ->paginate(10)->toArray();
+        }
+        else
+        {
+            $list = 'All';
+
+            $canceled_ride_list = DB::table('taxi_request')
+                    ->select('taxi_request.*', 
+                        DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
+                            'rider.mobile_no as rider_mobile', 
+                        DB::raw('CONCAT(driver.first_name," ",driver.last_name) as driver_name'),
+                            'driver.mobile_no as driver_mobile'
+                        )
+                    ->leftJoin('taxi_users as rider', 'taxi_request.rider_id', '=', 'rider.user_id')
+                    ->leftJoin('taxi_users as driver', 'taxi_request.driver_id', '=', 'driver.user_id')
+                    ->where('taxi_request.status',3)
+                    ->where('taxi_request.is_canceled',1)
+                    ->whereIn('taxi_request.cancel_by',[1,2])
+                    ->orderByRaw('taxi_request.id DESC')
+                    ->paginate(10)->toArray();
+        }
 
         if($canceled_ride_list['data'])
         {
             return response()->json([
                 'status'    => true,
-                'message'   => 'Canceled Ride List', 
+                'message'   => $list.' Canceled Ride List', 
                 'data'    => $canceled_ride_list,
             ], 200);
         }
@@ -234,20 +485,56 @@ class RideRepository extends Controller
     // get no driver available list
     public function get_no_driver_available_list($request)
     {
-        $no_driver_available_list = DB::table('taxi_driver_notavailable')
-                ->select('taxi_driver_notavailable.*', 
-                    DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
-                        'rider.mobile_no as rider_mobile'
-                    )
-                ->join('taxi_users as rider', 'taxi_driver_notavailable.rider_id', '=', 'rider.user_id')
-                ->orderByRaw('taxi_driver_notavailable.id DESC')
-                ->paginate(10)->toArray();
+        $no_driver_available_list = array();
+
+        if($request['type'] == 'currentWeek')
+        {
+            $list  = 'CurrentWeek';
+
+            $no_driver_available_list = DB::table('taxi_driver_notavailable')
+            ->select('taxi_driver_notavailable.*', 
+                DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
+                    'rider.mobile_no as rider_mobile'
+                )
+            ->join('taxi_users as rider', 'taxi_driver_notavailable.rider_id', '=', 'rider.user_id')
+            ->whereBetween('taxi_driver_notavailable.created_date', [$this->start_current_week, $this->end_current_week])
+            ->orderByRaw('taxi_driver_notavailable.id DESC')
+            ->paginate(10)->toArray();
+        }
+        elseif($request['type'] == 'lastWeek')
+        {
+            $list = 'lastWeek';
+
+            $no_driver_available_list = DB::table('taxi_driver_notavailable')
+            ->select('taxi_driver_notavailable.*', 
+                DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
+                    'rider.mobile_no as rider_mobile'
+                )
+            ->join('taxi_users as rider', 'taxi_driver_notavailable.rider_id', '=', 'rider.user_id')
+            ->whereBetween('taxi_driver_notavailable.created_date', [$this->start_last_week, $this->end_last_week])
+            ->orderByRaw('taxi_driver_notavailable.id DESC')
+            ->paginate(10)->toArray();
+        }
+        else
+        {
+            $list = 'All';
+
+            $no_driver_available_list = DB::table('taxi_driver_notavailable')
+            ->select('taxi_driver_notavailable.*', 
+                DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
+                    'rider.mobile_no as rider_mobile'
+                )
+            ->join('taxi_users as rider', 'taxi_driver_notavailable.rider_id', '=', 'rider.user_id')
+            ->orderByRaw('taxi_driver_notavailable.id DESC')
+            ->paginate(10)->toArray();            
+        }
+
 
         if($no_driver_available_list['data'])
         {
             return response()->json([
                 'status'    => true,
-                'message'   => 'no driver available list', 
+                'message'   => $list.' No driver available list', 
                 'data'    => $no_driver_available_list,
             ], 200);
         }
@@ -263,18 +550,65 @@ class RideRepository extends Controller
     // get fake ride list
     public function get_fake_ride_list($request)
     {
-        $fake_ride_list = DB::table('taxi_request')
-                ->select('taxi_request.*', 
-                    DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
-                        'rider.mobile_no as rider_mobile', 
-                    DB::raw('CONCAT(driver.first_name," ",driver.last_name) as driver_name'),
-                        'driver.mobile_no as driver_mobile'
-                    )
-                ->leftJoin('taxi_users as rider', 'taxi_request.rider_id', '=', 'rider.user_id')
-                ->leftJoin('taxi_users as driver', 'taxi_request.driver_id', '=', 'driver.user_id')
-                ->where('taxi_request.status',4)
-                ->orderByRaw('taxi_request.id DESC')
-                ->paginate(10)->toArray();
+        $fake_ride_list = array();
+
+        if($request['type'] == 'currentWeek')
+        {
+            $list = 'currentWeek';
+
+            $fake_ride_list = DB::table('taxi_request')
+                    ->select('taxi_request.*', 
+                        DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
+                            'rider.mobile_no as rider_mobile', 
+                        DB::raw('CONCAT(driver.first_name," ",driver.last_name) as driver_name'),
+                            'driver.mobile_no as driver_mobile'
+                        )
+                    ->leftJoin('taxi_users as rider', 'taxi_request.rider_id', '=', 'rider.user_id')
+                    ->leftJoin('taxi_users as driver', 'taxi_request.driver_id', '=', 'driver.user_id')
+                    ->whereBetween('taxi_request.created_date', [$this->start_current_week, $this->end_current_week])
+                    ->where('taxi_request.status',4)
+                    ->orderByRaw('taxi_request.id DESC')
+                    ->paginate(10)->toArray();
+
+        }
+        elseif($request['type'] == 'lastWeek')
+        {
+            $list = 'LastWeek';
+
+            $fake_ride_list = DB::table('taxi_request')
+                    ->select('taxi_request.*', 
+                        DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
+                            'rider.mobile_no as rider_mobile', 
+                        DB::raw('CONCAT(driver.first_name," ",driver.last_name) as driver_name'),
+                            'driver.mobile_no as driver_mobile'
+                        )
+                    ->leftJoin('taxi_users as rider', 'taxi_request.rider_id', '=', 'rider.user_id')
+                    ->leftJoin('taxi_users as driver', 'taxi_request.driver_id', '=', 'driver.user_id')
+                    ->whereBetween('taxi_request.created_date', [$this->start_last_week, $this->end_last_week])
+                    ->where('taxi_request.status',4)
+                    ->orderByRaw('taxi_request.id DESC')
+                    ->paginate(10)->toArray();
+
+        }
+        else
+        {
+
+            $list = 'All';
+
+            $fake_ride_list = DB::table('taxi_request')
+                    ->select('taxi_request.*', 
+                        DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
+                            'rider.mobile_no as rider_mobile', 
+                        DB::raw('CONCAT(driver.first_name," ",driver.last_name) as driver_name'),
+                            'driver.mobile_no as driver_mobile'
+                        )
+                    ->leftJoin('taxi_users as rider', 'taxi_request.rider_id', '=', 'rider.user_id')
+                    ->leftJoin('taxi_users as driver', 'taxi_request.driver_id', '=', 'driver.user_id')
+                    ->where('taxi_request.status',4)
+                    ->orderByRaw('taxi_request.id DESC')
+                    ->paginate(10)->toArray();
+
+        }
 
         if($fake_ride_list['data'])
         {
@@ -293,7 +627,7 @@ class RideRepository extends Controller
 
             return response()->json([
                 'status'    => true,
-                'message'   => 'Fake ride list', 
+                'message'   => $list.' Fake ride list', 
                 'data'    => $fake_ride_list,
             ], 200);
         }

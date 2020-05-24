@@ -105,6 +105,62 @@ class DriverRepository extends Controller
             ->paginate(10)->toArray();
 
         }
+        elseif($request['type'] == 'currentWeek')
+        {
+            // currentWeek driver
+            $list = 'CurrentWeek';
+
+            $previous_week = strtotime("0 week +1 day");
+            $start_week = strtotime("last saturday midnight",$previous_week);
+            $end_week = strtotime("next friday",$start_week);
+            $start_current_week = date("Y-m-d H:i:s",$start_week);
+            $end_current_week = date("Y-m-d 23:59:00",$end_week);
+
+            $driver_list = User::select('taxi_driver_detail.*','taxi_users.*')
+            ->leftJoin('taxi_driver_detail','taxi_users.user_id' , '=', 'taxi_driver_detail.driver_id')
+            ->where('taxi_users.user_type',1)
+            ->withCount([
+                'driver_rides' => function ($query) {
+                    $query->where('is_canceled',0);
+                }])
+            ->withCount([
+                'driver_cancel_ride' => function ($query) {
+                    $query->where('is_canceled',1);
+                    $query->where('cancel_by',1);
+                }])
+            ->whereBetween('taxi_users.created_date', [$start_current_week, $end_current_week])
+            ->orderByRaw('taxi_users.user_id DESC')
+            ->paginate(10)->toArray();
+
+        }
+        elseif($request['type'] == 'lastWeek')
+        {
+            // lastWeek driver
+            $list = 'LastWeek';
+
+            $previous_week1 = strtotime("-1 week +1 day");
+            $start_week = strtotime("last saturday midnight",$previous_week1);
+            $end_week = strtotime("next friday",$start_week);
+            $start_last_week = date("Y-m-d H:i:s",$start_week);
+            $end_last_week = date("Y-m-d 23:59:00",$end_week);
+
+            $driver_list = User::select('taxi_driver_detail.*','taxi_users.*')
+            ->leftJoin('taxi_driver_detail','taxi_users.user_id' , '=', 'taxi_driver_detail.driver_id')
+            ->where('taxi_users.user_type',1)
+            ->withCount([
+                'driver_rides' => function ($query) {
+                    $query->where('is_canceled',0);
+                }])
+            ->withCount([
+                'driver_cancel_ride' => function ($query) {
+                    $query->where('is_canceled',1);
+                    $query->where('cancel_by',1);
+                }])
+            ->whereBetween('taxi_users.created_date', [$start_last_week, $end_last_week])
+            ->orderByRaw('taxi_users.user_id DESC')
+            ->paginate(10)->toArray();
+
+        }
         else {
             // all driver
             $list = 'All';
