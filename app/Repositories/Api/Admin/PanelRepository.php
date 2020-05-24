@@ -494,7 +494,8 @@ class PanelRepository extends Controller
     public function get_dashboard_data()
     {
         $dashboard_data = [];
-
+        $dashboard_data['time'] = date('Y-m-d H:i:s');
+        
         /*-----------------User data-----------*/
         $dashboard_data['cms_count'] = DB::table('taxi_pages')->count();
         $dashboard_data['users_count'] = User::where('user_type',0)->count();
