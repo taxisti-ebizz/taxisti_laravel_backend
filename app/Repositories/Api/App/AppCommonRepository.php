@@ -41,6 +41,7 @@ class AppCommonRepository extends Controller
         }
 
         // update data
+        $user_id = Auth()->user()->user_id;
         User::where('user_id',$request['user_id'])->update($input);
 
         $user_data = User::where('user_id',$request['user_id'])->first();
