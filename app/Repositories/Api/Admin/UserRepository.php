@@ -236,7 +236,7 @@ class UserRepository extends Controller
             ], 200);
         } else {
             return response()->json([
-                'status'    => true,
+                'status'    => false,
                 'message'   => 'No data available',
                 'data'    => new ArrayObject,
             ], 200);
@@ -268,7 +268,7 @@ class UserRepository extends Controller
         }
         else {
             return response()->json([
-                'status'    => true,
+                'status'    => false,
                 'message'   => 'No data available', 
                 'data'    => array(),
             ], 200);

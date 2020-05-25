@@ -41,7 +41,7 @@ class PanelRepository extends Controller
         else
         {
             return response()->json([
-                'status'    => true,
+                'status'    => false,
                 'message'   => 'No data available', 
                 'data'    => new ArrayObject,
             ], 200);
@@ -159,7 +159,7 @@ class PanelRepository extends Controller
         else
         {
             return response()->json([
-                'status'    => true,
+                'status'    => false,
                 'message'   => 'No data available', 
                 'data'    => new ArrayObject,
             ], 200);
@@ -248,7 +248,7 @@ class PanelRepository extends Controller
         else
         {
             return response()->json([
-                'status'    => true,
+                'status'    => false,
                 'message'   => 'No data available', 
                 'data'    => new ArrayObject,
             ], 200);
@@ -334,7 +334,7 @@ class PanelRepository extends Controller
         else
         {
             return response()->json([
-                'status'    => true,
+                'status'    => false,
                 'message'   => 'No data available', 
                 'data'    => new ArrayObject,
             ], 200);
@@ -404,7 +404,7 @@ class PanelRepository extends Controller
         else
         {
             return response()->json([
-                'status'    => true,
+                'status'    => false,
                 'message'   => 'No data available', 
                 'data'    => new ArrayObject,
             ], 200);
