@@ -31,7 +31,7 @@ class RequestActionRequest extends FormRequest
     {
         return [
             'request_id' => 'required|exists:taxi_request,id',
-            'driver_id' => 'required|exists:taxi_users,user_id',
+            // 'driver_id' => 'required|exists:taxi_users,user_id',
             'status' => 'required',
         ];
     }

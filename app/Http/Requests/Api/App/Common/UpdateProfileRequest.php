@@ -30,7 +30,7 @@ class UpdateProfileRequest extends FormRequest
     public function rules()
     {
         return [
-            'user_id' => 'required|exists:taxi_users',
+            // 'user_id' => 'required|exists:taxi_users',
             'phone' => 'unique:taxi_users,mobile_no'
         ];
     }

@@ -31,7 +31,7 @@ class AddUserPromotionRequest extends FormRequest
     public function rules()
     {
         return [
-            'user_id' => 'required|exists:taxi_users',
+            // 'user_id' => 'required|exists:taxi_users',
             'code' => 'required|exists:taxi_promotion',
             'type' => 'required',
 

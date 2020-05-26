@@ -21,14 +21,13 @@ class AppLoginRepository extends Controller
     // Login
     public function login($request)
     {
-        $appCommon = new AppCommonRepository;
         if($user = User::where(['mobile_no' => $request['phone'],'password' => md5($request['password'])])->first()){ 
 
             Auth::login($user);
 
             if($user->user_type == 1)
             {
-                $check_ride_start_or_not = Request::where('driver_id',$user->user_id)->orWhere('rider_id',$user->user_id)->where('status',1)->first();
+                $check_ride_start_or_not = Request::where('status',1)->where('driver_id',$user->user_id)->first();
                 if($check_ride_start_or_not)
                 {
                     return response()->json([
@@ -40,7 +39,7 @@ class AppLoginRepository extends Controller
             }
             else 
             {
-                $check_ride_start_or_not = Request::where('rider_id',$user->user_id)->orWhere('driver_id',$user->user_id)->where('status',1)->first();
+                $check_ride_start_or_not = Request::where('status',1)->where('rider_id',$user->user_id)->first();
                 if($check_ride_start_or_not)
                 {
                     return response()->json([
@@ -57,7 +56,7 @@ class AppLoginRepository extends Controller
 
             $inpute['device_token'] = $request['device_token'];
             $inpute['device_type'] = $request['device_type'];
-            $inpute['updated_date'] = date('Y-m-d H:m:d');
+            $inpute['updated_date'] = date('Y-m-d H:i:s');
 
             // update device inform 
             User::where('user_id',$user->user_id)->update($inpute);

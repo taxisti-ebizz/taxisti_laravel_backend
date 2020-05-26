@@ -10,14 +10,17 @@ use App\Models\Ratting;
 use App\Models\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
 class AppCommonRepository extends Controller
 {
-
+    
     // update profile
     public function update_profile($request)
     {
+        $user_id = Auth()->user()->user_id;
+
         $input['first_name'] = $request['first_name']; 
         $input['last_name'] = $request['last_name']; 
         $input['mobile_no'] = $request['phone']; 
@@ -31,7 +34,7 @@ class AppCommonRepository extends Controller
         if ($request->file('profile_pic')) {
     
             // delete files
-            $user_data = User::where('user_id',$request['user_id'])->first();
+            $user_data = User::where('user_id',$user_id)->first();
             Storage::disk('s3')->exists($user_data->profile_pic) ? Storage::disk('s3')->delete($user_data->profile_pic) : '';
 
             $profile_pic = $request->file('profile_pic');
@@ -41,10 +44,9 @@ class AppCommonRepository extends Controller
         }
 
         // update data
-        $user_id = Auth()->user()->user_id;
-        User::where('user_id',$request['user_id'])->update($input);
+        User::where('user_id',$user_id)->update($input);
 
-        $user_data = User::where('user_id',$request['user_id'])->first();
+        $user_data = User::where('user_id',$user_id)->first();
         $user_data->profile_pic = $user_data->profile_pic != '' ? env('AWS_S3_URL').$user_data->profile_pic : '';
 
         if($user_data->user_type == 1)
@@ -118,6 +120,8 @@ class AppCommonRepository extends Controller
     // add user promotion
     public function add_user_promotion($request)
     {
+        $user_id = Auth()->user()->user_id;
+
         $msg = [];
         $result = DB::table('taxi_promotion')
             ->where('code',$request['code'])
@@ -128,15 +132,15 @@ class AppCommonRepository extends Controller
             if($result->user_limit != $result->limit_usage)
             {
                 $checkPromo = DB::table('taxi_user_promotion')
-                    ->where('user_id',$request['user_id'])
+                    ->where('user_id',$user_id)
                     ->where('promotion_id',$result->id)->first();
 
                 if(!$checkPromo)
                 {	
-                    $input['user_id'] = $request['user_id'];
+                    $input['user_id'] = $user_id;
                     $input['promotion_id'] = $result->id;
                     $input['type'] = $result->type;
-                    $input['created_at'] = date('Y-m-d H:m:d');
+                    $input['created_at'] = date('Y-m-d H:i:s');
 
 
                     $insert = DB::table('taxi_user_promotion')->insert($input);
@@ -149,7 +153,7 @@ class AppCommonRepository extends Controller
                     
 
                         $update['limit_usage'] = $limit_usage;
-                        $update['updated_at'] = date('Y-m-d H:m:d');
+                        $update['updated_at'] = date('Y-m-d H:i:s');
 
                         DB::table('taxi_promotion')->where('id',$result->id)->update($update);
 
@@ -215,7 +219,9 @@ class AppCommonRepository extends Controller
     // auto logout
     public function auto_logout($request)
     {
-        $auto_logout = User::where('user_id',$request['user_id'])->where('device_token',$request['device_token'])->first();
+        $user_id = Auth()->user()->user_id;
+
+        $auto_logout = User::where('user_id',$user_id)->where('device_token',$request['device_token'])->first();
 
         if($auto_logout)
         {
@@ -269,9 +275,11 @@ class AppCommonRepository extends Controller
     // check promotion status
     public function check_promotion_status($request)
     {
+        $user_id = Auth()->user()->user_id;
+
         $promotion_data = DB::table('taxi_user_promotion')
             ->join('taxi_promotion','taxi_promotion.id','taxi_user_promotion.promotion_id')
-            ->where('taxi_user_promotion.user_id',$request['user_id'])
+            ->where('taxi_user_promotion.user_id',$user_id)
             ->where('taxi_user_promotion.type',$request['type'])
             ->where('taxi_user_promotion.is_deleted',0)
             ->where('taxi_user_promotion.redeem',0)->first();
@@ -300,7 +308,9 @@ class AppCommonRepository extends Controller
     // check login
     public function check_login($request)
     {
-        $old_device_token = User::where('user_id',$request['user_id'])->first();
+        $user_id = Auth()->user()->user_id;
+
+        $old_device_token = User::where('user_id',$user_id)->first();
 
         if($old_device_token)
         {
@@ -308,17 +318,17 @@ class AppCommonRepository extends Controller
             {
                 if($request['fcm'] != $old_device_token->device_token)
                 {
-                    User::where('user_id',$request['user_id'])->update(['device_token'=>'']);
+                    User::where('user_id',$user_id)->update(['device_token'=>'']);
     
                     $msg['status']=true;
                     $msg['message']='You are logout';
-                    $msg['data']['user_id'] = $request['user_id'];
+                    $msg['data']['user_id'] = $user_id;
                 }
                 else
                 {
                     $update['device_token'] = $request['fcm'];
                     $update['device_type'] = $request['device_type'];
-                    User::where('user_id',$request['user_id'])->update($update);
+                    User::where('user_id',$user_id)->update($update);
                     
                     $msg['status']=false;
                     $msg['message']='You login successfully';
@@ -329,7 +339,7 @@ class AppCommonRepository extends Controller
             {
                 $update['device_token'] = $request['fcm'];
                 $update['device_type'] = $request['device_type'];
-                User::where('user_id',$request['user_id'])->update($update);
+                User::where('user_id',$user_id)->update($update);
     
                 $msg['status']=false;
                 $msg['message']='You login successfully';
@@ -352,7 +362,9 @@ class AppCommonRepository extends Controller
     {
         date_default_timezone_set("Africa/Tripoli");
 
-        $input['user_id'] =  $request['user_id'];
+        $user_id = Auth()->user()->user_id;
+
+        $input['user_id'] =  $user_id;
         $input['message'] =  $request['message'];
         $input['status'] =  1;
         $input['created_date'] =  date('Y-m-d H:i:s');
@@ -492,17 +504,20 @@ class AppCommonRepository extends Controller
     // logout
     public function logout($request)
     {
-
-        $user_data = User::where('user_id',$request['user_id'])->first();
-            
+        $user_id = Auth()->user()->user_id;
+        $user_data = User::where('user_id',$user_id)->first();
+        
         if($user_data)
         {
+            
             $update['device_type'] = '';
             $update['device_token'] = '';
             $update['updated_date'] = date('Y-m-d H:i:s');
-
-            User::where('user_id',$request['user_id'])->update($update);
-
+            
+            User::where('user_id',$user_id)->update($update);
+            $token = Auth()->user()->token();
+            $token->revoke();
+            
             return response()->json([
                 'status'    => true,
                 'message'   => 'Logout successfully', 
@@ -595,16 +610,8 @@ class AppCommonRepository extends Controller
         if(!$check)
         {
             $input = $request->except(['review_type']);
-            $input['created_date'] = date('Y-m-d H:m:d');
-                
-            if($request['review_type'] == 'byrider')
-            {
-                $input['review_by'] = 'rider';
-            }
-            else
-            {
-                $input['review_by'] = 'driver';
-            }
+            $input['created_date'] = date('Y-m-d H:i:s');
+            $input['review_by'] = $request['review_type'] == 'byrider' ? 'rider' : 'driver';
     
             $review = Ratting::insert($input);
 

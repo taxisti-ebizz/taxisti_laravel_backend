@@ -22,7 +22,7 @@ class CheckRole
             if ($request->user()->user_type == 1) {
                 return $next($request);
             }
-            abort(401, 'This action is unauthorized.');
+            return response()->json(['message' => 'This action is unauthorized.'],401);
         }
         elseif($role == 'riders')
         {
@@ -30,11 +30,12 @@ class CheckRole
             if ($request->user()->user_type == 0) {
                 return $next($request);
             }
-            abort(401, 'This action is unauthorized.');
+            return response()->json(['message' => 'This action is unauthorized.'],401);
+
         }
         else
         {
-            abort(401, 'This action is unauthorized.');
+            return response()->json(['message' => 'This action is unauthorized.'],401);
         }
     }
 }

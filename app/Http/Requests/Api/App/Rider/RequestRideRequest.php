@@ -31,7 +31,7 @@ class RequestRideRequest extends FormRequest
     {
 
         return [
-            'rider_id' => 'required|exists:taxi_users,user_id',
+            // 'rider_id' => 'required|exists:taxi_users,user_id',
             'driver_id' => 'required',
             'start_location' => 'required',
             'start_latitude' => 'required',

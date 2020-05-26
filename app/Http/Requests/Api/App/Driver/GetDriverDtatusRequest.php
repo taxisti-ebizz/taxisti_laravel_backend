@@ -30,7 +30,7 @@ class GetDriverDtatusRequest extends FormRequest
     public function rules()
     {
         return [
-            'driver_id' => 'required|exists:taxi_users,user_id'
+            // 'driver_id' => 'required|exists:taxi_users,user_id'
         ];
     }
 }

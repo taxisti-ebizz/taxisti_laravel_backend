@@ -47,7 +47,9 @@ class DriverRepository extends Controller
     // get driver car image
     public function get_car_image($request)
     {
-        $driver = Driver::where('driver_id',$request['user_id'])->first();
+        $user_id = Auth()->user()->user_id;
+
+        $driver = Driver::where('driver_id',$user_id)->first();
 
         if($driver)
         {
@@ -72,7 +74,9 @@ class DriverRepository extends Controller
     // get driver status
     public function get_driver_status($request)
     {
-        $driver = User::where('user_type',1)->where('user_id',$request['driver_id'])->first();
+        $driver_id = Auth()->user()->user_id;
+
+        $driver = User::where('user_type',1)->where('user_id',$driver_id)->first();
 
         if($driver)
         {
@@ -95,10 +99,12 @@ class DriverRepository extends Controller
     // driver detail
     public function driver_detail($request)
     {
+        $user_id = Auth()->user()->user_id;
+
         if($request['type'] =='add_driver')
         {
 
-            $check_driver = Driver::where('driver_id',$request['user_id'])->first();
+            $check_driver = Driver::where('driver_id',$user_id)->first();
 
             if(!$check_driver)
             {
@@ -125,7 +131,7 @@ class DriverRepository extends Controller
                                             
                 }
 
-                $driver['driver_id'] = $request['user_id'];
+                $driver['driver_id'] = $user_id;
                 $driver['car_brand'] = $request['car_brand'] != '' ? $request['car_brand'] : "";
                 $driver['car_year'] = $request['car_year'] != '' ? $request['car_year'] : "";
                 $driver['plate_no'] = $request['plate_no'] != '' ? $request['plate_no'] : "";
@@ -149,7 +155,7 @@ class DriverRepository extends Controller
                     isset($request['last_name']) ? $input['last_name'] = $request['last_name'] : '';
                     isset($request['password']) ? $input['password'] = md5($request['password']) : '';
 
-                    $update_user = User::where('user_id',$request['user_id'])->update($input);
+                    $update_user = User::where('user_id',$user_id)->update($input);
                      
                     $msg['message']="Driver Details Added Successfully.";
                     $msg['message_ar'] = "تم إضافة معلومات السائق بنجاح";
@@ -211,7 +217,7 @@ class DriverRepository extends Controller
         }
         elseif($request['type']=='edit_driver')
         {
-            $driver_detail = Driver::where('driver_id',$request['user_id'])->first();
+            $driver_detail = Driver::where('driver_id',$user_id)->first();
 
             // profile_pic handling 
             if($request->file('profile_pic')){
@@ -242,7 +248,7 @@ class DriverRepository extends Controller
                                         
             }
 
-            isset($request['user_id']) ? $driver['driver_id'] = $request['user_id'] : '';
+            isset($user_id) ? $driver['driver_id'] = $user_id : '';
             isset($request['car_brand']) ? $driver['car_brand'] = $request['car_brand'] : '';
             isset($request['car_year']) ? $driver['car_year'] = $request['car_year'] : '';
             isset($request['plate_no']) ? $driver['plate_no'] = $request['plate_no'] : '';
@@ -252,7 +258,7 @@ class DriverRepository extends Controller
             isset($request['long']) ? $driver['longitude'] = $request['long'] : '';
             $driver['last_update'] = date('Y-m-d h:i:s');
     
-            $update_driver_detail = Driver::where('driver_id',$request['user_id'])->update($driver);
+            $update_driver_detail = Driver::where('driver_id',$user_id)->update($driver);
             
             if($update_driver_detail)
             {
@@ -264,7 +270,7 @@ class DriverRepository extends Controller
                 isset($request['first_name']) ? $input['first_name'] = $request['first_name'] : '';
                 isset($request['last_name']) ? $input['last_name'] = $request['last_name'] : '';
 
-                $update_user = User::where('user_id',$request['user_id'])->update($input);
+                $update_user = User::where('user_id',$user_id)->update($input);
                     
                 $msg['message']="Driver Details Updated.";
                 $msg['message_ar'] = "تم تحميل معلومات السائق بنجاح";
@@ -284,7 +290,7 @@ class DriverRepository extends Controller
             $driver = DB::table('taxi_driver_detail')
             ->select('taxi_driver_detail.*','taxi_users.*')
             ->join('taxi_users', 'taxi_driver_detail.driver_id', '=', 'taxi_users.user_id')
-            ->where('taxi_driver_detail.driver_id',$request['user_id'])
+            ->where('taxi_driver_detail.driver_id',$user_id)
             ->first();
     
             if($driver)
@@ -314,7 +320,7 @@ class DriverRepository extends Controller
             $driver = DB::table('taxi_driver_detail')
             ->select('taxi_driver_detail.*','taxi_users.*')
             ->join('taxi_users', 'taxi_driver_detail.driver_id', '=', 'taxi_users.user_id')
-            ->where('taxi_driver_detail.driver_id',$request['user_id'])
+            ->where('taxi_driver_detail.driver_id',$user_id)
             ->first();
     
             if($driver)
@@ -347,6 +353,7 @@ class DriverRepository extends Controller
     // request_action
     public function request_action($request)
     {
+        $driver_id = Auth()->user()->user_id;
         $request_data = Request::where('id',$request['request_id'])->first();
 
         if($request['status'] == 1)
@@ -458,7 +465,7 @@ class DriverRepository extends Controller
                         $update_status = Request::where('id',$request['request_id'])->update($update);
         
 
-                        $driver_data = $this->appCommon->get_driver($request['driver_id']);
+                        $driver_data = $this->appCommon->get_driver($driver_id);
                         $this->appCommon->send_request_notification_to_driver($driver_data['device_token'],$request['request_id'],$new_driver,$request_data['rider_id'],$driver_data['device_type']);
 
                         $msg['status']=true;
@@ -501,12 +508,12 @@ class DriverRepository extends Controller
             $update_status = Request::where('id',$request['request_id'])->update($update);
 
 
-            if(isset($request['driver_id']) && $request['driver_id']!='')
+            if(isset($driver_id) && $driver_id!='')
             {
     
                 $type='driver';
     
-                $driver_data = $this->appCommon->get_driver($request['driver_id']);
+                $driver_data = $this->appCommon->get_driver($driver_id);
                 $rider_data = $this->appCommon->get_rider($request_data['rider_id']);
       
                 $msg['rider'] = $rider_data;

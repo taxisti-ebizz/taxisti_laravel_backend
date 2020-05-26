@@ -31,7 +31,7 @@ class GetDriverRequest extends FormRequest
     {
 
         return [
-            'user_id' => 'required|exists:taxi_users',
+            // 'user_id' => 'required|exists:taxi_users',
             'start_location' => 'required',
             'latitude' => 'required',
             'longitude' => 'required',
