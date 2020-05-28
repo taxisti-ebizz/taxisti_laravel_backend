@@ -66,6 +66,13 @@ class AppLoginRepository extends Controller
             $user_data =  User::where('user_id',$user->user_id)->first();
             $user_data->profile_pic = $user_data->profile_pic != '' ? env('AWS_S3_URL').$user_data->profile_pic : '';
 
+            if($user_data->user_type == 1)
+            {
+                $driver_detail =  $this->appCommon->get_driver_detail($user_data->user_id);
+                $driver_detail['car_images'] = $this->appCommon->car_images($driver_detail['id']);
+                $user_data->driver_detail = $driver_detail;
+            }
+
             $success['token'] =  $user_data->createToken('Texi_App')->accessToken; 
             $success['data'] = $user_data; 
     

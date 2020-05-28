@@ -6,9 +6,16 @@ namespace App\Repositories\Api\App\Auth;
 use App\Models\User;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
+use App\Repositories\Api\App\AppCommonRepository;
 
 class AppRegistorRepository extends Controller
 {
+    protected $appCommon;
+
+    public function __construct()
+    {
+        $this->appCommon = new AppCommonRepository;
+    }
 
     // user registor
     public function create($request)
