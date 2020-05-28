@@ -272,37 +272,400 @@ class DriverRepository extends Controller
         }
         elseif($driver_list['data'])
         {
-            foreach($driver_list['data'] as $driver)
+
+            if($request['type'] == 'filter')
             {
                 
-                // add calculation
-                $ratting_review = $this->driver_ratting_review($driver['user_id']);
-                $driver['driver_total_review_count'] = $ratting_review->total_review;
-                $driver['driver_avg_rating_count'] = $ratting_review->avg_ratting;
-                $ratio = $this->acceptance_rejected_ratio($driver['user_id']);
-                $driver['rejected_ratio'] = $ratio['rejected_ratio']; 
-                $driver['acceptance_ratio'] = $ratio['acceptance_ratio'];
-                $driver['online_hours_last_week'] = $this->total_online_hours_lastweek($driver['user_id']);
-                $driver['online_hours_current_week'] = $this->total_online_hours_currentweek($driver['user_id']);
-                $driver['total_online_hours'] = $this->total_online_hours($driver['user_id']);
+                $filter = json_decode($request['filter']);
+                $data = [];
 
-                // add car images
-                $driver['car_images'] = $this->car_images($driver['id']);
-
-                // add base url
-                $driver['licence'] = $driver['licence'] != ''? env('AWS_S3_URL').$driver['licence'] : '';
-                $driver['profile'] = $driver['profile'] != ''? env('AWS_S3_URL').$driver['profile'] : '';
-                $driver['profile_pic'] = $driver['profile_pic'] != ''? env('AWS_S3_URL').$driver['profile_pic'] : '';
-
-                if($request['type'] == 'online')
+                if(!empty($filter->driver_rides)) // driver_rides filter
                 {
-                    $driver['reviews'] = $this->getDriverRatRevData($driver['user_id']);
+                    $driver_rides = explode('-',$filter->driver_rides);
+
+                    foreach($driver_list['data'] as $driver)
+                    {
+                        // add calculation
+                        $ratting_review = $this->driver_ratting_review($driver['user_id']);
+                        $driver['driver_total_review_count'] = $ratting_review->total_review;
+                        $driver['driver_avg_rating_count'] = $ratting_review->avg_ratting;
+                        $ratio = $this->acceptance_rejected_ratio($driver['user_id']);
+                        $driver['rejected_ratio'] = $ratio['rejected_ratio']; 
+                        $driver['acceptance_ratio'] = $ratio['acceptance_ratio'];
+                        $driver['online_hours_last_week'] = $this->total_online_hours_lastweek($driver['user_id']);
+                        $driver['online_hours_current_week'] = $this->total_online_hours_currentweek($driver['user_id']);
+                        $driver['total_online_hours'] = $this->total_online_hours($driver['user_id']);
+        
+                        // add car images
+                        $driver['car_images'] = $this->car_images($driver['id']);
+        
+                        // add base url
+                        $driver['licence'] = $driver['licence'] != ''? env('AWS_S3_URL').$driver['licence'] : '';
+                        $driver['profile'] = $driver['profile'] != ''? env('AWS_S3_URL').$driver['profile'] : '';
+                        $driver['profile_pic'] = $driver['profile_pic'] != ''? env('AWS_S3_URL').$driver['profile_pic'] : '';
+
+                        // reviews
+                        $driver['reviews'] = $this->getDriverRatRevData($driver['user_id']);
+            
+                        // driver_rides filter
+                        if($driver['driver_rides_count'] >= $driver_rides[0] && $driver['driver_rides_count'] <= $driver_rides[1])
+                        {
+                            $data[] = $driver;
+                        }
+            
+                    }
+                    $driver_list['data'] = $data; 
                 }
-    
-                $data[] = $driver;
-    
+
+                if(!empty($filter->driver_cancel_ride)) // driver_cancel_ride filter
+                {
+                    $driver_cancel_ride = explode('-',$filter->driver_cancel_ride);
+                    
+                    foreach($driver_list['data'] as $driver)
+                    {
+                        // add calculation
+                        $ratting_review = $this->driver_ratting_review($driver['user_id']);
+                        $driver['driver_total_review_count'] = $ratting_review->total_review;
+                        $driver['driver_avg_rating_count'] = $ratting_review->avg_ratting;
+                        $ratio = $this->acceptance_rejected_ratio($driver['user_id']);
+                        $driver['rejected_ratio'] = $ratio['rejected_ratio']; 
+                        $driver['acceptance_ratio'] = $ratio['acceptance_ratio'];
+                        $driver['online_hours_last_week'] = $this->total_online_hours_lastweek($driver['user_id']);
+                        $driver['online_hours_current_week'] = $this->total_online_hours_currentweek($driver['user_id']);
+                        $driver['total_online_hours'] = $this->total_online_hours($driver['user_id']);
+        
+                        // add car images
+                        $driver['car_images'] = $this->car_images($driver['id']);
+        
+                        // add base url
+                        $driver['licence'] = $driver['licence'] != ''? env('AWS_S3_URL').$driver['licence'] : '';
+                        $driver['profile'] = $driver['profile'] != ''? env('AWS_S3_URL').$driver['profile'] : '';
+                        $driver['profile_pic'] = $driver['profile_pic'] != ''? env('AWS_S3_URL').$driver['profile_pic'] : '';
+
+                        // reviews
+                        $driver['reviews'] = $this->getDriverRatRevData($driver['user_id']);
+            
+                        // driver_cancel_ride filter
+                        if($driver['driver_cancel_ride_count'] >= $driver_cancel_ride[0] && $driver['driver_cancel_ride_count'] <= $driver_cancel_ride[1])
+                        {
+                            $data[] = $driver;
+                        }
+            
+                    }
+                    $driver_list['data'] = $data; 
+                }
+
+                if(!empty($filter->driver_total_review)) // driver_total_review filter
+                {
+                    $driver_total_review = explode('-',$filter->driver_total_review);
+                    
+                    foreach($driver_list['data'] as $driver)
+                    {
+                        // add calculation
+                        $ratting_review = $this->driver_ratting_review($driver['user_id']);
+                        $driver['driver_total_review_count'] = $ratting_review->total_review;
+                        $driver['driver_avg_rating_count'] = $ratting_review->avg_ratting;
+                        $ratio = $this->acceptance_rejected_ratio($driver['user_id']);
+                        $driver['rejected_ratio'] = $ratio['rejected_ratio']; 
+                        $driver['acceptance_ratio'] = $ratio['acceptance_ratio'];
+                        $driver['online_hours_last_week'] = $this->total_online_hours_lastweek($driver['user_id']);
+                        $driver['online_hours_current_week'] = $this->total_online_hours_currentweek($driver['user_id']);
+                        $driver['total_online_hours'] = $this->total_online_hours($driver['user_id']);
+        
+                        // add car images
+                        $driver['car_images'] = $this->car_images($driver['id']);
+        
+                        // add base url
+                        $driver['licence'] = $driver['licence'] != ''? env('AWS_S3_URL').$driver['licence'] : '';
+                        $driver['profile'] = $driver['profile'] != ''? env('AWS_S3_URL').$driver['profile'] : '';
+                        $driver['profile_pic'] = $driver['profile_pic'] != ''? env('AWS_S3_URL').$driver['profile_pic'] : '';
+
+                        // reviews
+                        $driver['reviews'] = $this->getDriverRatRevData($driver['user_id']);
+            
+                        // driver_total_review filter
+                        if($driver['driver_total_review_count'] >= $driver_total_review[0] && $driver['driver_total_review_count'] <= $driver_total_review[1])
+                        {
+                            $data[] = $driver;
+                        }
+            
+                    }
+                    $driver_list['data'] = $data; 
+                }
+
+                if(!empty($filter->driver_avg_rating)) // driver_avg_rating filter
+                {
+                    $driver_avg_rating = explode('-',$filter->driver_avg_rating);
+                    
+                    foreach($driver_list['data'] as $driver)
+                    {
+                        // add calculation
+                        $ratting_review = $this->driver_ratting_review($driver['user_id']);
+                        $driver['driver_total_review_count'] = $ratting_review->total_review;
+                        $driver['driver_avg_rating_count'] = $ratting_review->avg_ratting;
+                        $ratio = $this->acceptance_rejected_ratio($driver['user_id']);
+                        $driver['rejected_ratio'] = $ratio['rejected_ratio']; 
+                        $driver['acceptance_ratio'] = $ratio['acceptance_ratio'];
+                        $driver['online_hours_last_week'] = $this->total_online_hours_lastweek($driver['user_id']);
+                        $driver['online_hours_current_week'] = $this->total_online_hours_currentweek($driver['user_id']);
+                        $driver['total_online_hours'] = $this->total_online_hours($driver['user_id']);
+        
+                        // add car images
+                        $driver['car_images'] = $this->car_images($driver['id']);
+        
+                        // add base url
+                        $driver['licence'] = $driver['licence'] != ''? env('AWS_S3_URL').$driver['licence'] : '';
+                        $driver['profile'] = $driver['profile'] != ''? env('AWS_S3_URL').$driver['profile'] : '';
+                        $driver['profile_pic'] = $driver['profile_pic'] != ''? env('AWS_S3_URL').$driver['profile_pic'] : '';
+
+                        // reviews
+                        $driver['reviews'] = $this->getDriverRatRevData($driver['user_id']);
+            
+                        // driver_avg_rating filter
+                        if($driver['driver_avg_rating_count'] >= $driver_avg_rating[0] && $driver['driver_avg_rating_count'] <= $driver_avg_rating[1])
+                        {
+                            $data[] = $driver;
+                        }
+            
+                    }
+                    $driver_list['data'] = $data; 
+                }
+
+                if(!empty($filter->rejected_ratio)) // rejected_ratio filter
+                {
+                    $rejected_ratio = explode('-',$filter->rejected_ratio);
+                    
+                    foreach($driver_list['data'] as $driver)
+                    {
+                        // add calculation
+                        $ratting_review = $this->driver_ratting_review($driver['user_id']);
+                        $driver['driver_total_review_count'] = $ratting_review->total_review;
+                        $driver['driver_avg_rating_count'] = $ratting_review->avg_ratting;
+                        $ratio = $this->acceptance_rejected_ratio($driver['user_id']);
+                        $driver['rejected_ratio'] = $ratio['rejected_ratio']; 
+                        $driver['acceptance_ratio'] = $ratio['acceptance_ratio'];
+                        $driver['online_hours_last_week'] = $this->total_online_hours_lastweek($driver['user_id']);
+                        $driver['online_hours_current_week'] = $this->total_online_hours_currentweek($driver['user_id']);
+                        $driver['total_online_hours'] = $this->total_online_hours($driver['user_id']);
+        
+                        // add car images
+                        $driver['car_images'] = $this->car_images($driver['id']);
+        
+                        // add base url
+                        $driver['licence'] = $driver['licence'] != ''? env('AWS_S3_URL').$driver['licence'] : '';
+                        $driver['profile'] = $driver['profile'] != ''? env('AWS_S3_URL').$driver['profile'] : '';
+                        $driver['profile_pic'] = $driver['profile_pic'] != ''? env('AWS_S3_URL').$driver['profile_pic'] : '';
+
+                        // reviews
+                        $driver['reviews'] = $this->getDriverRatRevData($driver['user_id']);
+            
+                        // rejected_ratio filter
+                        if($driver['rejected_ratio'] >= $rejected_ratio[0] && $driver['rejected_ratio'] <= $rejected_ratio[1])
+                        {
+                            $data[] = $driver;
+                        }
+            
+                    }
+                    $driver_list['data'] = $data; 
+                }
+
+                if(!empty($filter->acceptance_ratio)) // acceptance_ratio filter
+                {
+                    $acceptance_ratio = explode('-',$filter->acceptance_ratio);
+                    
+                    foreach($driver_list['data'] as $driver)
+                    {
+                        // add calculation
+                        $ratting_review = $this->driver_ratting_review($driver['user_id']);
+                        $driver['driver_total_review_count'] = $ratting_review->total_review;
+                        $driver['driver_avg_rating_count'] = $ratting_review->avg_ratting;
+                        $ratio = $this->acceptance_rejected_ratio($driver['user_id']);
+                        $driver['rejected_ratio'] = $ratio['rejected_ratio']; 
+                        $driver['acceptance_ratio'] = $ratio['acceptance_ratio'];
+                        $driver['online_hours_last_week'] = $this->total_online_hours_lastweek($driver['user_id']);
+                        $driver['online_hours_current_week'] = $this->total_online_hours_currentweek($driver['user_id']);
+                        $driver['total_online_hours'] = $this->total_online_hours($driver['user_id']);
+        
+                        // add car images
+                        $driver['car_images'] = $this->car_images($driver['id']);
+        
+                        // add base url
+                        $driver['licence'] = $driver['licence'] != ''? env('AWS_S3_URL').$driver['licence'] : '';
+                        $driver['profile'] = $driver['profile'] != ''? env('AWS_S3_URL').$driver['profile'] : '';
+                        $driver['profile_pic'] = $driver['profile_pic'] != ''? env('AWS_S3_URL').$driver['profile_pic'] : '';
+
+                        // reviews
+                        $driver['reviews'] = $this->getDriverRatRevData($driver['user_id']);
+            
+                        // acceptance_ratio filter
+                        if($driver['acceptance_ratio'] >= $acceptance_ratio[0] && $driver['acceptance_ratio'] <= $acceptance_ratio[1])
+                        {
+                            $data[] = $driver;
+                        }
+            
+                    }
+                    $driver_list['data'] = $data; 
+                }
+
+                if(!empty($filter->online_hours_last_week)) // online_hours_last_week filter
+                {
+                    $online_hours_last_week = explode('-',$filter->online_hours_last_week);
+                    
+                    foreach($driver_list['data'] as $driver)
+                    {
+                        // add calculation
+                        $ratting_review = $this->driver_ratting_review($driver['user_id']);
+                        $driver['driver_total_review_count'] = $ratting_review->total_review;
+                        $driver['driver_avg_rating_count'] = $ratting_review->avg_ratting;
+                        $ratio = $this->acceptance_rejected_ratio($driver['user_id']);
+                        $driver['rejected_ratio'] = $ratio['rejected_ratio']; 
+                        $driver['acceptance_ratio'] = $ratio['acceptance_ratio'];
+                        $driver['online_hours_last_week'] = $this->total_online_hours_lastweek($driver['user_id']);
+                        $driver['online_hours_current_week'] = $this->total_online_hours_currentweek($driver['user_id']);
+                        $driver['total_online_hours'] = $this->total_online_hours($driver['user_id']);
+        
+                        // add car images
+                        $driver['car_images'] = $this->car_images($driver['id']);
+        
+                        // add base url
+                        $driver['licence'] = $driver['licence'] != ''? env('AWS_S3_URL').$driver['licence'] : '';
+                        $driver['profile'] = $driver['profile'] != ''? env('AWS_S3_URL').$driver['profile'] : '';
+                        $driver['profile_pic'] = $driver['profile_pic'] != ''? env('AWS_S3_URL').$driver['profile_pic'] : '';
+
+                        // reviews
+                        $driver['reviews'] = $this->getDriverRatRevData($driver['user_id']);
+            
+                        // online_hours_last_week filter
+                        if($driver['online_hours_last_week'] >= $online_hours_last_week[0] && $driver['online_hours_last_week'] <= $online_hours_last_week[1])
+                        {
+                            $data[] = $driver;
+                        }
+            
+                    }
+                    $driver_list['data'] = $data; 
+                }
+
+                if(!empty($filter->online_hours_current_week)) // online_hours_current_week filter
+                {
+                    $online_hours_current_week = explode('-',$filter->online_hours_current_week);
+                    
+                    foreach($driver_list['data'] as $driver)
+                    {
+                        // add calculation
+                        $ratting_review = $this->driver_ratting_review($driver['user_id']);
+                        $driver['driver_total_review_count'] = $ratting_review->total_review;
+                        $driver['driver_avg_rating_count'] = $ratting_review->avg_ratting;
+                        $ratio = $this->acceptance_rejected_ratio($driver['user_id']);
+                        $driver['rejected_ratio'] = $ratio['rejected_ratio']; 
+                        $driver['acceptance_ratio'] = $ratio['acceptance_ratio'];
+                        $driver['online_hours_last_week'] = $this->total_online_hours_lastweek($driver['user_id']);
+                        $driver['online_hours_current_week'] = $this->total_online_hours_currentweek($driver['user_id']);
+                        $driver['total_online_hours'] = $this->total_online_hours($driver['user_id']);
+        
+                        // add car images
+                        $driver['car_images'] = $this->car_images($driver['id']);
+        
+                        // add base url
+                        $driver['licence'] = $driver['licence'] != ''? env('AWS_S3_URL').$driver['licence'] : '';
+                        $driver['profile'] = $driver['profile'] != ''? env('AWS_S3_URL').$driver['profile'] : '';
+                        $driver['profile_pic'] = $driver['profile_pic'] != ''? env('AWS_S3_URL').$driver['profile_pic'] : '';
+
+                        // reviews
+                        $driver['reviews'] = $this->getDriverRatRevData($driver['user_id']);
+            
+                        // online_hours_current_week filter
+                        if($driver['online_hours_current_week'] >= $online_hours_current_week[0] && $driver['online_hours_current_week'] <= $online_hours_current_week[1])
+                        {
+                            $data[] = $driver;
+                        }
+            
+                    }
+                    $driver_list['data'] = $data; 
+                }
+
+                if(!empty($filter->total_online_hours)) // total_online_hours filter
+                {
+                    $total_online_hours = explode('-',$filter->total_online_hours);
+                    
+                    foreach($driver_list['data'] as $driver)
+                    {
+                        // add calculation
+                        $ratting_review = $this->driver_ratting_review($driver['user_id']);
+                        $driver['driver_total_review_count'] = $ratting_review->total_review;
+                        $driver['driver_avg_rating_count'] = $ratting_review->avg_ratting;
+                        $ratio = $this->acceptance_rejected_ratio($driver['user_id']);
+                        $driver['rejected_ratio'] = $ratio['rejected_ratio']; 
+                        $driver['acceptance_ratio'] = $ratio['acceptance_ratio'];
+                        $driver['online_hours_last_week'] = $this->total_online_hours_lastweek($driver['user_id']);
+                        $driver['online_hours_current_week'] = $this->total_online_hours_currentweek($driver['user_id']);
+                        $driver['total_online_hours'] = $this->total_online_hours($driver['user_id']);
+        
+                        // add car images
+                        $driver['car_images'] = $this->car_images($driver['id']);
+        
+                        // add base url
+                        $driver['licence'] = $driver['licence'] != ''? env('AWS_S3_URL').$driver['licence'] : '';
+                        $driver['profile'] = $driver['profile'] != ''? env('AWS_S3_URL').$driver['profile'] : '';
+                        $driver['profile_pic'] = $driver['profile_pic'] != ''? env('AWS_S3_URL').$driver['profile_pic'] : '';
+
+                        // reviews
+                        $driver['reviews'] = $this->getDriverRatRevData($driver['user_id']);
+            
+                        echo $driver['total_online_hours']." >= ".$total_online_hours[0]." && ".$driver['total_online_hours']." <= ".$total_online_hours[1].PHP_EOL; 
+                        // total_online_hours filter
+                        if($driver['total_online_hours'] >= $total_online_hours[0] && $driver['total_online_hours'] <= $total_online_hours[1])
+                        {
+                            $data[] = $driver;
+                        }
+            
+                    }
+                    $driver_list['data'] = $data; 
+                }
+
+                if(empty($driver_list['data'])) // No user found
+                {
+                    return response()->json([
+                        'status'    => false,
+                        'message'   => 'No user found',
+                        'data'    => new ArrayObject,
+                    ], 200);
+                }
+
             }
-            $driver_list['data'] = $data; 
+            else
+            {
+                foreach($driver_list['data'] as $driver)
+                {
+                    
+                    // add calculation
+                    $ratting_review = $this->driver_ratting_review($driver['user_id']);
+                    $driver['driver_total_review_count'] = $ratting_review->total_review;
+                    $driver['driver_avg_rating_count'] = $ratting_review->avg_ratting;
+                    $ratio = $this->acceptance_rejected_ratio($driver['user_id']);
+                    $driver['rejected_ratio'] = $ratio['rejected_ratio']; 
+                    $driver['acceptance_ratio'] = $ratio['acceptance_ratio'];
+                    $driver['online_hours_last_week'] = $this->total_online_hours_lastweek($driver['user_id']);
+                    $driver['online_hours_current_week'] = $this->total_online_hours_currentweek($driver['user_id']);
+                    $driver['total_online_hours'] = $this->total_online_hours($driver['user_id']);
+    
+                    // add car images
+                    $driver['car_images'] = $this->car_images($driver['id']);
+    
+                    // add base url
+                    $driver['licence'] = $driver['licence'] != ''? env('AWS_S3_URL').$driver['licence'] : '';
+                    $driver['profile'] = $driver['profile'] != ''? env('AWS_S3_URL').$driver['profile'] : '';
+                    $driver['profile_pic'] = $driver['profile_pic'] != ''? env('AWS_S3_URL').$driver['profile_pic'] : '';
+    
+                    if($request['type'] == 'online')
+                    {
+                        $driver['reviews'] = $this->getDriverRatRevData($driver['user_id']);
+                    }
+        
+                    $data[] = $driver;
+        
+                }
+                $driver_list['data'] = $data; 
+            }
     
             return response()->json([
                 'status'    => true,

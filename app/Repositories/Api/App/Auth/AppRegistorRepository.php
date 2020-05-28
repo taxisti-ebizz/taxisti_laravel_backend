@@ -60,7 +60,7 @@ class AppRegistorRepository extends Controller
         $success['data'] = $user_data; 
          
         return response()->json([
-            'success'    => true,
+            'status'    => true,
             'message'   => 'user date', 
             'data'    => $success,
         ], 200);
