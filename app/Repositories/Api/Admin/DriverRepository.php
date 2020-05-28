@@ -161,6 +161,88 @@ class DriverRepository extends Controller
             ->paginate(10)->toArray();
 
         }
+        elseif($request['type'] == 'filter')
+        {
+            if(isset($request['filter']))
+            {
+
+                $list = 'Filter';
+                $query = User::select('taxi_driver_detail.*','taxi_users.*')
+                    ->leftJoin('taxi_driver_detail','taxi_users.user_id' , '=', 'taxi_driver_detail.driver_id')
+                    ->where('taxi_users.user_type',1)
+                    ->withCount([
+                        'driver_rides' => function ($query) {
+                            $query->where('is_canceled',0);
+                        }])
+                    ->withCount([
+                        'driver_cancel_ride' => function ($query) {
+                            $query->where('is_canceled',1);
+                            $query->where('cancel_by',1);
+                        }]);
+                
+                $where = [];
+                $filter = json_decode($request['filter']);
+
+                if(!empty($filter->username)) // username filter
+                {
+                    $username = explode(' ',$filter->username);
+                    $where['first_name'] = $username[0];
+                    isset($username[1]) ? $where['last_name'] = $username[1] : ''; 
+                    
+                    $query->where($where);
+                }
+                if(!empty($filter->mobile)) // mobile filter 
+                {
+                    $where['mobile_no'] = $filter->mobile;
+                    $query->where($where);
+                }
+                if(!empty($filter->dob)) // date_of_birth filter
+                {
+                    $query->whereBetween('date_of_birth',explode(' ',$filter->dob));
+                }
+                if(!empty($filter->dor)) // date_of_register
+                {
+                    $query->whereBetween('created_date',explode(' ',$filter->dor));
+                }
+                if(!empty($filter->device_type)) // device_type filter
+                {
+                    $device_type = explode(',',$filter->device_type);
+                    if(count($device_type) > 1)
+                    {
+                        $query->whereBetween('device_type',$device_type);
+                    }
+                    else
+                    {
+                        $query->where('device_type',$device_type[0]);
+                    }
+                }
+                if(!empty($filter->verify) or $filter->verify == 0 ) // verify filter
+                {
+                    $verify = explode(',',$filter->verify);
+                    if(count($verify) > 1)
+                    {
+                        $query->whereBetween('verify',$verify);
+                    }
+                    else
+                    {
+                        $query->where('verify',$verify[0]);
+                    }
+                }
+
+                $driver_list = $query->orderByRaw('taxi_users.user_id DESC')->paginate(10)->toArray();
+
+
+            }
+            else
+            {
+                return response()->json([
+                    'status'    => false,
+                    'message'   => 'filter parameter is required',
+                    'data'    => new ArrayObject,
+                ], 200);
+            }
+
+        }
         else {
             // all driver
             $list = 'All';
