@@ -79,6 +79,50 @@ class RideRepository extends Controller
                 ->orderByRaw('taxi_request.id DESC')
                 ->paginate(10)->toArray();
         }
+        elseif($request['type'] == 'filter')
+        {
+            if(isset($request['filter']))
+            {
+
+                $list = 'Filter';
+                $query = DB::table('taxi_request')
+                ->select('taxi_request.*', 
+                    DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
+                        'rider.mobile_no as rider_mobile', 
+                    DB::raw('CONCAT(driver.first_name," ",driver.last_name) as driver_name'),
+                        'driver.mobile_no as driver_mobile'
+                    )               
+                ->leftJoin('taxi_users as rider', 'taxi_request.rider_id', '=', 'rider.user_id')
+                ->leftJoin('taxi_users as driver', 'taxi_request.driver_id', '=', 'driver.user_id')
+                ->where('taxi_request.status',0);
+ 
+                
+                $where = [];
+                $filter = json_decode($request['filter']);
+
+                if(!empty($filter->username)) // username filter
+                {
+                    $username = explode(' ',$filter->username);
+                    $where['first_name'] = $username[0];
+                    isset($username[1]) ? $where['last_name'] = $username[1] : ''; 
+                    
+                    $query->where($where);
+                }
+
+                $pending_ride_list = $query->orderByRaw('taxi_request.id DESC')->paginate(10)->toArray();
+
+
+            }
+            else
+            {
+                return response()->json([
+                    'status'    => false,
+                    'message'   => 'filter parameter is required',
+                    'data'    => new ArrayObject,
+                ], 200);
+            }
+
+        }
         else
         {
             $list = 'All';

@@ -611,7 +611,6 @@ class DriverRepository extends Controller
                         // reviews
                         $driver['reviews'] = $this->getDriverRatRevData($driver['user_id']);
             
-                        echo $driver['total_online_hours']." >= ".$total_online_hours[0]." && ".$driver['total_online_hours']." <= ".$total_online_hours[1].PHP_EOL; 
                         // total_online_hours filter
                         if($driver['total_online_hours'] >= $total_online_hours[0] && $driver['total_online_hours'] <= $total_online_hours[1])
                         {

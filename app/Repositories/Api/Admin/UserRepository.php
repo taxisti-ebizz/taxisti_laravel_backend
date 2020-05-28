@@ -125,16 +125,18 @@ class UserRepository extends Controller
                         $query->where('device_type',$device_type[0]);
                     }
                 }
-                if(!empty($filter->verify) or $filter->verify == 0 ) // verify filter
+                if(!empty($filter->verify)) // verify filter
                 {
+                    
                     $verify = explode(',',$filter->verify);
                     if(count($verify) > 1)
                     {
-                        $query->whereBetween('verify',$verify);
+                        $query->whereBetween('verify',[0,1]);
                     }
                     else
                     {
-                        $query->where('verify',$verify[0]);
+                        $verify = $verify[0] == 2 ? 0 : 1; 
+                        $query->where('verify',$verify);
                     }
                 }
 
