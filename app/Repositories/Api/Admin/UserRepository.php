@@ -70,6 +70,87 @@ class UserRepository extends Controller
             ->orderBy('user_id', 'DESC')
             ->paginate(10)->toArray();
         }
+        elseif($request['type'] == 'filter')
+        {
+            if(isset($request['filter']))
+            {
+
+                $list = 'Filter';
+                $query = User::withCount([
+                        'complate_ride' => function ($query) {
+                            $query->where('ride_status', 3);
+                        }
+                    ])
+                    ->withCount([
+                        'cancel_ride' => function ($query) {
+                            $query->where('is_canceled', 1);
+                            $query->where('cancel_by', 2);
+                        }
+                    ])
+                ->where('user_type', 0);
+                
+                $where = [];
+                $filter = json_decode($request['filter']);
+
+                if(!empty($filter->username)) // username filter
+                {
+                    $username = explode(' ',$filter->username);
+                    $where['first_name'] = $username[0];
+                    isset($username[1]) ? $where['last_name'] = $username[1] : ''; 
+                    
+                    $query->where($where);
+                }
+                if(!empty($filter->mobile)) // mobile filter 
+                {
+                    $where['mobile_no'] = $filter->mobile;
+                    $query->where($where);
+                }
+                if(!empty($filter->dob)) // date_of_birth filter
+                {
+                    $query->whereBetween('date_of_birth',explode(' ',$filter->dob));
+                }
+                if(!empty($filter->dor)) // date_of_register
+                {
+                    $query->whereBetween('created_date',explode(' ',$filter->dor));
+                }
+                if(!empty($filter->device_type)) // device_type filter
+                {
+                    $device_type = explode(',',$filter->device_type);
+                    if(count($device_type) > 1)
+                    {
+                        $query->whereBetween('device_type',$device_type);
+                    }
+                    else
+                    {
+                        $query->where('device_type',$device_type[0]);
+                    }
+                }
+                if(!empty($filter->verify) or $filter->verify == 0 ) // verify filter
+                {
+                    $verify = explode(',',$filter->verify);
+                    if(count($verify) > 1)
+                    {
+                        $query->whereBetween('verify',$verify);
+                    }
+                    else
+                    {
+                        $query->where('verify',$verify[0]);
+                    }
+                }
+
+                $user_list = $query->orderBy('user_id', 'DESC')->paginate(10)->toArray();
+
+            }
+            else
+            {
+                return response()->json([
+                    'status'    => false,
+                    'message'   => 'filter parameter is required',
+                    'data'    => new ArrayObject,
+                ], 200);
+            }
+
+        }
         else{
             
             $list = 'All';
@@ -91,17 +172,113 @@ class UserRepository extends Controller
 
         if($user_list['data'])
         {
-            // add base url in profile_pic
-            foreach ($user_list['data'] as $user) {
-                $user['profile_pic'] = $user['profile_pic'] != '' ? env('AWS_S3_URL') . $user['profile_pic'] : '';
+            if($request['type'] == 'filter')
+            {
+                $filter = json_decode($request['filter']);
+                $data = [];
 
-                $ratting_review = $this->user_ratting_review($user['user_id']);
-                $user['total_review_count'] = $ratting_review->total_review;
-                $user['avg_rating_count'] = $ratting_review->avg_ratting;
+                if(!empty($filter->complete_ride)) // complete_ride filter
+                {
+                    $complete_ride = explode('-',$filter->complete_ride);
+                    foreach ($user_list['data'] as $user) {
+                        if($user['complate_ride_count'] >= $complete_ride[0] || $user['complate_ride_count'] >= $complete_ride[1])
+                        {
+                            $user['profile_pic'] = $user['profile_pic'] != '' ? env('AWS_S3_URL') . $user['profile_pic'] : '';
+            
+                            $ratting_review = $this->user_ratting_review($user['user_id']);
+                            $user['total_review_count'] = $ratting_review->total_review;
+                            $user['avg_rating_count'] = $ratting_review->avg_ratting;
+            
+                            $data[] = $user;
+                        }
 
-                $data[] = $user;
+                    }
+                    $user_list['data'] = $data;
+
+                }
+
+                if(!empty($filter->cancelled_ride)) // cancel_ride filter
+                {
+                    $cancel_ride = explode('-',$filter->cancelled_ride);
+                    foreach ($user_list['data'] as $user) {
+                        if($user['cancel_ride_count'] >= $cancel_ride[0] || $user['cancel_ride_count'] >= $cancel_ride[1])
+                        {
+                            $user['profile_pic'] = $user['profile_pic'] != '' ? env('AWS_S3_URL') . $user['profile_pic'] : '';
+            
+                            $ratting_review = $this->user_ratting_review($user['user_id']);
+                            $user['total_review_count'] = $ratting_review->total_review;
+                            $user['avg_rating_count'] = $ratting_review->avg_ratting;
+            
+                            $data[] = $user;
+                        }
+
+                    }
+                    $user_list['data'] = $data;
+
+                }
+
+                if(!empty($filter->total_review)) // total_review filter
+                {
+                    $total_review = explode('-',$filter->total_review);
+                    foreach ($user_list['data'] as $user) {
+
+                        $user['profile_pic'] = $user['profile_pic'] != '' ? env('AWS_S3_URL') . $user['profile_pic'] : '';
+                        $ratting_review = $this->user_ratting_review($user['user_id']);
+                        $user['total_review_count'] = $ratting_review->total_review;
+                        $user['avg_rating_count'] = $ratting_review->avg_ratting;
+
+                        if($user['total_review_count'] >= $total_review[0] || $user['total_review_count'] >= $total_review[1])
+                        {
+                            $data[] = $user;
+                        }
+
+                    }
+                    $user_list['data'] = $data;
+
+                }
+
+                if(!empty($filter->average_ratting)) // average_ratting filter
+                {
+                    $average_ratting = explode('-',$filter->average_ratting);
+                    foreach ($user_list['data'] as $user) {
+
+                        $user['profile_pic'] = $user['profile_pic'] != '' ? env('AWS_S3_URL') . $user['profile_pic'] : '';
+                        $ratting_review = $this->user_ratting_review($user['user_id']);
+                        $user['total_review_count'] = $ratting_review->total_review;
+                        $user['avg_rating_count'] = $ratting_review->avg_ratting;
+
+                        if($user['avg_rating_count'] >= $average_ratting[0] || $user['avg_rating_count'] >= $average_ratting[1])
+                        {
+                            $data[] = $user;
+                        }
+
+                    }
+                    $user_list['data'] = $data;
+                }
+
+                if(empty($user_list['data'])) // No user found
+                {
+                    return response()->json([
+                        'status'    => false,
+                        'message'   => 'No user found',
+                        'data'    => new ArrayObject,
+                    ], 200);
+                }
             }
-            $user_list['data'] = $data;
+            else
+            {
+                // add base url in profile_pic
+                foreach ($user_list['data'] as $user) {
+                    $user['profile_pic'] = $user['profile_pic'] != '' ? env('AWS_S3_URL') . $user['profile_pic'] : '';
+    
+                    $ratting_review = $this->user_ratting_review($user['user_id']);
+                    $user['total_review_count'] = $ratting_review->total_review;
+                    $user['avg_rating_count'] = $ratting_review->avg_ratting;
+    
+                    $data[] = $user;
+                }
+                $user_list['data'] = $data;
+            }
 
             return response()->json([
                 'status'    => true,
