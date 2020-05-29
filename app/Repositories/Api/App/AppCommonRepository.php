@@ -679,7 +679,28 @@ class AppCommonRepository extends Controller
         }
     }
 
+    // store Password
+    public function storePassword($request)
+    {
 
+        $update['password'] = md5($request['password']);
+        $update['updated_date'] = date('Y-m-d H:i:s');
+
+        $check_phone = User::where('mobile_no',$request['phone'])->update($update);
+        if($check_phone)
+        {
+            $msg['status']=true;
+            $msg['message']='Password saved successfully';
+        }
+        else
+        {
+            $msg['status']=true;
+            $msg['message']='Password saved failed';
+        }
+
+        return response()->json($msg, 200);
+
+    }
 
 
 

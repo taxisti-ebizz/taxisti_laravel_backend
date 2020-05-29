@@ -124,6 +124,8 @@ Route::prefix('common')->group(function () {
     Route::post('appLogin','Api\App\Auth\AppLoginController@login');
     Route::post('appRegister','Api\App\Auth\AppRegisterController@create');
     Route::post('checkPhone','Api\App\AppCommonController@check_phone');
+    Route::post('storePassword','Api\App\AppCommonController@storePassword');
+
 
     // App Auth Routes
     Route::group(['middleware' => 'auth:api'], function(){

@@ -14,6 +14,7 @@ use App\Http\Requests\Api\App\Common\GetCmsPageRequest;
 use App\Http\Requests\Api\App\Common\GetRattingRequest;
 use App\Http\Requests\Api\App\Common\AdminSettingRequest;
 use App\Http\Requests\Api\App\Common\CheckPromotionStatus;
+use App\Http\Requests\Api\App\Common\StorePasswordRequest;
 use App\Http\Requests\Api\App\Common\UpdateProfileRequest;
 use App\Http\Requests\Api\App\Common\ApplyPromotionRequest;
 use App\Http\Requests\Api\App\Common\GetRequestListRequest;
@@ -285,6 +286,21 @@ class AppCommonController extends Controller
         }   
 
         return $this->appCommon->ride_request_automation($request);
+
+    }
+
+    // store Password
+    public function storePassword(StorePasswordRequest $request)
+    {
+        if ($request->validator->fails()) {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'parameter invalid', 
+                'errors'    => $request->validator->errors(),
+            ], 200);
+        }   
+
+        return $this->appCommon->storePassword($request);
 
     }
 }
