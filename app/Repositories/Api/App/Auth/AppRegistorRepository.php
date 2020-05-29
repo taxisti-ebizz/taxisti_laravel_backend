@@ -5,6 +5,7 @@ namespace App\Repositories\Api\App\Auth;
 
 use App\Models\User;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use App\Repositories\Api\App\AppCommonRepository;
 
@@ -45,26 +46,29 @@ class AppRegistorRepository extends Controller
             $input['profile_pic'] = $imageName;
         }
 
-        $user_data = User::where('mobile_no',$request['phone'])->first();
-        if($user_data)
+        $user = User::where('mobile_no',$request['phone'])->first();
+        if($user)
         {
             // delete files
-            Storage::disk('s3')->exists($user_data->profile_pic) ? Storage::disk('s3')->delete($user_data->profile_pic) : '';
+            Storage::disk('s3')->exists($user->profile_pic) ? Storage::disk('s3')->delete($user->profile_pic) : '';
 
             // update user data
-            $user = User::where('mobile_no',$request['phone'])->update($input); 
+            User::where('mobile_no',$request['phone'])->update($input); 
         }
         else {
 
             // create user
-            $user = User::create($input); 
+            User::create($input); 
         }
 
-        $user_data = User::where('mobile_no',$request['phone'])->first();
-        $user_data->profile_pic = $user_data->profile_pic != '' ? env('AWS_S3_URL').$user_data->profile_pic : '';
+        $user = User::where('mobile_no',$request['phone'])->first();
+
+        Auth::login($user);
+
+        $user->profile_pic = $user->profile_pic != '' ? env('AWS_S3_URL').$user->profile_pic : '';
         
-        $success['token'] =  $user_data->createToken('Texi_App')->accessToken; 
-        $success['data'] = $user_data; 
+        $success = $user; 
+        $success['token'] =  $user->createToken('Texi_App')->accessToken; 
          
         return response()->json([
             'status'    => true,

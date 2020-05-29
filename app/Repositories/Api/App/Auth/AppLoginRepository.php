@@ -23,7 +23,6 @@ class AppLoginRepository extends Controller
     {
         if($user = User::where(['mobile_no' => $request['phone'],'password' => md5($request['password'])])->first()){ 
 
-            Auth::login($user);
 
             if($user->user_type == 1)
             {
@@ -51,9 +50,7 @@ class AppLoginRepository extends Controller
 
             }
 
-            $this->appCommon->silentNotificationToOldDevice($user->device_token,$user->device_type,$user->user_id);
-            $this->appCommon->qb_delete_old_subscription($user->device_token);
-
+            
             $inpute['device_token'] = $request['device_token'];
             $inpute['device_type'] = $request['device_type'];
             $inpute['updated_date'] = date('Y-m-d H:i:s');
@@ -63,18 +60,24 @@ class AppLoginRepository extends Controller
 
 
             // get user data
-            $user_data =  User::where('user_id',$user->user_id)->first();
-            $user_data->profile_pic = $user_data->profile_pic != '' ? env('AWS_S3_URL').$user_data->profile_pic : '';
+            $user =  User::where('user_id',$user->user_id)->first();
 
-            if($user_data->user_type == 1)
+            Auth::login($user);
+            
+            // $this->appCommon->silentNotificationToOldDevice($user->device_token,$user->device_type,$user->user_id);
+            // $this->appCommon->qb_delete_old_subscription($user->device_token);
+
+            $user->profile_pic = $user->profile_pic != '' ? env('AWS_S3_URL').$user->profile_pic : '';
+
+            if($user->user_type == 1)
             {
-                $driver_detail =  $this->appCommon->get_driver_detail($user_data->user_id);
+                $driver_detail =  $this->appCommon->get_driver_detail($user->user_id);
                 $driver_detail['car_images'] = $this->appCommon->car_images($driver_detail['id']);
-                $user_data->driver_detail = $driver_detail;
+                $user->driver_detail = $driver_detail;
             }
 
-            $success['token'] =  $user_data->createToken('Texi_App')->accessToken; 
-            $success['data'] = $user_data; 
+            $success = $user; 
+            $success['token'] =  $user->createToken('Texi_App')->accessToken; 
     
             
             return response()->json([
