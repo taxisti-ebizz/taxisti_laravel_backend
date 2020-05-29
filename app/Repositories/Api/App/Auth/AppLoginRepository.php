@@ -72,10 +72,17 @@ class AppLoginRepository extends Controller
             if($user->user_type == 1)
             {
                 $driver_detail =  $this->appCommon->get_driver_detail($user->user_id);
-                $driver_detail['car_images'] = $this->appCommon->car_images($driver_detail['id']);
-                $user->driver_detail = $driver_detail;
+                if($driver_detail)
+                {
+                    $driver_detail['car_images'] = $this->appCommon->car_images($driver_detail['id']);
+                    $user->driver_detail = $driver_detail;
+                }
+                else
+                {
+                    $user->driver_detail = array();
+                }
             }
-
+            
             $success = $user; 
             $success['token'] =  $user->createToken('Texi_App')->accessToken; 
     
