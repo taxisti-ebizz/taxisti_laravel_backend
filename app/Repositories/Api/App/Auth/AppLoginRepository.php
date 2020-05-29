@@ -51,6 +51,7 @@ class AppLoginRepository extends Controller
             }
 
             
+            $inpute['user_type'] = $request['user_type'];
             $inpute['device_token'] = $request['device_token'];
             $inpute['device_type'] = $request['device_type'];
             $inpute['updated_date'] = date('Y-m-d H:i:s');
