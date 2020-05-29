@@ -66,7 +66,8 @@ class AppRegistorRepository extends Controller
         Auth::login($user);
 
         $user->profile_pic = $user->profile_pic != '' ? env('AWS_S3_URL').$user->profile_pic : '';
-        
+        $user->date_of_birth = $user->date_of_birth != '' ? $user->date_of_birth : '';
+
         $success = $user; 
         $success['token'] =  $user->createToken('Texi_App')->accessToken; 
          

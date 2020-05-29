@@ -69,6 +69,8 @@ class AppLoginRepository extends Controller
             // $this->appCommon->qb_delete_old_subscription($user->device_token);
 
             $user->profile_pic = $user->profile_pic != '' ? env('AWS_S3_URL').$user->profile_pic : '';
+            $user->date_of_birth = $user->date_of_birth != '' ? $user->date_of_birth : '';
+
 
             if($user->user_type == 1)
             {
