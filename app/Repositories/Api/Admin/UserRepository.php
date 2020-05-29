@@ -142,6 +142,17 @@ class UserRepository extends Controller
 
                 $user_list = $query->orderBy('user_id', 'DESC')->paginate(10)->toArray();
 
+                // add base url in profile_pic and calculation
+                foreach ($user_list['data'] as $user) {
+                    $user['profile_pic'] = $user['profile_pic'] != '' ? env('AWS_S3_URL') . $user['profile_pic'] : '';
+    
+                    $ratting_review = $this->user_ratting_review($user['user_id']);
+                    $user['total_review_count'] = $ratting_review->total_review;
+                    $user['avg_rating_count'] = $ratting_review->avg_ratting;
+    
+                    $data[] = $user;
+                }
+                $user_list['data'] = $data;
             }
             else
             {
@@ -183,11 +194,6 @@ class UserRepository extends Controller
                 {
                     $complete_ride = explode('-',$filter->complete_ride);
                     foreach ($user_list['data'] as $user) {
-                        $user['profile_pic'] = $user['profile_pic'] != '' ? env('AWS_S3_URL') . $user['profile_pic'] : '';
-        
-                        $ratting_review = $this->user_ratting_review($user['user_id']);
-                        $user['total_review_count'] = $ratting_review->total_review;
-                        $user['avg_rating_count'] = $ratting_review->avg_ratting;
 
                         // complete_ride filter
                         if($user['complate_ride_count'] >= $complete_ride[0] || $user['complate_ride_count'] >= $complete_ride[1])
@@ -204,11 +210,6 @@ class UserRepository extends Controller
                 {
                     $cancel_ride = explode('-',$filter->cancelled_ride);
                     foreach ($user_list['data'] as $user) {
-                        $user['profile_pic'] = $user['profile_pic'] != '' ? env('AWS_S3_URL') . $user['profile_pic'] : '';
-        
-                        $ratting_review = $this->user_ratting_review($user['user_id']);
-                        $user['total_review_count'] = $ratting_review->total_review;
-                        $user['avg_rating_count'] = $ratting_review->avg_ratting;
 
                         // cancel_ride filter
                         if($user['cancel_ride_count'] >= $cancel_ride[0] || $user['cancel_ride_count'] >= $cancel_ride[1])
@@ -226,11 +227,6 @@ class UserRepository extends Controller
                     $total_review = explode('-',$filter->total_review);
                     foreach ($user_list['data'] as $user) {
 
-                        $user['profile_pic'] = $user['profile_pic'] != '' ? env('AWS_S3_URL') . $user['profile_pic'] : '';
-                        $ratting_review = $this->user_ratting_review($user['user_id']);
-                        $user['total_review_count'] = $ratting_review->total_review;
-                        $user['avg_rating_count'] = $ratting_review->avg_ratting;
-
                         // total_review filter
                         if($user['total_review_count'] >= $total_review[0] || $user['total_review_count'] >= $total_review[1])
                         {
@@ -246,11 +242,6 @@ class UserRepository extends Controller
                 {
                     $average_ratting = explode('-',$filter->average_ratting);
                     foreach ($user_list['data'] as $user) {
-
-                        $user['profile_pic'] = $user['profile_pic'] != '' ? env('AWS_S3_URL') . $user['profile_pic'] : '';
-                        $ratting_review = $this->user_ratting_review($user['user_id']);
-                        $user['total_review_count'] = $ratting_review->total_review;
-                        $user['avg_rating_count'] = $ratting_review->avg_ratting;
 
                         // average_ratting filter
                         if($user['avg_rating_count'] >= $average_ratting[0] || $user['avg_rating_count'] >= $average_ratting[1])
