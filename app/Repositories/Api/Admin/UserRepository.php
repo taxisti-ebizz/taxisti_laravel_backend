@@ -28,7 +28,12 @@ class UserRepository extends Controller
             $start_current_week = date("Y-m-d H:i:s",$start_week);
             $end_current_week = date("Y-m-d 23:59:00",$end_week);
 
-            $user_list = User::withCount('complate_ride','cancel_ride')
+            $user_list = User::withCount('complate_ride','cancel_ride','total_review')
+            ->withCount([
+                'avg_rating' => function ($query) {
+                    $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
+                }
+            ])
             ->where('user_type', 0)
             ->whereBetween('created_date', [$start_current_week, $end_current_week])
             ->orderBy('user_id', 'DESC')
@@ -44,7 +49,12 @@ class UserRepository extends Controller
             $start_last_week = date("Y-m-d H:i:s",$start_week);
             $end_last_week = date("Y-m-d 23:59:00",$end_week);
 
-            $user_list = User::withCount('complate_ride','cancel_ride')
+            $user_list = User::withCount('complate_ride','cancel_ride','total_review')
+            ->withCount([
+                'avg_rating' => function ($query) {
+                    $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
+                }
+            ])
             ->where('user_type', 0)
             ->whereBetween('created_date', [$start_last_week, $end_last_week])
             ->orderBy('user_id', 'DESC')
@@ -114,7 +124,6 @@ class UserRepository extends Controller
                         $query->where('verify',$verify);
                     }
                 }
-
                 if(!empty($filter->complete_ride)) // complete_ride filter
                 {
                     $complete_ride = explode('-',$filter->complete_ride);
@@ -124,7 +133,6 @@ class UserRepository extends Controller
                     });
 
                 }
-
                 if(!empty($filter->cancelled_ride)) // cancel_ride filter
                 {
                     $cancel_ride = explode('-',$filter->cancelled_ride);
@@ -133,7 +141,6 @@ class UserRepository extends Controller
                         $q->has('cancel_ride','<=',$cancel_ride[1]);
                     });
                 }
-
                 if(!empty($filter->total_review)) // total_review filter
                 {
                     $total_review = explode('-',$filter->total_review);
@@ -143,7 +150,6 @@ class UserRepository extends Controller
                     });
 
                 }
-
                 if(!empty($filter->average_ratting)) // average_ratting filter
                 {
                     $average_ratting = explode('-',$filter->average_ratting);
@@ -152,7 +158,6 @@ class UserRepository extends Controller
                         $q->has('avg_rating','<=',$average_ratting[1]);
                     });
                 }
-
 
                 $user_list = $query->orderBy('user_id', 'DESC')->paginate(10)->toArray();
             }
@@ -169,7 +174,12 @@ class UserRepository extends Controller
         else{
             
             $list = 'All';
-            $user_list = User::withCount('complate_ride','cancel_ride')
+            $user_list = User::withCount('complate_ride','cancel_ride','total_review')
+            ->withCount([
+                'avg_rating' => function ($query) {
+                    $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
+                }
+            ])
             ->where('user_type', 0)
             ->orderBy('user_id', 'DESC')
             ->paginate(10)->toArray();
