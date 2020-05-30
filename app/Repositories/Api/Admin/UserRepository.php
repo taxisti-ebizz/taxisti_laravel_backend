@@ -28,17 +28,7 @@ class UserRepository extends Controller
             $start_current_week = date("Y-m-d H:i:s",$start_week);
             $end_current_week = date("Y-m-d 23:59:00",$end_week);
 
-            $user_list = User::withCount([
-                'complate_ride' => function ($query) {
-                    $query->where('ride_status', 3);
-                }
-            ])
-            ->withCount([
-                'cancel_ride' => function ($query) {
-                    $query->where('is_canceled', 1);
-                    $query->where('cancel_by', 2);
-                }
-            ])
+            $user_list = User::withCount('complate_ride','cancel_ride')
             ->where('user_type', 0)
             ->whereBetween('created_date', [$start_current_week, $end_current_week])
             ->orderBy('user_id', 'DESC')
@@ -54,17 +44,7 @@ class UserRepository extends Controller
             $start_last_week = date("Y-m-d H:i:s",$start_week);
             $end_last_week = date("Y-m-d 23:59:00",$end_week);
 
-            $user_list = User::withCount([
-                'complate_ride' => function ($query) {
-                    $query->where('ride_status', 3);
-                }
-            ])
-            ->withCount([
-                'cancel_ride' => function ($query) {
-                    $query->where('is_canceled', 1);
-                    $query->where('cancel_by', 2);
-                }
-            ])
+            $user_list = User::withCount('complate_ride','cancel_ride')
             ->where('user_type', 0)
             ->whereBetween('created_date', [$start_last_week, $end_last_week])
             ->orderBy('user_id', 'DESC')
@@ -76,17 +56,12 @@ class UserRepository extends Controller
             {
 
                 $list = 'Filter';
-                $query = User::withCount([
-                        'complate_ride' => function ($query) {
-                            $query->where('ride_status', 3);
-                        }
-                    ])
-                    ->withCount([
-                        'cancel_ride' => function ($query) {
-                            $query->where('is_canceled', 1);
-                            $query->where('cancel_by', 2);
-                        }
-                    ])
+                $query = User::withCount('complate_ride','cancel_ride','total_review')
+                ->withCount([
+                    'avg_rating' => function ($query) {
+                        $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
+                    }
+                ])
                 ->where('user_type', 0);
                 
                 $where = [];
@@ -140,19 +115,46 @@ class UserRepository extends Controller
                     }
                 }
 
-                $user_list = $query->orderBy('user_id', 'DESC')->paginate(10)->toArray();
+                if(!empty($filter->complete_ride)) // complete_ride filter
+                {
+                    $complete_ride = explode('-',$filter->complete_ride);
+                    $query = $query->where(function($q) use ( $complete_ride ){
+                        $q->has('complate_ride','>=',$complete_ride[0]);
+                        $q->has('complate_ride','<=',$complete_ride[1]);
+                    });
 
-                // add base url in profile_pic and calculation
-                foreach ($user_list['data'] as $user) {
-                    $user['profile_pic'] = $user['profile_pic'] != '' ? env('AWS_S3_URL') . $user['profile_pic'] : '';
-    
-                    $ratting_review = $this->user_ratting_review($user['user_id']);
-                    $user['total_review_count'] = $ratting_review->total_review;
-                    $user['avg_rating_count'] = $ratting_review->avg_ratting;
-    
-                    $data[] = $user;
                 }
-                $user_list['data'] = $data;
+
+                if(!empty($filter->cancelled_ride)) // cancel_ride filter
+                {
+                    $cancel_ride = explode('-',$filter->cancelled_ride);
+                    $query = $query->where(function($q) use ( $cancel_ride ){
+                        $q->has('cancel_ride','>=',$cancel_ride[0]);
+                        $q->has('cancel_ride','<=',$cancel_ride[1]);
+                    });
+                }
+
+                if(!empty($filter->total_review)) // total_review filter
+                {
+                    $total_review = explode('-',$filter->total_review);
+                    $query = $query->where(function($q) use ( $total_review ){
+                        $q->has('total_review','>=',$total_review[0]);
+                        $q->has('total_review','<=',$total_review[1]);
+                    });
+
+                }
+
+                if(!empty($filter->average_ratting)) // average_ratting filter
+                {
+                    $average_ratting = explode('-',$filter->average_ratting);
+                    $query = $query->where(function($q) use ( $average_ratting ){
+                        $q->has('avg_rating','>=',$average_ratting[0]);
+                        $q->has('avg_rating','<=',$average_ratting[1]);
+                    });
+                }
+
+
+                $user_list = $query->orderBy('user_id', 'DESC')->paginate(10)->toArray();
             }
             else
             {
@@ -167,17 +169,7 @@ class UserRepository extends Controller
         else{
             
             $list = 'All';
-            $user_list = User::withCount([
-                'complate_ride' => function ($query) {
-                    $query->where('ride_status', 3);
-                }
-            ])
-            ->withCount([
-                'cancel_ride' => function ($query) {
-                    $query->where('is_canceled', 1);
-                    $query->where('cancel_by', 2);
-                }
-            ])
+            $user_list = User::withCount('complate_ride','cancel_ride')
             ->where('user_type', 0)
             ->orderBy('user_id', 'DESC')
             ->paginate(10)->toArray();
@@ -185,97 +177,13 @@ class UserRepository extends Controller
 
         if($user_list['data'])
         {
-            if($request['type'] == 'filter')
-            {
-                $filter = json_decode($request['filter']);
-                $data = [];
+            // add base url in profile_pic
+            foreach ($user_list['data'] as $user) {
+                $user['profile_pic'] = $user['profile_pic'] != '' ? env('AWS_S3_URL') . $user['profile_pic'] : '';
 
-                if(!empty($filter->complete_ride)) // complete_ride filter
-                {
-                    $complete_ride = explode('-',$filter->complete_ride);
-                    foreach ($user_list['data'] as $user) {
-
-                        // complete_ride filter
-                        if($user['complate_ride_count'] >= $complete_ride[0] || $user['complate_ride_count'] >= $complete_ride[1])
-                        {
-                            $data[] = $user;
-                        }
-
-                    }
-                    $user_list['data'] = $data;
-
-                }
-
-                if(!empty($filter->cancelled_ride)) // cancel_ride filter
-                {
-                    $cancel_ride = explode('-',$filter->cancelled_ride);
-                    foreach ($user_list['data'] as $user) {
-
-                        // cancel_ride filter
-                        if($user['cancel_ride_count'] >= $cancel_ride[0] || $user['cancel_ride_count'] >= $cancel_ride[1])
-                        {
-                            $data[] = $user;
-                        }
-
-                    }
-                    $user_list['data'] = $data;
-
-                }
-
-                if(!empty($filter->total_review)) // total_review filter
-                {
-                    $total_review = explode('-',$filter->total_review);
-                    foreach ($user_list['data'] as $user) {
-
-                        // total_review filter
-                        if($user['total_review_count'] >= $total_review[0] || $user['total_review_count'] >= $total_review[1])
-                        {
-                            $data[] = $user;
-                        }
-
-                    }
-                    $user_list['data'] = $data;
-
-                }
-
-                if(!empty($filter->average_ratting)) // average_ratting filter
-                {
-                    $average_ratting = explode('-',$filter->average_ratting);
-                    foreach ($user_list['data'] as $user) {
-
-                        // average_ratting filter
-                        if($user['avg_rating_count'] >= $average_ratting[0] || $user['avg_rating_count'] >= $average_ratting[1])
-                        {
-                            $data[] = $user;
-                        }
-
-                    }
-                    $user_list['data'] = $data;
-                }
-
-                if(empty($user_list['data'])) // No user found
-                {
-                    return response()->json([
-                        'status'    => false,
-                        'message'   => 'No user found',
-                        'data'    => new ArrayObject,
-                    ], 200);
-                }
+                $data[] = $user;
             }
-            else
-            {
-                // add base url in profile_pic
-                foreach ($user_list['data'] as $user) {
-                    $user['profile_pic'] = $user['profile_pic'] != '' ? env('AWS_S3_URL') . $user['profile_pic'] : '';
-    
-                    $ratting_review = $this->user_ratting_review($user['user_id']);
-                    $user['total_review_count'] = $ratting_review->total_review;
-                    $user['avg_rating_count'] = $ratting_review->avg_ratting;
-    
-                    $data[] = $user;
-                }
-                $user_list['data'] = $data;
-            }
+            $user_list['data'] = $data;
 
             return response()->json([
                 'status'    => true,

@@ -24,10 +24,11 @@ class AppCommonRepository extends Controller
         $input['first_name'] = $request['first_name']; 
         $input['last_name'] = $request['last_name']; 
         $input['mobile_no'] = $request['phone']; 
-        $input['date_of_birth'] = $request['dob']; 
+        isset($request['dob']) ? $input['date_of_birth'] = $request['dob'] : ''; 
         $input['user_type'] = $request['user_type']; 
         $input['device_type'] = $request['device_type']; 
         $input['device_token'] = $request['device_token']; 
+        $input['updated_date'] =  date('Y-m-d H:i:s');
         $imageName = '';
 
         // profile_pic handling 

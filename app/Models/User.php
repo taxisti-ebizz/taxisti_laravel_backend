@@ -11,7 +11,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable
 {
-    use HasApiTokens,Notifiable;
+    use HasApiTokens, Notifiable;
 
 
     protected $table = 'taxi_users';
@@ -24,8 +24,8 @@ class User extends Authenticatable
      *
      * @var array
      */
-     protected $fillable = [
-        'user_id', 'first_name', 'last_name','profile_pic','email_id','password','login_type','date_of_birth','mobile_no','user_type','status','created_date','updated_date','facebook_id','device_type','device_token','fire_base_id','verify',
+    protected $fillable = [
+        'user_id', 'first_name', 'last_name', 'profile_pic', 'email_id', 'password', 'login_type', 'date_of_birth', 'mobile_no', 'user_type', 'status', 'created_date', 'updated_date', 'facebook_id', 'device_type', 'device_token', 'fire_base_id', 'verify',
     ];
 
 
@@ -49,23 +49,31 @@ class User extends Authenticatable
 
     public function complate_ride()
     {
-        return $this->hasMany(Request::class,'rider_id','user_id');
+        return $this->hasMany(Request::class, 'rider_id', 'user_id')->where('ride_status', 3);
     }
 
     public function cancel_ride()
     {
-        return $this->hasMany(Request::class,'rider_id','user_id');
+        return $this->hasMany(Request::class, 'rider_id', 'user_id')->where('is_canceled', 1)->where('cancel_by', 2);
+    }
+
+    public function total_review()
+    {
+        return $this->hasManyThrough(Ratting::class, Request::class, 'rider_id', 'request_id', 'user_id')->where('review_by', '=', 'driver');
+    }
+
+    public function avg_rating()
+    {
+        return $this->hasManyThrough(Ratting::class, Request::class, 'rider_id', 'request_id', 'user_id')->where('review_by', '=', 'driver');
     }
 
     public function driver_rides()
     {
-        return $this->hasMany(Request::class,'driver_id','user_id');
+        return $this->hasMany(Request::class, 'driver_id', 'user_id');
     }
 
     public function driver_cancel_ride()
     {
-        return $this->hasMany(Request::class,'driver_id','user_id');
+        return $this->hasMany(Request::class, 'driver_id', 'user_id');
     }
-    
-    
 }

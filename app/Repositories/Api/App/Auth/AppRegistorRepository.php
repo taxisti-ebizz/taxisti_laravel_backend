@@ -27,7 +27,7 @@ class AppRegistorRepository extends Controller
         $input['last_name'] = $request['last_name']; 
         $input['password'] = md5($request['password']);
         $input['mobile_no'] = $request['phone']; 
-        $input['date_of_birth'] = $request['dob']; 
+        $input['date_of_birth'] = isset($request['dob']) ? $request['dob'] : '0000-00-00'; 
         $input['login_type'] = $request['login_type']; 
         $input['user_type'] = $request['user_type']; 
         $input['facebook_id'] = $request['facebook_id'] != ''?$request['facebook_id']:''; 
@@ -53,11 +53,13 @@ class AppRegistorRepository extends Controller
             Storage::disk('s3')->exists($user->profile_pic) ? Storage::disk('s3')->delete($user->profile_pic) : '';
 
             // update user data
+            $input['updated_date'] =  date('Y-m-d H:i:s');
             User::where('mobile_no',$request['phone'])->update($input); 
         }
         else {
 
             // create user
+            $input['created_date'] =  date('Y-m-d H:i:s');
             User::create($input); 
         }
 
