@@ -69,7 +69,7 @@ class AppRegistorRepository extends Controller
         $user->date_of_birth = $user->date_of_birth != '' ? $user->date_of_birth : '';
 
         $success = $user; 
-        $success['token'] =  $user->createToken('Texi_App')->accessToken; 
+        $success['token'] =  "Bearer ".$user->createToken('Texi_App')->accessToken; 
          
         return response()->json([
             'status'    => true,

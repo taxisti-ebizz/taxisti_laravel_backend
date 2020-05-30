@@ -87,7 +87,7 @@ class AppLoginRepository extends Controller
             }
             
             $success = $user; 
-            $success['token'] =  $user->createToken('Texi_App')->accessToken; 
+            $success['token'] =  "Bearer ".$user->createToken('Texi_App')->accessToken; 
     
             
             return response()->json([
