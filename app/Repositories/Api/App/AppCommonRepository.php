@@ -23,7 +23,7 @@ class AppCommonRepository extends Controller
 
         $input['first_name'] = $request['first_name']; 
         $input['last_name'] = $request['last_name']; 
-        $input['mobile_no'] = $request['phone']; 
+        isset($request['phone']) ? $input['mobile_no'] = $request['phone'] : ''; 
         isset($request['dob']) ? $input['date_of_birth'] = $request['dob'] : ''; 
         $input['user_type'] = $request['user_type']; 
         $input['device_type'] = $request['device_type']; 
