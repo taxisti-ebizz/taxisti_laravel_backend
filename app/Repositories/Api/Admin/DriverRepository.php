@@ -408,6 +408,14 @@ class DriverRepository extends Controller
                     }
                     $driver_list['data'] = $data; 
                 }
+                else
+                {
+                    return response()->json([
+                        'status'    => false,
+                        'message'   => 'No data available', 
+                        'data'    => new ArrayObject,
+                    ], 200);
+                }
                 
 
             }
