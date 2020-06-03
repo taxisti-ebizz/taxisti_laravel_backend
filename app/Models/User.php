@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Ratting;
 use App\Models\Request;
+use Illuminate\Support\Facades\DB;
 use Laravel\Passport\HasApiTokens;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -69,11 +70,21 @@ class User extends Authenticatable
 
     public function driver_rides()
     {
-        return $this->hasMany(Request::class, 'driver_id', 'user_id');
+        return $this->hasMany(Request::class, 'driver_id', 'user_id')->where('ride_status', 3);
     }
 
     public function driver_cancel_ride()
     {
-        return $this->hasMany(Request::class, 'driver_id', 'user_id');
+        return $this->hasMany(Request::class, 'driver_id', 'user_id')->where('is_canceled', 1)->where('cancel_by', 2);
+    }
+
+    public function driver_total_review()
+    {
+        return $this->hasManyThrough(Ratting::class, Request::class, 'driver_id', 'request_id', 'user_id')->where('review_by', '=', 'rider');
+    }
+
+    public function driver_avg_rating()
+    {
+        return $this->hasManyThrough(Ratting::class, Request::class, 'driver_id', 'request_id', 'user_id')->where('review_by', '=', 'rider');
     }
 }

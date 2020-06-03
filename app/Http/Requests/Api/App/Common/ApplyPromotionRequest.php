@@ -32,7 +32,7 @@ class ApplyPromotionRequest extends FormRequest
     {
         return [
             'code' => 'required|exists:taxi_promotion',
-            'type' => 'required',
+            'type' => 'required|in:driver,rider',
 
         ];
     }

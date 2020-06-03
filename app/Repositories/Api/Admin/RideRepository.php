@@ -43,7 +43,7 @@ class RideRepository extends Controller
     {
         $pending_ride_list = array();
 
-        if($request['type'] == 'currentWeek')
+        if($request['type'] == 'currentWeek' && $request['sub_type'] == '')
         {
             $list = 'CurrentWeek ';
 
@@ -61,7 +61,7 @@ class RideRepository extends Controller
                 ->orderByRaw('taxi_request.id DESC')
                 ->paginate(10)->toArray();
         }
-        elseif($request['type'] == 'lastWeek')
+        elseif($request['type'] == 'lastWeek' && $request['sub_type'] == '')
         {
             $list = 'LastWeek';
 
@@ -79,34 +79,106 @@ class RideRepository extends Controller
                 ->orderByRaw('taxi_request.id DESC')
                 ->paginate(10)->toArray();
         }
-        elseif($request['type'] == 'filter')
+        elseif($request['sub_type'] == 'filter')
         {
             if(isset($request['filter']))
             {
 
-                $list = 'Filter';
-                $query = DB::table('taxi_request')
-                ->select('taxi_request.*', 
-                    DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
-                        'rider.mobile_no as rider_mobile', 
-                    DB::raw('CONCAT(driver.first_name," ",driver.last_name) as driver_name'),
-                        'driver.mobile_no as driver_mobile'
-                    )               
-                ->leftJoin('taxi_users as rider', 'taxi_request.rider_id', '=', 'rider.user_id')
-                ->leftJoin('taxi_users as driver', 'taxi_request.driver_id', '=', 'driver.user_id')
-                ->where('taxi_request.status',0);
- 
-                
-                $where = [];
                 $filter = json_decode($request['filter']);
-
-                if(!empty($filter->username)) // username filter
+                $query = [];
+                
+                if($request['type'] == 'currentWeek')
                 {
-                    $username = explode(' ',$filter->username);
-                    $where['first_name'] = $username[0];
-                    isset($username[1]) ? $where['last_name'] = $username[1] : ''; 
-                    
-                    $query->where($where);
+                    $list = 'Filter currentWeek ';
+
+                    $query = DB::table('taxi_request')
+                        ->select('taxi_request.*', 
+                            DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
+                                'rider.mobile_no as rider_mobile', 
+                            DB::raw('CONCAT(driver.first_name," ",driver.last_name) as driver_name'),
+                                'driver.mobile_no as driver_mobile'
+                            )               
+                        ->leftJoin('taxi_users as rider', 'taxi_request.rider_id', '=', 'rider.user_id')
+                        ->leftJoin('taxi_users as driver', 'taxi_request.driver_id', '=', 'driver.user_id')
+                        ->whereBetween('taxi_request.created_date', [$this->start_current_week, $this->end_current_week])
+                        ->where('taxi_request.status',0);
+        
+                }
+                elseif($request['type'] == 'lastWeek')
+                {
+                    $list = 'Filter lastWeek';
+
+                    $query = DB::table('taxi_request')
+                        ->select('taxi_request.*', 
+                            DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
+                                'rider.mobile_no as rider_mobile', 
+                            DB::raw('CONCAT(driver.first_name," ",driver.last_name) as driver_name'),
+                                'driver.mobile_no as driver_mobile'
+                            )               
+                        ->leftJoin('taxi_users as rider', 'taxi_request.rider_id', '=', 'rider.user_id')
+                        ->leftJoin('taxi_users as driver', 'taxi_request.driver_id', '=', 'driver.user_id')
+                        ->whereBetween('taxi_request.created_date', [$this->start_last_week, $this->end_last_week])
+                        ->where('taxi_request.status',0);
+        
+                }
+                else
+                {
+                    $list = 'Filter all';
+
+                    $query = DB::table('taxi_request')
+                    ->select('taxi_request.*', 
+                        DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
+                            'rider.mobile_no as rider_mobile', 
+                        DB::raw('CONCAT(driver.first_name," ",driver.last_name) as driver_name'),
+                            'driver.mobile_no as driver_mobile'
+                        )               
+                    ->leftJoin('taxi_users as rider', 'taxi_request.rider_id', '=', 'rider.user_id')
+                    ->leftJoin('taxi_users as driver', 'taxi_request.driver_id', '=', 'driver.user_id')
+                    ->where('taxi_request.status',0);
+                }
+               
+
+                if(!empty($filter->rider_name)) // rider_name filter
+                {
+                    $query->where('rider.first_name', 'LIKE', '%'.$filter->rider_name.'%')->orWhere('rider.last_name', 'LIKE', '%'.$filter->rider_name.'%')->where('taxi_request.status',0);
+
+                }
+
+                if(!empty($filter->driver_name)) // driver_name filter
+                {
+                    $query->where('driver.first_name', 'LIKE', '%'.$filter->driver_name.'%')->orWhere('driver.last_name', 'LIKE', '%'.$filter->driver_name.'%')->where('taxi_request.status',0);
+                }
+
+                if(!empty($filter->start_date)) // start_datetime filter
+                {
+                    $query->whereBetween('taxi_request.start_datetime',explode(' ',$filter->start_date));
+                }
+
+                if(!empty($filter->end_date)) // end_datetime filter
+                {
+                    $query->whereBetween('taxi_request.end_datetime',explode(' ',$filter->end_date));
+                }
+
+                if(!empty($filter->start_location)) // start_location filter
+                {
+                    $query->where('taxi_request.start_location', 'LIKE', '%'.$filter->start_location.'%');
+                }
+
+                if(!empty($filter->end_location)) // end_location filter
+                {
+                    $query->where('taxi_request.end_location', 'LIKE', '%'.$filter->end_location.'%');
+                }
+
+                if(!empty($filter->amount)) // amount filter
+                {
+                    $amount = explode('-',$filter->amount);
+                    $query->where('taxi_request.amount', '>=' ,$amount[0])->where('taxi_request.amount', '>=' ,$amount[1]);
+                }
+
+                if(!empty($filter->distance)) // distance filter
+                {
+                    $distance = explode('-',$filter->distance);
+                    $query->whereBetween('taxi_request.distance',$distance);
                 }
 
                 $pending_ride_list = $query->orderByRaw('taxi_request.id DESC')->paginate(10)->toArray();

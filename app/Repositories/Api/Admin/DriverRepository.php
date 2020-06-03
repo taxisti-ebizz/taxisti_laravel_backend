@@ -19,7 +19,8 @@ class DriverRepository extends Controller
     public function get_driver_list($request)
     {
         $driver_list = array();
-        if($request['type'] == 'select') {
+        if($request['type'] == 'select' && $request['sub_type'] == '') 
+        {
             // Select driver list
             $list = 'Select';
         
@@ -31,25 +32,23 @@ class DriverRepository extends Controller
                 ->orderByRaw('taxi_users.user_id DESC')
                 ->get();
         }
-        elseif($request['type'] == 'current') {
+        elseif($request['type'] == 'current' && $request['sub_type'] == '') 
+        {
             // current driver
             $list = 'Current';
         
             $driver_list = Driver::select('taxi_driver_detail.*','taxi_users.*')
                 ->leftJoin('taxi_users', 'taxi_driver_detail.driver_id', '=', 'taxi_users.user_id')
+                ->withCount('driver_rides','driver_cancel_ride','driver_total_review')
                 ->withCount([
-                    'driver_rides' => function ($query) {
-                        $query->where('is_canceled',0);
-                    }])
-                ->withCount([
-                    'driver_cancel_ride' => function ($query) {
-                        $query->where('is_canceled',1);
-                        $query->where('cancel_by',1);
-                    }])
+                    'driver_avg_rating' => function ($query) {
+                        $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
+                    }
+                ])
                 ->orderByRaw('taxi_users.user_id DESC')
                 ->paginate(10)->toArray();
         }
-        elseif($request['type'] == 'online')
+        elseif($request['type'] == 'online' && $request['sub_type'] == '')
         {
             // online driver
             $list = 'Online';
@@ -92,20 +91,17 @@ class DriverRepository extends Controller
             $driver_list = Driver::select('taxi_driver_detail.*','taxi_users.*')
             ->leftJoin('taxi_users', 'taxi_driver_detail.driver_id', '=', 'taxi_users.user_id')
             ->whereIn('taxi_users.user_id', $driverArray)
+            ->withCount('driver_rides','driver_cancel_ride','driver_total_review')
             ->withCount([
-                'driver_rides' => function ($query) {
-                    $query->where('is_canceled',0);
-                }])
-            ->withCount([
-                'driver_cancel_ride' => function ($query) {
-                    $query->where('is_canceled',1);
-                    $query->where('cancel_by',1);
-                }])
+                'driver_avg_rating' => function ($query) {
+                    $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
+                }
+            ])
             ->orderByRaw('taxi_users.user_id DESC')
             ->paginate(10)->toArray();
 
         }
-        elseif($request['type'] == 'currentWeek')
+        elseif($request['type'] == 'currentWeek' && $request['sub_type'] == '')
         {
             // currentWeek driver
             $list = 'CurrentWeek';
@@ -119,21 +115,18 @@ class DriverRepository extends Controller
             $driver_list = User::select('taxi_driver_detail.*','taxi_users.*')
             ->leftJoin('taxi_driver_detail','taxi_users.user_id' , '=', 'taxi_driver_detail.driver_id')
             ->where('taxi_users.user_type',1)
+            ->withCount('driver_rides','driver_cancel_ride','driver_total_review')
             ->withCount([
-                'driver_rides' => function ($query) {
-                    $query->where('is_canceled',0);
-                }])
-            ->withCount([
-                'driver_cancel_ride' => function ($query) {
-                    $query->where('is_canceled',1);
-                    $query->where('cancel_by',1);
-                }])
+                'driver_avg_rating' => function ($query) {
+                    $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
+                }
+            ])
             ->whereBetween('taxi_users.created_date', [$start_current_week, $end_current_week])
             ->orderByRaw('taxi_users.user_id DESC')
             ->paginate(10)->toArray();
 
         }
-        elseif($request['type'] == 'lastWeek')
+        elseif($request['type'] == 'lastWeek' && $request['sub_type'] == '')
         {
             // lastWeek driver
             $list = 'LastWeek';
@@ -147,63 +140,173 @@ class DriverRepository extends Controller
             $driver_list = User::select('taxi_driver_detail.*','taxi_users.*')
             ->leftJoin('taxi_driver_detail','taxi_users.user_id' , '=', 'taxi_driver_detail.driver_id')
             ->where('taxi_users.user_type',1)
+            ->withCount('driver_rides','driver_cancel_ride','driver_total_review')
             ->withCount([
-                'driver_rides' => function ($query) {
-                    $query->where('is_canceled',0);
-                }])
-            ->withCount([
-                'driver_cancel_ride' => function ($query) {
-                    $query->where('is_canceled',1);
-                    $query->where('cancel_by',1);
-                }])
+                'driver_avg_rating' => function ($query) {
+                    $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
+                }
+            ])
             ->whereBetween('taxi_users.created_date', [$start_last_week, $end_last_week])
             ->orderByRaw('taxi_users.user_id DESC')
             ->paginate(10)->toArray();
 
         }
-        elseif($request['type'] == 'filter')
+        elseif($request['sub_type'] == 'filter')
         {
             if(isset($request['filter']))
             {
 
-                $list = 'Filter';
-                $query = User::select('taxi_driver_detail.*','taxi_users.*')
+                $filter = json_decode($request['filter']);
+                $query = [];
+
+                if($request['type'] == 'current')
+                {
+                    $list = 'Filter current';
+
+                    $query = Driver::select('taxi_driver_detail.*','taxi_users.*')
+                    ->leftJoin('taxi_users', 'taxi_driver_detail.driver_id', '=', 'taxi_users.user_id')
+                    ->withCount('driver_rides','driver_cancel_ride','driver_total_review')
+                    ->withCount([
+                        'driver_avg_rating' => function ($query) {
+                            $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
+                        }
+                    ]);
+
+
+                }
+                elseif($request['type'] == 'online')
+                {
+                    $list = 'Filter online';
+
+                    // online driver
+                    $list = 'Online';
+
+                    $url="https://taxisti-8392c.firebaseio.com/userData1.json";
+        
+                    $ch = curl_init();
+                    // Will return the response, if false it print the response
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                    // Set the url
+                    curl_setopt($ch, CURLOPT_URL,$url);
+                    // Execute
+                    $result=curl_exec($ch);
+                    // Closing
+                    curl_close($ch);
+        
+                                
+                    $ids = '';
+                    if(!empty($result))
+                    {
+                        $datas = json_decode($result);
+                        foreach ($datas as $key => $value) 
+                        {
+                            if($ids!='')
+                            {
+                                $ids .= ',';
+                            }
+                            $ids .= $key;
+                        }
+                    }
+                    if($ids == '')
+                    {
+                        $ids = 0;
+                    }
+        
+        
+                    $driver_id = $ids;
+                    $driverArray = explode(',', $driver_id);
+        
+                    $driver_list = Driver::select('taxi_driver_detail.*','taxi_users.*')
+                    ->leftJoin('taxi_users', 'taxi_driver_detail.driver_id', '=', 'taxi_users.user_id')
+                    ->whereIn('taxi_users.user_id', $driverArray)
+                    ->withCount('driver_rides','driver_cancel_ride','driver_total_review')
+                    ->withCount([
+                        'driver_avg_rating' => function ($query) {
+                            $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
+                        }
+                    ]);
+
+        
+                }
+                elseif($request['type'] == 'currentWeek')
+                {
+                    $list = 'Filter currentWeek';
+
+                    $previous_week = strtotime("0 week +1 day");
+                    $start_week = strtotime("last saturday midnight",$previous_week);
+                    $end_week = strtotime("next friday",$start_week);
+                    $start_current_week = date("Y-m-d H:i:s",$start_week);
+                    $end_current_week = date("Y-m-d 23:59:00",$end_week);
+        
+                    $driver_list = User::select('taxi_driver_detail.*','taxi_users.*')
                     ->leftJoin('taxi_driver_detail','taxi_users.user_id' , '=', 'taxi_driver_detail.driver_id')
                     ->where('taxi_users.user_type',1)
+                    ->withCount('driver_rides','driver_cancel_ride','driver_total_review')
                     ->withCount([
-                        'driver_rides' => function ($query) {
-                            $query->where('is_canceled',0);
-                        }])
+                        'driver_avg_rating' => function ($query) {
+                            $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
+                        }
+                    ])
+                    ->whereBetween('taxi_users.created_date', [$start_current_week, $end_current_week]);
+                }
+                elseif($request['type'] == 'lastWeek')
+                {
+                    $list = 'filter lastWeek';
+
+                    $previous_week1 = strtotime("-1 week +1 day");
+                    $start_week = strtotime("last saturday midnight",$previous_week1);
+                    $end_week = strtotime("next friday",$start_week);
+                    $start_last_week = date("Y-m-d H:i:s",$start_week);
+                    $end_last_week = date("Y-m-d 23:59:00",$end_week);
+        
+                    $driver_list = User::select('taxi_driver_detail.*','taxi_users.*')
+                    ->leftJoin('taxi_driver_detail','taxi_users.user_id' , '=', 'taxi_driver_detail.driver_id')
+                    ->where('taxi_users.user_type',1)
+                    ->withCount('driver_rides','driver_cancel_ride','driver_total_review')
                     ->withCount([
-                        'driver_cancel_ride' => function ($query) {
-                            $query->where('is_canceled',1);
-                            $query->where('cancel_by',1);
-                        }]);
-                
-                $where = [];
-                $filter = json_decode($request['filter']);
+                        'driver_avg_rating' => function ($query) {
+                            $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
+                        }
+                    ])
+                    ->whereBetween('taxi_users.created_date', [$start_last_week, $end_last_week]);
+                }
+                else
+                {
+                    $list = 'Filter all';
+
+                    $query = User::query()
+                        ->select('taxi_driver_detail.*','taxi_users.*')
+                        ->leftJoin('taxi_driver_detail','taxi_users.user_id' , '=', 'taxi_driver_detail.driver_id')
+                        ->where('taxi_users.user_type',1)
+                        ->withCount('driver_rides','driver_cancel_ride','driver_total_review')
+                        ->withCount([
+                            'driver_avg_rating' => function ($query) {
+                                $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
+                            }
+                        ]);
+                        
+                }
 
                 if(!empty($filter->username)) // username filter
                 {
-                    $username = explode(' ',$filter->username);
-                    $where['first_name'] = $username[0];
-                    isset($username[1]) ? $where['last_name'] = $username[1] : ''; 
-                    
-                    $query->where($where);
+                    $query->where('first_name', 'LIKE', '%'.$filter->username.'%')->orWhere('last_name', 'LIKE', '%'.$filter->username.'%');
                 }
+
                 if(!empty($filter->mobile)) // mobile filter 
                 {
-                    $where['mobile_no'] = $filter->mobile;
-                    $query->where($where);
+                    $query->where('mobile_no', 'LIKE', '%'.$filter->mobile.'%');
                 }
+
                 if(!empty($filter->dob)) // date_of_birth filter
                 {
                     $query->whereBetween('date_of_birth',explode(' ',$filter->dob));
                 }
+
                 if(!empty($filter->dor)) // date_of_register
                 {
                     $query->whereBetween('created_date',explode(' ',$filter->dor));
                 }
+
                 if(!empty($filter->device_type)) // device_type filter
                 {
                     $device_type = explode(',',$filter->device_type);
@@ -216,21 +319,96 @@ class DriverRepository extends Controller
                         $query->where('device_type',$device_type[0]);
                     }
                 }
-                if(!empty($filter->verify) or $filter->verify == 0 ) // verify filter
+
+                if(!empty($filter->verify)) // verify filter
                 {
                     $verify = explode(',',$filter->verify);
                     if(count($verify) > 1)
                     {
-                        $query->whereBetween('verify',$verify);
+                        $query->whereBetween('verify',[0,1]);
                     }
-                    else
                     {
-                        $query->where('verify',$verify[0]);
+                        $verify = $verify[0] == 2 ? 0 : 1; 
+                        $query->where('verify',$verify);
                     }
+                }
+
+                if(!empty($filter->driver_rides)) // driver_rides filter
+                {
+                    $driver_rides = explode('-',$filter->driver_rides);
+                    $query = $query->where(function($q) use ( $driver_rides ){
+                        $q->has('driver_rides','>=',$driver_rides[0]);
+                        $q->has('driver_rides','<=',$driver_rides[1]);
+                    });
+                }
+
+                if(!empty($filter->driver_cancel_ride)) // driver_cancel_ride filter
+                {
+                    $driver_cancel_ride = explode('-',$filter->driver_cancel_ride);
+                    $query = $query->where(function($q) use ( $driver_cancel_ride ){
+                        $q->has('driver_cancel_ride','>=',$driver_cancel_ride[0]);
+                        $q->has('driver_cancel_ride','<=',$driver_cancel_ride[1]);
+                    });
+                }
+
+                if(!empty($filter->driver_total_review)) // driver_total_review filter
+                {
+                    $driver_total_review = explode('-',$filter->driver_total_review);
+                    $query = $query->where(function($q) use ( $driver_total_review ){
+                        $q->has('driver_total_review','>=',$driver_total_review[0]);
+                        $q->has('driver_total_review','<=',$driver_total_review[1]);
+                    });
+                }
+
+                if(!empty($filter->driver_avg_rating)) // driver_avg_rating filter
+                {
+                    $driver_avg_rating = explode('-',$filter->driver_avg_rating);
+                    $query = $query->withCount([
+                        'driver_avg_rating' => function ($query) {
+                            $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
+                        }
+                    ])->where(function($q) use ( $driver_avg_rating ){
+                        $q->has('driver_avg_rating','>=',$driver_avg_rating[0]);
+                        $q->has('driver_avg_rating','<=',$driver_avg_rating[1]);
+                    });
                 }
 
                 $driver_list = $query->orderByRaw('taxi_users.user_id DESC')->paginate(10)->toArray();
 
+                if($driver_list['data'])
+                {
+                    foreach($driver_list['data'] as $driver)
+                    {
+                        
+                        // add calculation
+                        $ratio = $this->acceptance_rejected_ratio($driver['user_id']);
+                        $driver['rejected_ratio'] = $ratio['rejected_ratio']; 
+                        $driver['acceptance_ratio'] = $ratio['acceptance_ratio'];
+    
+                        // hours calculation
+                        $driver['online_hours_last_week'] = $this->total_online_hours_lastweek($driver['user_id']);
+                        $driver['online_hours_current_week'] = $this->total_online_hours_currentweek($driver['user_id']);
+                        $driver['total_online_hours'] = $this->total_online_hours($driver['user_id']);
+        
+                        // add car images
+                        $driver['car_images'] = $this->car_images($driver['id']);
+        
+                        // add base url
+                        $driver['licence'] = $driver['licence'] != ''? env('AWS_S3_URL').$driver['licence'] : '';
+                        $driver['profile'] = $driver['profile'] != ''? env('AWS_S3_URL').$driver['profile'] : '';
+                        $driver['profile_pic'] = $driver['profile_pic'] != ''? env('AWS_S3_URL').$driver['profile_pic'] : '';
+        
+                        if($request['type'] == 'online')
+                        {
+                            $driver['reviews'] = $this->getDriverRatRevData($driver['user_id']);
+                        }
+            
+                        $data[] = $driver;
+            
+                    }
+                    $driver_list['data'] = $data; 
+                }
+                
 
             }
             else
@@ -273,164 +451,13 @@ class DriverRepository extends Controller
         elseif($driver_list['data'])
         {
 
-            if($request['type'] == 'filter')
+            if($request['sub_type'] == 'filter')
             {
                 
                 $filter = json_decode($request['filter']);
                 $data = [];
 
-                if(!empty($filter->driver_rides)) // driver_rides filter
-                {
-                    $driver_rides = explode('-',$filter->driver_rides);
-
-                    foreach($driver_list['data'] as $driver)
-                    {
-                        // add calculation
-                        $ratting_review = $this->driver_ratting_review($driver['user_id']);
-                        $driver['driver_total_review_count'] = $ratting_review->total_review;
-                        $driver['driver_avg_rating_count'] = $ratting_review->avg_ratting;
-                        $ratio = $this->acceptance_rejected_ratio($driver['user_id']);
-                        $driver['rejected_ratio'] = $ratio['rejected_ratio']; 
-                        $driver['acceptance_ratio'] = $ratio['acceptance_ratio'];
-                        $driver['online_hours_last_week'] = $this->total_online_hours_lastweek($driver['user_id']);
-                        $driver['online_hours_current_week'] = $this->total_online_hours_currentweek($driver['user_id']);
-                        $driver['total_online_hours'] = $this->total_online_hours($driver['user_id']);
-        
-                        // add car images
-                        $driver['car_images'] = $this->car_images($driver['id']);
-        
-                        // add base url
-                        $driver['licence'] = $driver['licence'] != ''? env('AWS_S3_URL').$driver['licence'] : '';
-                        $driver['profile'] = $driver['profile'] != ''? env('AWS_S3_URL').$driver['profile'] : '';
-                        $driver['profile_pic'] = $driver['profile_pic'] != ''? env('AWS_S3_URL').$driver['profile_pic'] : '';
-
-                        // reviews
-                        $driver['reviews'] = $this->getDriverRatRevData($driver['user_id']);
-            
-                        // driver_rides filter
-                        if($driver['driver_rides_count'] >= $driver_rides[0] && $driver['driver_rides_count'] <= $driver_rides[1])
-                        {
-                            $data[] = $driver;
-                        }
-            
-                    }
-                    $driver_list['data'] = $data; 
-                }
-
-                if(!empty($filter->driver_cancel_ride)) // driver_cancel_ride filter
-                {
-                    $driver_cancel_ride = explode('-',$filter->driver_cancel_ride);
-                    
-                    foreach($driver_list['data'] as $driver)
-                    {
-                        // add calculation
-                        $ratting_review = $this->driver_ratting_review($driver['user_id']);
-                        $driver['driver_total_review_count'] = $ratting_review->total_review;
-                        $driver['driver_avg_rating_count'] = $ratting_review->avg_ratting;
-                        $ratio = $this->acceptance_rejected_ratio($driver['user_id']);
-                        $driver['rejected_ratio'] = $ratio['rejected_ratio']; 
-                        $driver['acceptance_ratio'] = $ratio['acceptance_ratio'];
-                        $driver['online_hours_last_week'] = $this->total_online_hours_lastweek($driver['user_id']);
-                        $driver['online_hours_current_week'] = $this->total_online_hours_currentweek($driver['user_id']);
-                        $driver['total_online_hours'] = $this->total_online_hours($driver['user_id']);
-        
-                        // add car images
-                        $driver['car_images'] = $this->car_images($driver['id']);
-        
-                        // add base url
-                        $driver['licence'] = $driver['licence'] != ''? env('AWS_S3_URL').$driver['licence'] : '';
-                        $driver['profile'] = $driver['profile'] != ''? env('AWS_S3_URL').$driver['profile'] : '';
-                        $driver['profile_pic'] = $driver['profile_pic'] != ''? env('AWS_S3_URL').$driver['profile_pic'] : '';
-
-                        // reviews
-                        $driver['reviews'] = $this->getDriverRatRevData($driver['user_id']);
-            
-                        // driver_cancel_ride filter
-                        if($driver['driver_cancel_ride_count'] >= $driver_cancel_ride[0] && $driver['driver_cancel_ride_count'] <= $driver_cancel_ride[1])
-                        {
-                            $data[] = $driver;
-                        }
-            
-                    }
-                    $driver_list['data'] = $data; 
-                }
-
-                if(!empty($filter->driver_total_review)) // driver_total_review filter
-                {
-                    $driver_total_review = explode('-',$filter->driver_total_review);
-                    
-                    foreach($driver_list['data'] as $driver)
-                    {
-                        // add calculation
-                        $ratting_review = $this->driver_ratting_review($driver['user_id']);
-                        $driver['driver_total_review_count'] = $ratting_review->total_review;
-                        $driver['driver_avg_rating_count'] = $ratting_review->avg_ratting;
-                        $ratio = $this->acceptance_rejected_ratio($driver['user_id']);
-                        $driver['rejected_ratio'] = $ratio['rejected_ratio']; 
-                        $driver['acceptance_ratio'] = $ratio['acceptance_ratio'];
-                        $driver['online_hours_last_week'] = $this->total_online_hours_lastweek($driver['user_id']);
-                        $driver['online_hours_current_week'] = $this->total_online_hours_currentweek($driver['user_id']);
-                        $driver['total_online_hours'] = $this->total_online_hours($driver['user_id']);
-        
-                        // add car images
-                        $driver['car_images'] = $this->car_images($driver['id']);
-        
-                        // add base url
-                        $driver['licence'] = $driver['licence'] != ''? env('AWS_S3_URL').$driver['licence'] : '';
-                        $driver['profile'] = $driver['profile'] != ''? env('AWS_S3_URL').$driver['profile'] : '';
-                        $driver['profile_pic'] = $driver['profile_pic'] != ''? env('AWS_S3_URL').$driver['profile_pic'] : '';
-
-                        // reviews
-                        $driver['reviews'] = $this->getDriverRatRevData($driver['user_id']);
-            
-                        // driver_total_review filter
-                        if($driver['driver_total_review_count'] >= $driver_total_review[0] && $driver['driver_total_review_count'] <= $driver_total_review[1])
-                        {
-                            $data[] = $driver;
-                        }
-            
-                    }
-                    $driver_list['data'] = $data; 
-                }
-
-                if(!empty($filter->driver_avg_rating)) // driver_avg_rating filter
-                {
-                    $driver_avg_rating = explode('-',$filter->driver_avg_rating);
-                    
-                    foreach($driver_list['data'] as $driver)
-                    {
-                        // add calculation
-                        $ratting_review = $this->driver_ratting_review($driver['user_id']);
-                        $driver['driver_total_review_count'] = $ratting_review->total_review;
-                        $driver['driver_avg_rating_count'] = $ratting_review->avg_ratting;
-                        $ratio = $this->acceptance_rejected_ratio($driver['user_id']);
-                        $driver['rejected_ratio'] = $ratio['rejected_ratio']; 
-                        $driver['acceptance_ratio'] = $ratio['acceptance_ratio'];
-                        $driver['online_hours_last_week'] = $this->total_online_hours_lastweek($driver['user_id']);
-                        $driver['online_hours_current_week'] = $this->total_online_hours_currentweek($driver['user_id']);
-                        $driver['total_online_hours'] = $this->total_online_hours($driver['user_id']);
-        
-                        // add car images
-                        $driver['car_images'] = $this->car_images($driver['id']);
-        
-                        // add base url
-                        $driver['licence'] = $driver['licence'] != ''? env('AWS_S3_URL').$driver['licence'] : '';
-                        $driver['profile'] = $driver['profile'] != ''? env('AWS_S3_URL').$driver['profile'] : '';
-                        $driver['profile_pic'] = $driver['profile_pic'] != ''? env('AWS_S3_URL').$driver['profile_pic'] : '';
-
-                        // reviews
-                        $driver['reviews'] = $this->getDriverRatRevData($driver['user_id']);
-            
-                        // driver_avg_rating filter
-                        if($driver['driver_avg_rating_count'] >= $driver_avg_rating[0] && $driver['driver_avg_rating_count'] <= $driver_avg_rating[1])
-                        {
-                            $data[] = $driver;
-                        }
-            
-                    }
-                    $driver_list['data'] = $data; 
-                }
-
+                
                 if(!empty($filter->rejected_ratio)) // rejected_ratio filter
                 {
                     $rejected_ratio = explode('-',$filter->rejected_ratio);
@@ -637,12 +664,11 @@ class DriverRepository extends Controller
                 {
                     
                     // add calculation
-                    $ratting_review = $this->driver_ratting_review($driver['user_id']);
-                    $driver['driver_total_review_count'] = $ratting_review->total_review;
-                    $driver['driver_avg_rating_count'] = $ratting_review->avg_ratting;
                     $ratio = $this->acceptance_rejected_ratio($driver['user_id']);
                     $driver['rejected_ratio'] = $ratio['rejected_ratio']; 
                     $driver['acceptance_ratio'] = $ratio['acceptance_ratio'];
+
+                    // hours calculation
                     $driver['online_hours_last_week'] = $this->total_online_hours_lastweek($driver['user_id']);
                     $driver['online_hours_current_week'] = $this->total_online_hours_currentweek($driver['user_id']);
                     $driver['total_online_hours'] = $this->total_online_hours($driver['user_id']);
@@ -1139,7 +1165,7 @@ class DriverRepository extends Controller
         $total = DB::table('taxi_request')
             ->select(DB::raw('count(id) as total'))
             ->whereRaw('FIND_IN_SET('.$driver_id.',all_driver)')
-            ->whereRaw('FIND_IN_SET('.$driver_id.',rejected_by)')
+            ->orWhereRaw('FIND_IN_SET('.$driver_id.',rejected_by)')
             ->value('total');
 
         $rejected =  $total - $accepted;

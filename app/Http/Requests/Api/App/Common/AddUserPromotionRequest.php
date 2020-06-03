@@ -33,7 +33,7 @@ class AddUserPromotionRequest extends FormRequest
         return [
             // 'user_id' => 'required|exists:taxi_users',
             'code' => 'required|exists:taxi_promotion',
-            'type' => 'required',
+            'type' => 'required|in:driver,rider',
 
         ];
     }

@@ -28,12 +28,23 @@ class Driver extends Model
 
     public function driver_rides()
     {
-        return $this->hasMany(Request::class,'driver_id','driver_id');
+        return $this->hasMany(Request::class,'driver_id','driver_id')->where('ride_status', 3);;
     }
 
     public function driver_cancel_ride()
     {
-        return $this->hasMany(Request::class,'driver_id','driver_id');
+        return $this->hasMany(Request::class,'driver_id','driver_id')->where('is_canceled', 1)->where('cancel_by', 2);
     }
+
+    public function driver_total_review()
+    {
+        return $this->hasManyThrough(Ratting::class, Request::class, 'driver_id', 'request_id', 'driver_id')->where('review_by', '=', 'rider');
+    }
+
+    public function driver_avg_rating()
+    {
+        return $this->hasManyThrough(Ratting::class, Request::class, 'driver_id', 'request_id', 'driver_id')->where('review_by', '=', 'rider');
+    }
+
 
 }

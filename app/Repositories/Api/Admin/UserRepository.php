@@ -18,7 +18,7 @@ class UserRepository extends Controller
     { 
         $user_list = array();
 
-        if($request['type'] == 'currentWeek')
+        if($request['type'] == 'currentWeek' && $request['sub_type'] == '')
         {
             $list = 'CurrentWeek';
 
@@ -39,7 +39,7 @@ class UserRepository extends Controller
             ->orderBy('user_id', 'DESC')
             ->paginate(10)->toArray();
         }
-        elseif($request['type'] == 'lastWeek')
+        elseif($request['type'] == 'lastWeek' && $request['sub_type'] == '')
         {
             $list = 'LastWeek';
 
@@ -60,44 +60,90 @@ class UserRepository extends Controller
             ->orderBy('user_id', 'DESC')
             ->paginate(10)->toArray();
         }
-        elseif($request['type'] == 'filter')
+        elseif($request['sub_type'] == 'filter')
         {
             if(isset($request['filter']))
             {
-
-                $list = 'Filter';
-                $query = User::withCount('complate_ride','cancel_ride','total_review')
-                ->withCount([
-                    'avg_rating' => function ($query) {
-                        $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
-                    }
-                ])
-                ->where('user_type', 0);
                 
-                $where = [];
                 $filter = json_decode($request['filter']);
+                $query = [];
+
+                if($request['type'] == 'currentWeek')
+                {
+                    $list = 'Filter currentWeek';
+
+                    $previous_week = strtotime("0 week +1 day");
+                    $start_week = strtotime("last saturday midnight",$previous_week);
+                    $end_week = strtotime("next friday",$start_week);
+                    $start_current_week = date("Y-m-d H:i:s",$start_week);
+                    $end_current_week = date("Y-m-d 23:59:00",$end_week);
+        
+                    $query = User::withCount('complate_ride','cancel_ride','total_review')
+                    ->withCount([
+                        'avg_rating' => function ($query) {
+                            $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
+                        }
+                    ])
+                    ->where('user_type', 0)
+                    ->whereBetween('created_date', [$start_current_week, $end_current_week]);
+        
+                }
+                elseif($request['type'] == 'lastWeek')
+                {
+                    $list = 'Filter lastWeek';
+
+                    $previous_week1 = strtotime("-1 week +1 day");
+                    $start_week = strtotime("last saturday midnight",$previous_week1);
+                    $end_week = strtotime("next friday",$start_week);
+                    $start_last_week = date("Y-m-d H:i:s",$start_week);
+                    $end_last_week = date("Y-m-d 23:59:00",$end_week);
+        
+                    $query = User::withCount('complate_ride','cancel_ride','total_review')
+                    ->withCount([
+                        'avg_rating' => function ($query) {
+                            $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
+                        }
+                    ])
+                    ->where('user_type', 0)
+                    ->whereBetween('created_date', [$start_last_week, $end_last_week]);
+                }
+                else
+                {
+                    $list = 'Filter all';
+
+                    $query = User::withCount('complate_ride','cancel_ride','total_review')
+                    ->withCount([
+                        'avg_rating' => function ($query) {
+                            $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
+                        }
+                    ])
+                    ->where('user_type', 0);
+                    
+                }
+       
 
                 if(!empty($filter->username)) // username filter
                 {
-                    $username = explode(' ',$filter->username);
-                    $where['first_name'] = $username[0];
-                    isset($username[1]) ? $where['last_name'] = $username[1] : ''; 
-                    
-                    $query->where($where);
+                    // $username = explode(' ',$filter->username);
+                    $query->where('first_name', 'LIKE', '%'.$filter->username.'%')->orWhere('last_name', 'LIKE', '%'.$filter->username.'%');
+
                 }
+                
                 if(!empty($filter->mobile)) // mobile filter 
                 {
-                    $where['mobile_no'] = $filter->mobile;
-                    $query->where($where);
+                    $query->where('mobile_no', 'LIKE', '%'.$filter->mobile.'%');
                 }
+                
                 if(!empty($filter->dob)) // date_of_birth filter
                 {
                     $query->whereBetween('date_of_birth',explode(' ',$filter->dob));
                 }
+                
                 if(!empty($filter->dor)) // date_of_register
                 {
                     $query->whereBetween('created_date',explode(' ',$filter->dor));
                 }
+                
                 if(!empty($filter->device_type)) // device_type filter
                 {
                     $device_type = explode(',',$filter->device_type);
@@ -110,6 +156,7 @@ class UserRepository extends Controller
                         $query->where('device_type',$device_type[0]);
                     }
                 }
+                
                 if(!empty($filter->verify)) // verify filter
                 {
                     
@@ -124,6 +171,7 @@ class UserRepository extends Controller
                         $query->where('verify',$verify);
                     }
                 }
+                
                 if(!empty($filter->complete_ride)) // complete_ride filter
                 {
                     $complete_ride = explode('-',$filter->complete_ride);
@@ -133,6 +181,7 @@ class UserRepository extends Controller
                     });
 
                 }
+                
                 if(!empty($filter->cancelled_ride)) // cancel_ride filter
                 {
                     $cancel_ride = explode('-',$filter->cancelled_ride);
@@ -141,6 +190,7 @@ class UserRepository extends Controller
                         $q->has('cancel_ride','<=',$cancel_ride[1]);
                     });
                 }
+                
                 if(!empty($filter->total_review)) // total_review filter
                 {
                     $total_review = explode('-',$filter->total_review);
@@ -150,10 +200,15 @@ class UserRepository extends Controller
                     });
 
                 }
+                
                 if(!empty($filter->average_ratting)) // average_ratting filter
                 {
                     $average_ratting = explode('-',$filter->average_ratting);
-                    $query = $query->where(function($q) use ( $average_ratting ){
+                    $query = $query->withCount([
+                        'avg_rating' => function ($query) {
+                            $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
+                        }
+                    ])->where(function($q) use ( $average_ratting ){
                         $q->has('avg_rating','>=',$average_ratting[0]);
                         $q->has('avg_rating','<=',$average_ratting[1]);
                     });

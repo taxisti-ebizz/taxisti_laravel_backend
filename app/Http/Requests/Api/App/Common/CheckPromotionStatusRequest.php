@@ -32,7 +32,7 @@ class CheckPromotionStatusRequest extends FormRequest
     {
         return [
             // 'user_id' => 'required|exists:taxi_users',
-            'type' => 'required',
+            'type' => 'required|in:driver,rider',
 
         ];
     }
