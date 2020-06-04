@@ -216,7 +216,7 @@ class DriverRepository extends Controller
                     $driver_id = $ids;
                     $driverArray = explode(',', $driver_id);
         
-                    $driver_list = Driver::select('taxi_driver_detail.*','taxi_users.*')
+                    $query = Driver::select('taxi_driver_detail.*','taxi_users.*')
                     ->leftJoin('taxi_users', 'taxi_driver_detail.driver_id', '=', 'taxi_users.user_id')
                     ->whereIn('taxi_users.user_id', $driverArray)
                     ->withCount('driver_rides','driver_cancel_ride','driver_total_review')
@@ -238,7 +238,7 @@ class DriverRepository extends Controller
                     $start_current_week = date("Y-m-d H:i:s",$start_week);
                     $end_current_week = date("Y-m-d 23:59:00",$end_week);
         
-                    $driver_list = User::select('taxi_driver_detail.*','taxi_users.*')
+                    $query = User::select('taxi_driver_detail.*','taxi_users.*')
                     ->leftJoin('taxi_driver_detail','taxi_users.user_id' , '=', 'taxi_driver_detail.driver_id')
                     ->where('taxi_users.user_type',1)
                     ->withCount('driver_rides','driver_cancel_ride','driver_total_review')
@@ -259,7 +259,7 @@ class DriverRepository extends Controller
                     $start_last_week = date("Y-m-d H:i:s",$start_week);
                     $end_last_week = date("Y-m-d 23:59:00",$end_week);
         
-                    $driver_list = User::select('taxi_driver_detail.*','taxi_users.*')
+                    $query = User::select('taxi_driver_detail.*','taxi_users.*')
                     ->leftJoin('taxi_driver_detail','taxi_users.user_id' , '=', 'taxi_driver_detail.driver_id')
                     ->where('taxi_users.user_type',1)
                     ->withCount('driver_rides','driver_cancel_ride','driver_total_review')
