@@ -813,10 +813,10 @@ class RideRepository extends Controller
                     $query->where('rider.first_name', 'LIKE', '%'.$filter->rider_name.'%')->orWhere('rider.last_name', 'LIKE', '%'.$filter->rider_name.'%')->where('taxi_request.status',3)->where('taxi_request.is_canceled',1)->where('taxi_request.cancel_by',0);
                 }
 
-                // if(!empty($filter->driver_name)) // driver_name filter
-                // {
-                //     $query->where('driver.first_name', 'LIKE', '%'.$filter->driver_name.'%')->orWhere('driver.last_name', 'LIKE', '%'.$filter->driver_name.'%')->where('taxi_request.status',3)->where('taxi_request.is_canceled',1)    ->where('taxi_request.cancel_by',0);
-                // }
+                /* if(!empty($filter->driver_name)) // driver_name filter
+                {
+                    $query->where('driver.first_name', 'LIKE', '%'.$filter->driver_name.'%')->orWhere('driver.last_name', 'LIKE', '%'.$filter->driver_name.'%')->where('taxi_request.status',3)->where('taxi_request.is_canceled',1)    ->where('taxi_request.cancel_by',0);
+                } */
 
                 if(!empty($filter->start_date)) // start_datetime filter
                 {
@@ -1166,7 +1166,7 @@ class RideRepository extends Controller
     {
         $no_driver_available_list = array();
 
-        if($request['type'] == 'currentWeek')
+        if($request['type'] == 'currentWeek'  && $request['sub_type'] == '') 
         {
             $list  = 'CurrentWeek';
 
@@ -1180,7 +1180,7 @@ class RideRepository extends Controller
             ->orderByRaw('taxi_driver_notavailable.id DESC')
             ->paginate(10)->toArray();
         }
-        elseif($request['type'] == 'lastWeek')
+        elseif($request['type'] == 'lastWeek'  && $request['sub_type'] == '')
         {
             $list = 'lastWeek';
 
@@ -1193,6 +1193,89 @@ class RideRepository extends Controller
             ->whereBetween('taxi_driver_notavailable.created_date', [$this->start_last_week, $this->end_last_week])
             ->orderByRaw('taxi_driver_notavailable.id DESC')
             ->paginate(10)->toArray();
+        }
+        elseif($request['sub_type'] == 'filter')
+        {
+            if(isset($request['filter']))
+            {
+
+                $filter = json_decode($request['filter']);
+                $query = [];
+                
+                if($request['type'] == 'currentWeek')
+                {
+                    $list = 'Filter currentWeek ';
+
+                    $query = DB::table('taxi_driver_notavailable')
+                    ->select('taxi_driver_notavailable.*', 
+                        DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
+                            'rider.mobile_no as rider_mobile'
+                        )
+                    ->join('taxi_users as rider', 'taxi_driver_notavailable.rider_id', '=', 'rider.user_id')
+                    ->whereBetween('taxi_driver_notavailable.created_date', [$this->start_current_week, $this->end_current_week]);
+        
+                }
+                elseif($request['type'] == 'lastWeek')
+                {
+                    $list = 'Filter lastWeek';
+
+                    $query = DB::table('taxi_driver_notavailable')
+                    ->select('taxi_driver_notavailable.*', 
+                        DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
+                            'rider.mobile_no as rider_mobile'
+                        )
+                    ->join('taxi_users as rider', 'taxi_driver_notavailable.rider_id', '=', 'rider.user_id')
+                    ->whereBetween('taxi_driver_notavailable.created_date', [$this->start_last_week, $this->end_last_week]);
+        
+                }
+                else
+                {
+                    $list = 'Filter all';
+
+                    $query = DB::table('taxi_driver_notavailable')
+                    ->select('taxi_driver_notavailable.*', 
+                        DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
+                            'rider.mobile_no as rider_mobile'
+                        )
+                    ->join('taxi_users as rider', 'taxi_driver_notavailable.rider_id', '=', 'rider.user_id');
+                }
+               
+
+                if(!empty($filter->rider_name)) // rider_name filter
+                {
+                    $query->where('rider.first_name', 'LIKE', '%'.$filter->rider_name.'%')->orWhere('rider.last_name', 'LIKE', '%'.$filter->rider_name.'%');
+
+                }
+
+                if(!empty($filter->mobile)) // mobile filter
+                {
+                    $query->where('rider.mobile_no', 'LIKE', '%'.$filter->mobile.'%');
+                }
+
+                if(!empty($filter->location)) // location filter
+                {
+                    $query->where('taxi_driver_notavailable.start_location', 'LIKE', '%'.$filter->location.'%');
+                }
+
+                if(!empty($filter->created_date)) // created_datetime filter
+                {
+                    $query->whereBetween('taxi_driver_notavailable.created_date',explode(' ',$filter->created_date));
+                }
+
+
+                $no_driver_available_list = $query->orderByRaw('taxi_driver_notavailable.id DESC')->paginate(10)->toArray();
+
+
+            }
+            else
+            {
+                return response()->json([
+                    'status'    => false,
+                    'message'   => 'filter parameter is required',
+                    'data'    => new ArrayObject,
+                ], 200);
+            }
+
         }
         else
         {
@@ -1269,6 +1352,138 @@ class RideRepository extends Controller
                     ->paginate(10)->toArray();
 
         }
+        elseif($request['sub_type'] == 'filter')
+        {
+            if(isset($request['filter']))
+            {
+
+                $filter = json_decode($request['filter']);
+                $query = [];
+
+                if($request['type'] == 'currentWeek')
+                {
+                    $list = 'Filter currentWeek ';
+
+                    $query = DB::table('taxi_request')
+                        ->select('taxi_request.*', 
+                            DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
+                                'rider.mobile_no as rider_mobile', 
+                            DB::raw('CONCAT(driver.first_name," ",driver.last_name) as driver_name'),
+                                'driver.mobile_no as driver_mobile'
+                            )               
+                        ->leftJoin('taxi_users as rider', 'taxi_request.rider_id', '=', 'rider.user_id')
+                        ->leftJoin('taxi_users as driver', 'taxi_request.driver_id', '=', 'driver.user_id')
+                        ->whereBetween('taxi_request.created_date', [$this->start_current_week, $this->end_current_week])
+                        ->where('taxi_request.status',4);
+            
+                }
+                elseif($request['type'] == 'lastWeek')
+                {
+                    $list = 'Filter lastWeek';
+
+                    $query = DB::table('taxi_request')
+                        ->select('taxi_request.*', 
+                            DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
+                                'rider.mobile_no as rider_mobile', 
+                            DB::raw('CONCAT(driver.first_name," ",driver.last_name) as driver_name'),
+                                'driver.mobile_no as driver_mobile'
+                            )               
+                        ->leftJoin('taxi_users as rider', 'taxi_request.rider_id', '=', 'rider.user_id')
+                        ->leftJoin('taxi_users as driver', 'taxi_request.driver_id', '=', 'driver.user_id')
+                        ->whereBetween('taxi_request.created_date', [$this->start_last_week, $this->end_last_week])
+                        ->where('taxi_request.status',3)
+                        ->where('taxi_request.ride_status',3);
+            
+                }
+                else
+                {
+                    $list = 'Filter all';
+
+                    $query = DB::table('taxi_request')
+                    ->select('taxi_request.*', 
+                        DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
+                            'rider.mobile_no as rider_mobile', 
+                        DB::raw('CONCAT(driver.first_name," ",driver.last_name) as driver_name'),
+                            'driver.mobile_no as driver_mobile'
+                        )               
+                    ->leftJoin('taxi_users as rider', 'taxi_request.rider_id', '=', 'rider.user_id')
+                    ->leftJoin('taxi_users as driver', 'taxi_request.driver_id', '=', 'driver.user_id')
+                    ->where('taxi_request.status',4);
+                }
+               
+
+                if(!empty($filter->rider_name)) // rider_name filter
+                {
+                    $query->where('rider.first_name', 'LIKE', '%'.$filter->rider_name.'%')->orWhere('rider.last_name', 'LIKE', '%'.$filter->rider_name.'%')->where('taxi_request.status',4);
+
+                }
+
+                if(!empty($filter->driver_name)) // driver_name filter
+                {
+                    $query->where('driver.first_name', 'LIKE', '%'.$filter->driver_name.'%')->orWhere('driver.last_name', 'LIKE', '%'.$filter->driver_name.'%')->where('taxi_request.status',4);
+                }
+
+                if(!empty($filter->start_date)) // start_datetime filter
+                {
+                    $query->whereBetween('taxi_request.start_datetime',explode(' ',$filter->start_date));
+                }
+
+                if(!empty($filter->end_date)) // end_datetime filter
+                {
+                    $query->whereBetween('taxi_request.end_datetime',explode(' ',$filter->end_date));
+                }
+
+                if(!empty($filter->start_location)) // start_location filter
+                {
+                    $query->where('taxi_request.start_location', 'LIKE', '%'.$filter->start_location.'%');
+                }
+
+                if(!empty($filter->end_location)) // end_location filter
+                {
+                    $query->where('taxi_request.end_location', 'LIKE', '%'.$filter->end_location.'%');
+                }
+
+                if(!empty($filter->amount)) // amount filter
+                {
+                    $amount = explode('-',$filter->amount);
+                    $query->where('taxi_request.amount', '>=' ,$amount[0])->where('taxi_request.amount', '>=' ,$amount[1]);
+                }
+
+                if(!empty($filter->distance)) // distance filter
+                {
+                    $distance = explode('-',$filter->distance);
+                    $query->whereBetween('taxi_request.distance',$distance);
+                }
+
+                $fake_ride_list = $query->orderByRaw('taxi_request.id DESC')->paginate(10)->toArray();
+
+                if($fake_ride_list['data'])
+                {
+                    $lists = [];
+                    foreach($fake_ride_list['data'] as $ride)
+                    {
+                        $driver_ratting = $this->get_driver_ratting($ride->id);
+                        $rider_ratting = $this->get_rider_ratting($ride->id);
+    
+                        $ride->driver_ratting = $driver_ratting ? $driver_ratting->ratting : 0;
+                        $ride->rider_ratting = $rider_ratting ? $rider_ratting->ratting : 0;
+    
+                        $lists[] = $ride;
+                    }
+                    $fake_ride_list['data'] = $lists;
+                }
+
+            }
+            else
+            {
+                return response()->json([
+                    'status'    => false,
+                    'message'   => 'filter parameter is required',
+                    'data'    => new ArrayObject,
+                ], 200);
+            }
+
+        }
         else
         {
 
@@ -1291,18 +1506,76 @@ class RideRepository extends Controller
 
         if($fake_ride_list['data'])
         {
+            if($request['sub_type'] == 'filter')
+            {
+                if(!empty($filter->rider_rating)) // rider_rating filter
+                {
+                    $rider_rating = explode('-',$filter->rider_rating);
+                    $list = [];
+                    foreach($fake_ride_list['data'] as $ride)
+                    {
+                        $driver_ratting = $this->get_driver_ratting($ride->id);
+                        $rider_ratting = $this->get_rider_ratting($ride->id);
+        
+                        $ride->driver_ratting = $driver_ratting ? $driver_ratting->ratting : 0;
+                        $ride->rider_ratting = $rider_ratting ? $rider_ratting->ratting : 0;
+        
+                        if($ride->rider_ratting >= $rider_rating[0] && $ride->rider_ratting <= $rider_rating[1])
+                        {
+                            $list[] = $ride;
+                        }
+                    }
+                    $fake_ride_list['data'] = $list;
+    
 
-            foreach ($fake_ride_list['data'] as  $ride) {
-                
-                $rider_reveiw = Ratting::where('request_id',$ride->id)->where('review_by','rider')->value('ratting');
-                $driver_reveiw = Ratting::where('request_id',$ride->id)->where('review_by','driver')->value('ratting');
-                
-                $ride->rider_reveiw = $rider_reveiw != "" ? $rider_reveiw : 0;
-                $ride->driver_reveiw = $driver_reveiw != "" ? $driver_reveiw : 0;
-                
-                $ride_list[] = $ride;
+                }
+
+                if(!empty($filter->driver_rating)) // driver_rating filter
+                {
+                    $driver_rating = explode('-',$filter->driver_rating);
+                    $lists = [];
+                    foreach($fake_ride_list['data'] as $ride)
+                    {
+                        $driver_ratting = $this->get_driver_ratting($ride->id);
+                        $rider_ratting = $this->get_rider_ratting($ride->id);
+        
+                        $ride->driver_ratting = $driver_ratting ? $driver_ratting->ratting : 0;
+                        $ride->rider_ratting = $rider_ratting ? $rider_ratting->ratting : 0;
+        
+                        if($ride->rider_ratting >= $driver_rating[0] && $ride->rider_ratting <= $driver_rating[1])
+                        {
+                            $lists[] = $ride;
+                        }
+                    }
+                    $fake_ride_list['data'] = $lists;
+    
+
+                }
+
+                if(!$fake_ride_list['data'])
+                {
+                    return response()->json([
+                        'status'    => false,
+                        'message'   => 'No data available', 
+                        'data'    => new ArrayObject,
+                    ], 200);
+                }
+
             }
-            $fake_ride_list['data'] = $ride_list;
+            else
+            {
+                foreach ($fake_ride_list['data'] as  $ride) {
+                    
+                    $rider_reveiw = Ratting::where('request_id',$ride->id)->where('review_by','rider')->value('ratting');
+                    $driver_reveiw = Ratting::where('request_id',$ride->id)->where('review_by','driver')->value('ratting');
+                    
+                    $ride->rider_reveiw = $rider_reveiw != "" ? $rider_reveiw : 0;
+                    $ride->driver_reveiw = $driver_reveiw != "" ? $driver_reveiw : 0;
+                    
+                    $ride_list[] = $ride;
+                }
+                $fake_ride_list['data'] = $ride_list;
+            }
 
             return response()->json([
                 'status'    => true,
@@ -1321,18 +1594,62 @@ class RideRepository extends Controller
 
     // get ride area list
     public function get_ride_area_list($request)
-    {
-        $ride_area_list = DB::table('taxi_ride_area_coordinates')
-                ->select('id','area_name','created_date')
-                ->orderByRaw('id DESC')
-                ->paginate(10)->toArray();
+    {   
+        if($request['type'] == 'filter')
+        {
+            if(isset($request['filter']))
+            {
+                
+                $filter = json_decode($request['filter']);
+                $query = [];
+
+                $list = 'Filter all';
+      
+                $query = DB::table('taxi_ride_area_coordinates')->select('id','area_name','created_date');
+       
+
+                if(!empty($filter->area_name)) // name filter
+                {
+                    $query->where('area_name', 'LIKE', '%'.$filter->area_name.'%');
+
+                }
+                
+                if(!empty($filter->created_date)) // created_date filter 
+                {
+                    $created_date = explode(' ',$filter->created_date);
+                    $query->whereBetween('created_date',$created_date);
+                }
+                
+
+                $ride_area_list = $query->orderBy('id', 'DESC')->paginate(10)->toArray();
+            }
+            else
+            {
+                
+                return response()->json([
+                    'status'    => false,
+                    'message'   => 'filter parameter is required',
+                    'data'    => new ArrayObject,
+                ], 200);
+            }
+
+        }
+        else
+        {
+            $list = 'All';
+
+            $ride_area_list = DB::table('taxi_ride_area_coordinates')
+                    ->select('id','area_name','created_date')
+                    ->orderByRaw('id DESC')
+                    ->paginate(10)->toArray();
+        }
 
         if($ride_area_list['data'])
         {
 
             return response()->json([
                 'status'    => true,
-                'message'   => 'Ride area list', 
+                'message'   => $list.' Ride area list', 
                 'data'    => $ride_area_list,
             ], 200);
         }
@@ -1568,7 +1885,7 @@ class RideRepository extends Controller
 
     // Sub Function =================================
 
-    // silent notification
+    // silent notification      
     public function silentNotificationToAllUsers()
     {
 

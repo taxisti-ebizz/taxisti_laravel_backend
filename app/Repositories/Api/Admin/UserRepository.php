@@ -356,32 +356,105 @@ class UserRepository extends Controller
     // get rider reviews
     public function get_rider_reviews($request)
     {
-        $rider_reviews = User::select(
-            DB::raw('CONCAT(first_name," ",last_name) as rider_name'),
-            'mobile_no as rider_mobile','user_id as rider_id'
-        )
-        ->where('user_type', 0)
-        ->orderBy('user_id', 'DESC')
-        ->paginate(10)->toArray();
+        if($request['type'] == 'filter')
+        {
+            if(isset($request['filter']))
+            {
+                
+                $filter = json_decode($request['filter']);
+                $query = [];
 
-        if ($rider_reviews['data']) {
+                $list = 'Filter all';
 
-            foreach ($rider_reviews['data'] as $user) {
-    
-                $ratting_review = $this->user_ratting_review($user['rider_id']);
-                $user['total_review_count'] = $ratting_review->total_review;
-                $user['avg_rating_count'] = $ratting_review->avg_ratting;
-    
-                $data[] = $user;
+                $query = User::select(
+                    DB::raw('CONCAT(first_name," ",last_name) as rider_name'),
+                    'mobile_no as rider_mobile','user_id as rider_id'
+                )
+                ->withCount('total_review')
+                ->withCount([
+                    'avg_rating' => function ($query) {
+                        $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
+                    }
+                ])
+                ->where('user_type', 0);
+       
+
+                if(!empty($filter->name)) // name filter
+                {
+                    $query->where('first_name', 'LIKE', '%'.$filter->name.'%')->orWhere('last_name', 'LIKE', '%'.$filter->name.'%');
+
+                }
+                
+                if(!empty($filter->mobile)) // mobile filter 
+                {
+                    $query->where('mobile_no', 'LIKE', '%'.$filter->mobile.'%');
+                }
+                
+                if(!empty($filter->review)) // review filter
+                {
+                    $total_review = explode('-',$filter->review);
+                    $query = $query->where(function($q) use ( $total_review ){
+                        $q->has('total_review','>=',$total_review[0]);
+                        $q->has('total_review','<=',$total_review[1]);
+                    });
+
+                }
+                
+                if(!empty($filter->avg_rating)) // avg_rating filter
+                {
+                    $average_ratting = explode('-',$filter->avg_rating);
+                    $query = $query->withCount([
+                        'avg_rating' => function ($query) {
+                            $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
+                        }
+                    ])->where(function($q) use ( $average_ratting ){
+                        $q->has('avg_rating','>=',$average_ratting[0]);
+                        $q->has('avg_rating','<=',$average_ratting[1]);
+                    });
+                }
+
+                $rider_reviews = $query->orderBy('user_id', 'DESC')->paginate(10)->toArray();
             }
-            $rider_reviews['data'] = $data;
-    
+            else
+            {
+                return response()->json([
+                    'status'    => false,
+                    'message'   => 'filter parameter is required',
+                    'data'    => new ArrayObject,
+                ], 200);
+            }
+
+        }
+        else
+        {
+            $list = 'All';
+
+            $rider_reviews = User::select(
+                DB::raw('CONCAT(first_name," ",last_name) as rider_name'),
+                'mobile_no as rider_mobile','user_id as rider_id'
+            )
+            ->withCount('total_review')
+            ->withCount([
+                'avg_rating' => function ($query) {
+                    $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
+                }
+            ])
+            ->where('user_type', 0)
+            ->orderBy('user_id', 'DESC')
+            ->paginate(10)->toArray();
+        }
+
+
+        if ($rider_reviews['data']) 
+        {
             return response()->json([
                 'status'    => true,
-                'message'   => 'Rider reviews',
+                'message'   => $list.' Rider reviews',
                 'data'    => $rider_reviews,
             ], 200);
-        } else {
+        } 
+        else 
+        {
             return response()->json([
                 'status'    => false,
                 'message'   => 'No data available',

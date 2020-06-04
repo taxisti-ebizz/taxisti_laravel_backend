@@ -16,24 +16,90 @@ class PanelRepository extends Controller
     // get promotion list
     public function get_promotion_list($request)
     {
-        $promotion_list = DB::table('taxi_promotion')
-            ->orderByRaw('id DESC')
-            ->paginate(10)->toArray();
+        if($request['type'] == 'filter')
+        {
+            if(isset($request['filter']))
+            {
+                
+                $filter = json_decode($request['filter']);
+                $query = [];
+
+                $list = 'Filter';
+      
+                $query = DB::table('taxi_promotion');
+       
+
+                if(!empty($filter->code)) // code filter
+                {
+                    $query->where('code', 'LIKE', '%'.$filter->code.'%');
+                }
+                
+                if(!empty($filter->type)) // type filter 
+                {
+                    $type = explode(',',$filter->type);
+                    if(count($type) > 1)
+                    {
+                        $query->whereBetween('type',$type);
+                    }
+                    else
+                    {
+                        $query->where('type',$type[0]);
+                    }
+                }
+
+                if(!empty($filter->user_limit)) // user_limit filter 
+                {
+                    $user_limit = explode('-',$filter->user_limit);
+                    $query->whereBetween('user_limit',$user_limit);
+                }
+
+                if(!empty($filter->start_date)) // start_date filter 
+                {
+                    $start_date = explode(' ',$filter->start_date);
+                    $query->whereBetween('start_date',$start_date);
+                }
+
+                if(!empty($filter->end_date)) // end_date filter 
+                {
+                    $end_date = explode(' ',$filter->end_date);
+                    $query->whereBetween('end_date',$end_date);
+                }
+                
+
+                $promotion_list = $query->orderBy('id', 'DESC')->paginate(10)->toArray();
+            }
+            else
+            {
+                return response()->json([
+                    'status'    => false,
+                    'message'   => 'filter parameter is required',
+                    'data'    => new ArrayObject,
+                ], 200);
+            }
+
+        }
+        else
+        {
+            $list = 'All';
+
+            $promotion_list = DB::table('taxi_promotion')->orderByRaw('id DESC')->paginate(10)->toArray();
+
+        }    
 
         if($promotion_list['data'])
         {
-            $list = [];
+            $lists = [];
             foreach ($promotion_list['data'] as $promotion) {
                 
                 $promotion->promo_image = $promotion->promo_image != "" ?  env('AWS_S3_URL') . $promotion->promo_image : '';
-                $list[] = $promotion;
+                $lists[] = $promotion;
             }
             
-            $promotion_list['data'] = $list;
+            $promotion_list['data'] = $lists;
 
             return response()->json([
                 'status'    => true,
-                'message'   => 'Promotion list', 
+                'message'   => $list.' Promotion list', 
                 'data'    => $promotion_list,
             ], 200);
 
@@ -127,31 +193,93 @@ class PanelRepository extends Controller
     // get user promotion list
     public function get_user_promotion_list($request)
     {
-        $user_promotion_list = DB::table('taxi_user_promotion')
-        ->select('taxi_user_promotion.id',
-            'taxi_user_promotion.redeem','taxi_promotion.description','taxi_user_promotion.created_at', 
-            DB::raw('CONCAT(taxi_users.first_name," ",taxi_users.last_name) as name'),
-                'taxi_users.mobile_no','taxi_users.profile_pic'
-            )
-        ->join('taxi_users', 'taxi_user_promotion.user_id', '=', 'taxi_users.user_id')
-        ->join('taxi_promotion', 'taxi_user_promotion.promotion_id', '=', 'taxi_promotion.id')
-        ->orderByRaw('taxi_user_promotion.id DESC')
-        ->paginate(10)->toArray();
+        if($request['type'] == 'filter')
+        {
+            if(isset($request['filter']))
+            {
+                
+                $filter = json_decode($request['filter']);
+                $query = [];
+
+                $list = 'Filter all';
+      
+                $query = DB::table('taxi_user_promotion')
+                ->select('taxi_user_promotion.id',
+                    'taxi_user_promotion.redeem','taxi_promotion.description','taxi_user_promotion.created_at', 
+                    DB::raw('CONCAT(taxi_users.first_name," ",taxi_users.last_name) as name'),
+                        'taxi_users.mobile_no','taxi_users.profile_pic'
+                    )
+                ->join('taxi_users', 'taxi_user_promotion.user_id', '=', 'taxi_users.user_id')
+                ->join('taxi_promotion', 'taxi_user_promotion.promotion_id', '=', 'taxi_promotion.id');
+       
+
+                if(!empty($filter->username)) // username filter
+                {
+                    $query->where('taxi_users.first_name', 'LIKE', '%'.$filter->username.'%')->orWhere('taxi_users.last_name', 'LIKE', '%'.$filter->username.'%');
+                }
+
+
+                if(!empty($filter->mobile)) // mobile filter 
+                {
+                    $query->where('taxi_users.mobile_no', 'LIKE', '%'.$filter->mobile.'%');
+                }
+
+                if(!empty($filter->description)) // description filter 
+                {
+                    $query->where('taxi_promotion.description', 'LIKE', '%'.$filter->description.'%');
+                }
+                
+                if(!empty($filter->apply_date)) // apply_date filter 
+                {
+                    $apply_date = explode(' ',$filter->apply_date);
+                    $query->whereBetween('taxi_user_promotion.created_at',$apply_date);
+                }
+                
+
+                $user_promotion_list = $query->orderBy('taxi_user_promotion.id', 'DESC')->paginate(10)->toArray();
+            }
+            else
+            {
+                
+                return response()->json([
+                    'status'    => false,
+                    'message'   => 'filter parameter is required',
+                    'data'    => new ArrayObject,
+                ], 200);
+            }
+
+        }
+        else
+        {
+            $list = 'All';
+
+            $user_promotion_list = DB::table('taxi_user_promotion')
+            ->select('taxi_user_promotion.id',
+                'taxi_user_promotion.redeem','taxi_promotion.description','taxi_user_promotion.created_at', 
+                DB::raw('CONCAT(taxi_users.first_name," ",taxi_users.last_name) as name'),
+                    'taxi_users.mobile_no','taxi_users.profile_pic'
+                )
+            ->join('taxi_users', 'taxi_user_promotion.user_id', '=', 'taxi_users.user_id')
+            ->join('taxi_promotion', 'taxi_user_promotion.promotion_id', '=', 'taxi_promotion.id')
+            ->orderByRaw('taxi_user_promotion.id DESC')
+            ->paginate(10)->toArray();
+
+        }
 
         if($user_promotion_list['data'])
         {
-            $list = [];
+            $lists = [];
             foreach ($user_promotion_list['data'] as $promotion) {
                 
                 $promotion->profile_pic = $promotion->profile_pic != "" ?  env('AWS_S3_URL') . $promotion->profile_pic : '';
-                $list[] = $promotion;
+                $lists[] = $promotion;
             }
             
-            $user_promotion_list['data'] = $list;
+            $user_promotion_list['data'] = $lists;
 
             return response()->json([
                 'status'    => true,
-                'message'   => 'User promotion list', 
+                'message'   => $list.' User promotion list', 
                 'data'    => $user_promotion_list,
             ], 200);
 
@@ -228,20 +356,87 @@ class PanelRepository extends Controller
     // get contact us list
     public function get_contact_us_list($request)
     {
-        $contact_us_list = DB::table('taxi_contact_us')
-            ->select('taxi_contact_us.*',
-                DB::raw('CONCAT(taxi_users.first_name," ",taxi_users.last_name) as name'),
-                    'taxi_users.mobile_no'
-                )
-            ->join('taxi_users', 'taxi_contact_us.user_id', '=', 'taxi_users.user_id')
-            ->orderByRaw('taxi_contact_us.id DESC')
-            ->paginate(10)->toArray();
+        if($request['type'] == 'filter')
+        {
+            if(isset($request['filter']))
+            {
+                
+                $filter = json_decode($request['filter']);
+                $query = [];
 
-        if ($contact_us_list) {
+                $list = 'Filter all';
+      
+                $query = DB::table('taxi_contact_us')
+                ->select('taxi_contact_us.*',
+                    DB::raw('CONCAT(taxi_users.first_name," ",taxi_users.last_name) as name'),
+                        'taxi_users.mobile_no'
+                    )
+                ->join('taxi_users', 'taxi_contact_us.user_id', '=', 'taxi_users.user_id');
+       
+
+                if(!empty($filter->username)) // username filter
+                {
+                    $query->where('taxi_users.first_name', 'LIKE', '%'.$filter->username.'%')->orWhere('taxi_users.last_name', 'LIKE', '%'.$filter->username.'%');
+                }
+
+                if(!empty($filter->message)) // message filter 
+                {
+                    $query->where('taxi_contact_us.message', 'LIKE', '%'.$filter->message.'%');
+                }
+
+                if(!empty($filter->status)) // status filter 
+                {
+                    $status = explode(',',$filter->status);
+                    if(count($status) > 1)
+                    {
+                        $query->whereBetween('taxi_contact_us.status',$status);
+                    }
+                    else
+                    {
+                        $query->where('taxi_contact_us.status',$status[0]);
+                    }
+
+                }
+                
+                if(!empty($filter->date)) // date filter 
+                {
+                    $date = explode(' ',$filter->date);
+                    $query->whereBetween('taxi_contact_us.created_date',$date);
+                }
+
+                $contact_us_list = $query->orderBy('taxi_contact_us.id', 'DESC')->paginate(10)->toArray();
+            }
+            else
+            {
+                
+                return response()->json([
+                    'status'    => false,
+                    'message'   => 'filter parameter is required',
+                    'data'    => new ArrayObject,
+                ], 200);
+            }
+
+        }
+        else
+        {
+            $list = 'All';
+
+            $contact_us_list = DB::table('taxi_contact_us')
+                ->select('taxi_contact_us.*',
+                    DB::raw('CONCAT(taxi_users.first_name," ",taxi_users.last_name) as name'),
+                        'taxi_users.mobile_no'
+                    )
+                ->join('taxi_users', 'taxi_contact_us.user_id', '=', 'taxi_users.user_id')
+                ->orderByRaw('taxi_contact_us.id DESC')
+                ->paginate(10)->toArray();
+
+        }
+
+        if($contact_us_list['data']) {
 
             return response()->json([
                 'status'    => true,
-                'message'   => 'Contact us list', 
+                'message'   => $list.' Contact us list', 
                 'data'    => $contact_us_list,
             ], 200);
         }
@@ -386,18 +581,56 @@ class PanelRepository extends Controller
     //  get sub admin list 
     public function get_sub_admin_list($request)
     {
-        
-        $sub_admin_list = DB::table('taxi_admin')
-            ->select('user_id','name','email_id','mobile_no','type','status','lastupdated_date','lastupdated_time')
-            ->where('type',1)
-            ->orderByRaw('user_id DESC')
-            ->paginate(10)->toArray();
+        if($request['type'] == 'filter')
+        {
+            if(isset($request['filter']))
+            {
+                
+                $filter = json_decode($request['filter']);
+                $query = [];
+
+                $list = 'Filter all';
+      
+                $query = DB::table('taxi_admin')->select('user_id','name','email_id','mobile_no','type','status','lastupdated_date','lastupdated_time')->where('type',1);
+
+                if(!empty($filter->name)) // name filter
+                {
+                    $query->where('name', 'LIKE', '%'.$filter->name.'%');
+                }
+
+                if(!empty($filter->email_id)) // email_id filter 
+                {
+                    $query->where('email_id', 'LIKE', '%'.$filter->email_id.'%');
+                }
+
+                $sub_admin_list = $query->orderBy('user_id', 'DESC')->paginate(10)->toArray();
+            }
+            else
+            {
+                return response()->json([
+                    'status'    => false,
+                    'message'   => 'filter parameter is required',
+                    'data'    => new ArrayObject,
+                ], 200);
+            }
+
+        }
+        else
+        {
+            $list = 'All';
+
+            $sub_admin_list = DB::table('taxi_admin')
+                ->select('user_id','name','email_id','mobile_no','type','status','lastupdated_date','lastupdated_time')
+                ->where('type',1)
+                ->orderByRaw('user_id DESC')
+                ->paginate(10)->toArray();
+        }
 
         if($sub_admin_list['data'])
         {
             return response()->json([
                 'status'    => true,
-                'message'   => 'Sub admin list', 
+                'message'   => $list.' Sub admin list', 
                 'data'    => $sub_admin_list,
             ], 200);
         }

@@ -953,30 +953,99 @@ class DriverRepository extends Controller
     // get driver reviews
     public function get_driver_reviews($request)
     {
-        $driver_reviews = User::select(
+        if($request['type'] == 'filter')
+        {
+            if(isset($request['filter']))
+            {
+
+                $filter = json_decode($request['filter']);
+                $query = [];
+
+                $list = 'Filter';
+
+                $query = User::select(
+                    DB::raw('CONCAT(first_name," ",last_name) as driver_name'),
+                        'mobile_no as driver_mobile','user_id as driver_id'
+                    )
+                    ->withCount('driver_total_review')
+                    ->withCount([
+                        'driver_avg_rating' => function ($query) {
+                            $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
+                        }
+                    ])
+                    ->where('user_type',1);
+                    
+
+                if(!empty($filter->name)) // name filter
+                {
+                    $query->where('first_name', 'LIKE', '%'.$filter->name.'%')->orWhere('last_name', 'LIKE', '%'.$filter->name.'%');
+                }
+
+                if(!empty($filter->mobile)) // mobile filter 
+                {
+                    $query->where('mobile_no', 'LIKE', '%'.$filter->mobile.'%');
+                }
+
+                if(!empty($filter->review)) // driver_total_review filter
+                {
+                    $driver_total_review = explode('-',$filter->review);
+                    $query = $query->where(function($q) use ( $driver_total_review ){
+                        $q->has('driver_total_review','>=',$driver_total_review[0]);
+                        $q->has('driver_total_review','<=',$driver_total_review[1]);
+                    });
+                }
+
+                if(!empty($filter->avg_rating)) // driver_avg_rating filter
+                {
+                    $driver_avg_rating = explode('-',$filter->avg_rating);
+                    $query = $query->withCount([
+                        'driver_avg_rating' => function ($query) {
+                            $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
+                        }
+                    ])->where(function($q) use ( $driver_avg_rating ){
+                        $q->has('driver_avg_rating','>=',$driver_avg_rating[0]);
+                        $q->has('driver_avg_rating','<=',$driver_avg_rating[1]);
+                    });
+                }
+
+                $driver_reviews = $query->orderByRaw('taxi_users.user_id DESC')->paginate(10)->toArray();
+
+
+            }
+            else
+            {
+                return response()->json([
+                    'status'    => false,
+                    'message'   => 'filter parameter is required',
+                    'data'    => new ArrayObject,
+                ], 200);
+            }
+
+        }
+        else {
+
+            $list = 'All';
+            $driver_reviews = User::select(
                 DB::raw('CONCAT(first_name," ",last_name) as driver_name'),
                     'mobile_no as driver_mobile','user_id as driver_id'
             )
+            ->withCount('driver_total_review')
+            ->withCount([
+                'driver_avg_rating' => function ($query) {
+                    $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
+                }
+            ])
             ->where('user_type',1)
             ->orderByRaw('user_id DESC')
             ->paginate(10)->toArray();
 
+        }
+
         if($driver_reviews['data'])
         {
-            foreach($driver_reviews['data'] as $driver )
-            {
-                $ratting_review = $this->driver_ratting_review($driver['driver_id']);
-                $driver['driver_total_review_count'] = $ratting_review->total_review;
-                $driver['driver_avg_rating_count'] = $ratting_review->avg_ratting;
-
-                $data[] = $driver;
-    
-            }
-            $driver_reviews['data'] = $data; 
-
             return response()->json([
                 'status'    => true,
-                'message'   => 'Driver reviews', 
+                'message'   => $list.' Driver reviews', 
                 'data'    => $driver_reviews,
             ], 200);   
         }
