@@ -204,7 +204,7 @@ class PanelRepository extends Controller
                 $list = 'Filter all';
       
                 $query = DB::table('taxi_user_promotion')
-                ->select('taxi_user_promotion.id',
+                ->select('taxi_user_promotion.id','taxi_user_promotion.user_id',
                     'taxi_user_promotion.redeem','taxi_promotion.description','taxi_user_promotion.created_at', 
                     DB::raw('CONCAT(taxi_users.first_name," ",taxi_users.last_name) as name'),
                         'taxi_users.mobile_no','taxi_users.profile_pic'
@@ -254,7 +254,7 @@ class PanelRepository extends Controller
             $list = 'All';
 
             $user_promotion_list = DB::table('taxi_user_promotion')
-            ->select('taxi_user_promotion.id',
+            ->select('taxi_user_promotion.id','taxi_user_promotion.user_id',
                 'taxi_user_promotion.redeem','taxi_promotion.description','taxi_user_promotion.created_at', 
                 DB::raw('CONCAT(taxi_users.first_name," ",taxi_users.last_name) as name'),
                     'taxi_users.mobile_no','taxi_users.profile_pic'
