@@ -65,10 +65,48 @@ class AppCommonRepository extends Controller
     // admin setting
     public function admin_setting($request)
     {
+        $km = isset($request['KM']) ? $request['KM'] : '';
+        $kilometer = str_replace(',', '', $km);
 
         $setting_data = DB::table('taxi_option')->get();
         $data = [];
-        foreach ($setting_data as $value) {
+        $val = 0;
+
+        foreach ($setting_data as $value) 
+        {
+            if ($value->option_name == 'ride_charge' && isset($kilometer) && $kilometer != '')
+            {
+                $ride_charge = str_replace('KM', $kilometer, $value->option_value);
+                $calculate_charge = str_replace('^', '*', $ride_charge);
+                $explode = explode('+', $calculate_charge);
+          
+                $explode1 = str_replace(array( '(', ')' ), '', $explode[0]);
+                $explode2 =  str_replace(array( '(', ')' ), '', $explode[1]);
+                $explode3 = str_replace(array( '(', ')' ), '', $explode[2]);
+
+                $ex1 = explode('*', $explode1);
+
+                $f1 = $ex1[1] ** $ex1[2];
+                $f2 = $f1 * $ex1[0];
+
+                $ex2 = explode('*', $explode2);
+
+                $b1 = $ex2[1] ** $ex2[2];
+                $b2 = $b1 * $ex2[0];
+
+                $ex3 = explode('*', $explode3);
+
+                $c1 = $ex3[0] * $ex3[1];
+
+                $ex4 = isset($explode[4]) != '' ? $explode[4] : 0;
+
+                $ex5 = isset($explode[5]) != '' ? $explode[5] : 0;
+
+                $val = $f2 + $b2 + $c1 + $explode[3] + $ex4 + $ex5;
+
+                $data['ride_price'] = isset($request['KM']) ? (string)round($val) : 0;
+            }
+
             $data[$value->option_name] = $value->option_value;
         }
 
