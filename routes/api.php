@@ -21,6 +21,7 @@ Route::prefix('management')->group(function () {
     // Admin Gust Routes
     Route::post('adminLogin','Api\Admin\Auth\AdminLoginController@login');
     Route::post('adminRegister','Api\Admin\Auth\AdminRegisterController@create');
+    Route::post('distance','Api\Admin\Auth\AdminRegisterController@distance');
 
     // Admin Auth Routes
     Route::group(['middleware' => 'auth:admin'], function(){

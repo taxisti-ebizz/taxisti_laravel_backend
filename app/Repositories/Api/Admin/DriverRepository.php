@@ -432,18 +432,16 @@ class DriverRepository extends Controller
         else {
             // all driver
             $list = 'All';
-            $driver_list = User::select('taxi_driver_detail.*','taxi_users.*')
+            $driver_list = User::query()
+                ->select('taxi_driver_detail.*','taxi_users.*')
                 ->leftJoin('taxi_driver_detail','taxi_users.user_id' , '=', 'taxi_driver_detail.driver_id')
                 ->where('taxi_users.user_type',1)
+                ->withCount('driver_rides','driver_cancel_ride','driver_total_review')
                 ->withCount([
-                    'driver_rides' => function ($query) {
-                        $query->where('is_canceled',0);
-                    }])
-                ->withCount([
-                    'driver_cancel_ride' => function ($query) {
-                        $query->where('is_canceled',1);
-                        $query->where('cancel_by',1);
-                    }])
+                    'driver_avg_rating' => function ($query) {
+                        $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
+                    }
+                ])
                 ->orderByRaw('taxi_users.user_id DESC')
                 ->paginate(10)->toArray();
         }

@@ -172,7 +172,7 @@ class RideRepository extends Controller
                 if(!empty($filter->amount)) // amount filter
                 {
                     $amount = explode('-',$filter->amount);
-                    $query->where('taxi_request.amount', '>=' ,$amount[0])->where('taxi_request.amount', '>=' ,$amount[1]);
+                    $query->whereBetween('taxi_request.amount',$amount);
                 }
 
                 if(!empty($filter->distance)) // distance filter
@@ -365,7 +365,7 @@ class RideRepository extends Controller
                 if(!empty($filter->amount)) // amount filter
                 {
                     $amount = explode('-',$filter->amount);
-                    $query->where('taxi_request.amount', '>=' ,$amount[0])->where('taxi_request.amount', '>=' ,$amount[1]);
+                    $query->whereBetween('taxi_request.amount',$amount);
                 }
 
                 if(!empty($filter->distance)) // distance filter
@@ -564,7 +564,7 @@ class RideRepository extends Controller
                 if(!empty($filter->amount)) // amount filter
                 {
                     $amount = explode('-',$filter->amount);
-                    $query->where('taxi_request.amount', '>=' ,$amount[0])->where('taxi_request.amount', '>=' ,$amount[1]);
+                    $query->whereBetween('taxi_request.amount',$amount);
                 }
 
                 if(!empty($filter->distance)) // distance filter
@@ -841,7 +841,7 @@ class RideRepository extends Controller
                 if(!empty($filter->amount)) // amount filter
                 {
                     $amount = explode('-',$filter->amount);
-                    $query->where('taxi_request.amount', '>=' ,$amount[0])->where('taxi_request.amount', '>=' ,$amount[1]);
+                    $query->whereBetween('taxi_request.amount',$amount);
                 }
 
                 if(!empty($filter->distance)) // distance filter
@@ -1094,7 +1094,7 @@ class RideRepository extends Controller
                 if(!empty($filter->amount)) // amount filter
                 {
                     $amount = explode('-',$filter->amount);
-                    $query->where('taxi_request.amount', '>=' ,$amount[0])->where('taxi_request.amount', '>=' ,$amount[1]);
+                    $query->whereBetween('taxi_request.amount',$amount);
                 }
 
                 if(!empty($filter->cancel_by)) // cancel_by filter
@@ -1446,7 +1446,7 @@ class RideRepository extends Controller
                 if(!empty($filter->amount)) // amount filter
                 {
                     $amount = explode('-',$filter->amount);
-                    $query->where('taxi_request.amount', '>=' ,$amount[0])->where('taxi_request.amount', '>=' ,$amount[1]);
+                    $query->whereBetween('taxi_request.amount',$amount);
                 }
 
                 if(!empty($filter->distance)) // distance filter
