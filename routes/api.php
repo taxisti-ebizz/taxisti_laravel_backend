@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -27,7 +28,7 @@ Route::prefix('management')->group(function () {
     Route::group(['middleware' => 'auth:admin'], function(){
     
         Route::post('test',function(){
-            echo "test";
+            return User::first();
         });
 
         // USER
