@@ -165,66 +165,73 @@ class AppCommonRepository extends Controller
         $result = DB::table('taxi_promotion')
             ->where('code',$request['code'])
             ->where('type',$request['type'])->first();
-
-        if($result->start_date <= date('Y-m-d') && date('Y-m-d') <= $result->end_date)
+        
+        if($result)
         {
-            if($result->user_limit != $result->limit_usage)
+            if($result->start_date <= date('Y-m-d') && date('Y-m-d') <= $result->end_date)
             {
-                $checkPromo = DB::table('taxi_user_promotion')
-                    ->where('user_id',$user_id)
-                    ->where('promotion_id',$result->id)->first();
+                if($result->user_limit != $result->limit_usage)
+                {
+                    $checkPromo = DB::table('taxi_user_promotion')
+                        ->where('user_id',$user_id)
+                        ->where('promotion_id',$result->id)->first();
 
-                if(!$checkPromo)
-                {	
-                    $input['user_id'] = $user_id;
-                    $input['promotion_id'] = $result->id;
-                    $input['type'] = $result->type;
-                    $input['created_at'] = date('Y-m-d H:i:s');
+                    if(!$checkPromo)
+                    {	
+                        $input['user_id'] = $user_id;
+                        $input['promotion_id'] = $result->id;
+                        $input['type'] = $result->type;
+                        $input['created_at'] = date('Y-m-d H:i:s');
 
 
-                    $insert = DB::table('taxi_user_promotion')->insert($input);
-                    if($insert)
-                    {
-                        $limit_usage = $result->limit_usage + 1;
-                
-                        $result->promo_image = $result->promo_image != '' ? env('AWS_S3_URL').$result->promo_image : '' ;
-                        $result->user_limit = $result->user_limit - $limit_usage;
+                        $insert = DB::table('taxi_user_promotion')->insert($input);
+                        if($insert)
+                        {
+                            $limit_usage = $result->limit_usage + 1;
                     
+                            $result->promo_image = $result->promo_image != '' ? env('AWS_S3_URL').$result->promo_image : '' ;
+                            $result->user_limit = $result->user_limit - $limit_usage;
+                        
 
-                        $update['limit_usage'] = $limit_usage;
-                        $update['updated_at'] = date('Y-m-d H:i:s');
+                            $update['limit_usage'] = $limit_usage;
+                            $update['updated_at'] = date('Y-m-d H:i:s');
 
-                        DB::table('taxi_promotion')->where('id',$result->id)->update($update);
+                            DB::table('taxi_promotion')->where('id',$result->id)->update($update);
 
-                        $msg['status'] = true;
-                        $msg['message'] = 'Success';
-                        $msg['data'] = $result;
+                            $msg['status'] = true;
+                            $msg['message'] = 'Success';
+                            $msg['data'] = $result;
+                        }
+                    }
+                    else
+                    {
+                        $msg['status'] = false;
+                        $msg['message'] = 'Promo code already used';
+                        $msg['message_ar'] = 'لقد تم استخدام الرمز سابقا';
+                        $msg['data'] = array();
                     }
                 }
                 else
                 {
                     $msg['status'] = false;
-                    $msg['message'] = 'Promo code already used';
-                    $msg['message_ar'] = 'لقد تم استخدام الرمز سابقا';
+                    $msg['message'] = 'Promo code limit reached. Try another one!';
+                    $msg['message_ar'] = 'بلغ العرض الحد الاقصى من الاستخدامات ';
                     $msg['data'] = array();
                 }
-            }
+            }	
             else
             {
                 $msg['status'] = false;
-                $msg['message'] = 'Promo code limit reached. Try another one!';
-                $msg['message_ar'] = 'بلغ العرض الحد الاقصى من الاستخدامات ';
+                $msg['message'] = 'Promo code is expired. Try another one!';
+                $msg['message_ar'] = 'الرمز الذي أدخلته منتهي الصلاحية';
                 $msg['data'] = array();
             }
-        }	
-        else
-        {
-            $msg['status'] = false;
-            $msg['message'] = 'Promo code is expired. Try another one!';
-            $msg['message_ar'] = 'الرمز الذي أدخلته منتهي الصلاحية';
-            $msg['data'] = array();
         }
-
+        else{
+            $msg['status']    = false;
+            $msg['message']  = 'No code found'; 
+            $msg['data']    = array();
+        }
         return response()->json($msg, 200);
     } 
 

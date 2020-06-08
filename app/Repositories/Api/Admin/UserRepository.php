@@ -111,16 +111,19 @@ class UserRepository extends Controller
                 {
                     $list = 'Filter all';
 
-                    $query = User::withCount('complate_ride','cancel_ride','total_review')
+                    $query = User::withCount('complate_ride','cancel_ride','total_review','avg_rating')
                     ->withCount([
                         'avg_rating' => function ($query) {
-                            $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
+                            $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1) as test'));
                         }
                     ])
                     ->where('user_type', 0);
-                    
+
+                    // Test 1 
+                    // ->addSelect(['test_select' => User::select(DB::raw('ROUND(coalesce(avg(user_id),0),1) as test'))
+                    //     ->having('test','<=',5)
+                    // ])
                 }
-       
 
                 if(!empty($filter->username)) // username filter
                 {
@@ -212,7 +215,21 @@ class UserRepository extends Controller
                         $q->has('avg_rating','>=',$average_ratting[0]);
                         $q->has('avg_rating','<=',$average_ratting[1]);
                     });
+
+                    // Test 1 
+                    // $query = $query->withCount([
+                    //     'avg_rating' => function ($query) {
+                    //         $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1) as test1'));
+                    //         $query->having('test12','<=',5);
+                    //     }
+                    // ]);
+
+                    // Test 2 
+                    // $query = $query->having('avg_rating_count','>=',$average_ratting[0])->having('avg_rating_count','>=',$average_ratting[1]);
+
                 }
+
+                // return $user_list = $query->toSql();
 
                 $user_list = $query->orderBy('user_id', 'DESC')->paginate(10)->toArray();
             }
