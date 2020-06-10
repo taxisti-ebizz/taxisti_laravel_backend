@@ -87,4 +87,30 @@ class User extends Authenticatable
     {
         return $this->hasManyThrough(Ratting::class, Request::class, 'driver_id', 'request_id', 'user_id')->where('review_by', '=', 'rider');
     }
+
+    public function reviewRows()
+    {
+        return $this->hasManyThrough(Ratting::class, Request::class,'rider_id' , 'request_id' , 'user_id' , 'id')
+            ->where('review_by' , 'rider');
+    }
+
+
+    public function avgRating()
+    {
+        return $this->reviewRows()
+            ->selectRaw('avg(ratting) as avg, rider_id')
+            ->groupBy('rider_id');
+    }
+
+    public function getAvgRatingAttribute()
+    {
+        if ( ! array_key_exists('avgRating', $this->relations)) {
+            $this->load('avgRating');
+        }
+
+        $relation = $this->getRelation('avgRating')->first();
+
+        return ($relation) ? $relation->aggregate : null;
+    }
+
 }
