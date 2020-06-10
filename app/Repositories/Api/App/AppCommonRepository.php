@@ -49,6 +49,7 @@ class AppCommonRepository extends Controller
 
         $user_data = User::where('user_id',$user_id)->first();
         $user_data->profile_pic = $user_data->profile_pic != '' ? env('AWS_S3_URL').$user_data->profile_pic : '';
+        $user_data->date_of_birth = $user_data->date_of_birth != '' ? $user_data->date_of_birth : '';
 
         if($user_data->user_type == 1)
         {
