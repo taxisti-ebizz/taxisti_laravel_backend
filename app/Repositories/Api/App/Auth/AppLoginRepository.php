@@ -2,6 +2,7 @@
 
 namespace App\Repositories\Api\App\Auth;
 
+use ArrayObject;
 use App\Models\User;
 use App\Models\Request;
 use App\Http\Controllers\Controller;
@@ -82,7 +83,7 @@ class AppLoginRepository extends Controller
                 }
                 else
                 {
-                    $user->driver_detail = array();
+                    $user->driver_detail = new ArrayObject;
                 }
             }
             
