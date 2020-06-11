@@ -119,7 +119,6 @@ class UserRepository extends Controller
                     ])
                     ->where('user_type', 0);
 
-                    
                     // Test 1 
                     // ->addSelect(['test_select' => User::select(DB::raw('ROUND(coalesce(avg(user_id),0),1) as test'))
                     //     ->having('test','<=',5)

@@ -156,10 +156,14 @@ class DriverRepository extends Controller
                     isset($request['password']) ? $input['password'] = md5($request['password']) : '';
 
                     $update_user = User::where('user_id',$user_id)->update($input);
-                     
+
+                    $driver_data = $this->appCommon->get_driver($user_id);
+                    $driver_data['car_images'] = $this->appCommon->car_images($driver_data['driver_detail']['id']);
+                    
                     $msg['message']="Driver Details Added Successfully.";
                     $msg['message_ar'] = "تم إضافة معلومات السائق بنجاح";
                     $msg['status']=1;
+                    $msg['data'] = $driver_data;
 
                 }
                 else{
@@ -197,9 +201,13 @@ class DriverRepository extends Controller
                         $car_image = DB::table('taxi_car_images')->insert($car);
                     }
 
+                    $driver_data = $this->appCommon->get_driver($user_id);
+                    $driver_data['car_images'] = $this->appCommon->car_images($driver_data['driver_detail']['id']);
+
                     $msg['message']="Car Image Added Successfully.";
                     $msg['message_ar'] = "تم تحميل صورة السيارة بنجاح";
                     $msg['status']=1;
+                    $msg['data'] = $driver_data;
         
                 }
                 else
@@ -271,10 +279,14 @@ class DriverRepository extends Controller
                 isset($request['last_name']) ? $input['last_name'] = $request['last_name'] : '';
 
                 $update_user = User::where('user_id',$user_id)->update($input);
-                    
+
+                $driver_data = $this->appCommon->get_driver($user_id);
+                $driver_data['car_images'] = $this->appCommon->car_images($driver_data['driver_detail']['id']);
+                
                 $msg['message']="Driver Details Updated.";
                 $msg['message_ar'] = "تم تحميل معلومات السائق بنجاح";
                 $msg['status']=1;
+                $msg['data'] = $driver_data;
     
 
             }
