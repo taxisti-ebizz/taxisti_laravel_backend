@@ -674,6 +674,19 @@ class PanelRepository extends Controller
 
     }
 
+    //  delete sub admin 
+    public function get_sub_admin($request)
+    {
+        $sub_admin = DB::table('taxi_admin')->where('user_id',$request['user_id'])->first();
+
+        return response()->json([
+            'status'    => true,
+            'message'   => 'Sub admin Detail', 
+            'data'    => $sub_admin,
+        ], 200);
+
+    }
+    
 
     //  add sub_admin 
     public function add_sub_admin($request)

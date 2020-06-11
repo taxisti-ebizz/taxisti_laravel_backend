@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Admin\SubAdmin;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Repositories\Api\Admin\PanelRepository;
+use App\Http\Requests\Api\Admin\SubAdmin\GetSubAdminRequest;
 use App\Http\Requests\Api\Admin\SubAdmin\DeleteSubAdminRequest;
 use App\Http\Requests\Api\Admin\SubAdmin\GetSubAdminListRequest;
 use App\Http\Requests\Api\Admin\SubAdmin\UpdateSubAdminStatusRequest;
@@ -60,5 +61,20 @@ class SubAdminController extends Controller
         return $this->panel->delete_sub_admin($request, $id);
 
     }
+
+    //  get sub admin 
+    public function get_sub_admin(GetSubAdminRequest $request)
+    {
+        if ($request->validator->fails()) {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'parameter invalid', 
+                'errors'    => $request->validator->errors(),
+            ], 200);
+        }   
+
+        return $this->panel->get_sub_admin($request);
+    }
+    
 
 }
