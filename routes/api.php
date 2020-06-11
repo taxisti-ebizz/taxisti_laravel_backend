@@ -97,6 +97,7 @@ Route::prefix('management')->group(function () {
         
         // SUBADMIN
         Route::post('getSubAdminList','Api\Admin\SubAdmin\SubAdminController@get_sub_admin_list');
+        Route::post('getSubAdmin','Api\Admin\SubAdmin\SubAdminController@get_sub_admin');
         Route::post('updateSubAdminStatus','Api\Admin\SubAdmin\SubAdminController@update_sub_admin_status');
         Route::delete('deleteSubAdmin/{id}','Api\Admin\SubAdmin\SubAdminController@delete_sub_admin');
         Route::post('addSubAdmin','Api\Admin\SubAdmin\AddSubAdminController@add_sub_admin');
