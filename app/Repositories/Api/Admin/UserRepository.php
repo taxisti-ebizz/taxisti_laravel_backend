@@ -375,13 +375,9 @@ class UserRepository extends Controller
                 if(!empty($filter->avg_rating)) // avg_rating filter
                 {
                     $average_ratting = explode('-',$filter->avg_rating);
-                    $query = $query->withCount([
-                        'avg_rating' => function ($query) {
-                            $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
-                        }
-                    ])->where(function($q) use ( $average_ratting ){
-                        $q->has('avg_rating','>=',$average_ratting[0]);
-                        $q->has('avg_rating','<=',$average_ratting[1]);
+                    $query->whereHas('avg_rating' , function ($q) use ( $average_ratting ) {
+                        $q->havingRaw('AVG(taxi_ratting.ratting) >= '.$average_ratting[0]);
+                        $q->havingRaw('AVG(taxi_ratting.ratting) <= '.$average_ratting[1]);
                     });
                 }
 

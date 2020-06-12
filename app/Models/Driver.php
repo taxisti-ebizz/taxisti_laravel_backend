@@ -49,7 +49,7 @@ class Driver extends Model
     public function driverAvgRating()
     {
         return $this->driver_avg_rating()
-            ->selectRaw('avg(ratting) as avg, driver_id')
+            ->selectRaw('ROUND(coalesce(avg(ratting),0),1) as avg, driver_id')
             ->groupBy('driver_id');
     }
 

@@ -951,14 +951,11 @@ class DriverRepository extends Controller
                 if(!empty($filter->avg_rating)) // driver_avg_rating filter
                 {
                     $driver_avg_rating = explode('-',$filter->avg_rating);
-                    $query = $query->withCount([
-                        'driver_avg_rating' => function ($query) {
-                            $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
-                        }
-                    ])->where(function($q) use ( $driver_avg_rating ){
-                        $q->has('driver_avg_rating','>=',$driver_avg_rating[0]);
-                        $q->has('driver_avg_rating','<=',$driver_avg_rating[1]);
+                    $query->whereHas('driver_avg_rating' , function ($q) use ( $driver_avg_rating ) {
+                        $q->havingRaw('AVG(taxi_ratting.ratting) >= '.$driver_avg_rating[0]);
+                        $q->havingRaw('AVG(taxi_ratting.ratting) <= '.$driver_avg_rating[1]);
                     });
+
                 }
 
                 $driver_reviews = $query->orderByRaw('taxi_users.user_id DESC')->paginate(10)->toArray();

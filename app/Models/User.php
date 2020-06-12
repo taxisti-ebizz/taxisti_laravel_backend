@@ -92,14 +92,14 @@ class User extends Authenticatable
     public function avgRating()
     {
         return $this->avg_rating()
-            ->selectRaw('avg(ratting) as avg, rider_id')
+            ->selectRaw('ROUND(coalesce(avg(ratting),0),1) as avg, rider_id')
             ->groupBy('rider_id');
     }
 
     public function driverAvgRating()
     {
         return $this->driver_avg_rating()
-            ->selectRaw('avg(ratting) as avg, driver_id')
+            ->selectRaw('ROUND(coalesce(avg(ratting),0),1) as avg, driver_id')
             ->groupBy('driver_id');
     }
 

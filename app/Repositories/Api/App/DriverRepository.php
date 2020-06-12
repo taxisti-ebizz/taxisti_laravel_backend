@@ -80,10 +80,11 @@ class DriverRepository extends Controller
 
         if($driver)
         {
+            $data['driver_status'] = $driver['verify'];
             return response()->json([
                 'status'    => true,
                 'message'   => 'Success', 
-                'data'    => $driver['verify'],
+                'data'    => $data,
             ], 200);
         }
         else
