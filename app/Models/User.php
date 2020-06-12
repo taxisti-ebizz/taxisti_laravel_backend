@@ -60,12 +60,12 @@ class User extends Authenticatable
 
     public function total_review()
     {
-        return $this->hasManyThrough(Ratting::class, Request::class, 'rider_id', 'request_id', 'user_id')->where('review_by', '=', 'driver');
+        return $this->hasManyThrough(Ratting::class, Request::class, 'rider_id', 'request_id', 'user_id')->where('review_by', 'driver');
     }
 
     public function avg_rating()
     {
-        return $this->hasManyThrough(Ratting::class, Request::class, 'rider_id', 'request_id', 'user_id')->where('review_by', '=', 'driver');
+        return $this->hasManyThrough(Ratting::class, Request::class, 'rider_id', 'request_id', 'user_id')->where('review_by', 'driver');
     }
 
     public function driver_rides()
@@ -80,24 +80,18 @@ class User extends Authenticatable
 
     public function driver_total_review()
     {
-        return $this->hasManyThrough(Ratting::class, Request::class, 'driver_id', 'request_id', 'user_id')->where('review_by', '=', 'rider');
+        return $this->hasManyThrough(Ratting::class, Request::class, 'driver_id', 'request_id', 'user_id')->where('review_by', 'rider');
     }
 
     public function driver_avg_rating()
     {
-        return $this->hasManyThrough(Ratting::class, Request::class, 'driver_id', 'request_id', 'user_id')->where('review_by', '=', 'rider');
-    }
-
-    public function reviewRows()
-    {
-        return $this->hasManyThrough(Ratting::class, Request::class,'rider_id' , 'request_id' , 'user_id' , 'id')
-            ->where('review_by' , 'rider');
+        return $this->hasManyThrough(Ratting::class, Request::class, 'driver_id', 'request_id', 'user_id')->where('review_by', 'rider');
     }
 
 
     public function avgRating()
     {
-        return $this->reviewRows()
+        return $this->avg_rating()
             ->selectRaw('avg(ratting) as avg, rider_id')
             ->groupBy('rider_id');
     }
@@ -106,11 +100,11 @@ class User extends Authenticatable
     {
         if ( ! array_key_exists('avgRating', $this->relations)) {
             $this->load('avgRating');
-        }
+    }
 
         $relation = $this->getRelation('avgRating')->first();
 
-        return ($relation) ? $relation->aggregate : null;
+        return ($relation) ? (int) $relation->aggregate : 0;
     }
 
 }

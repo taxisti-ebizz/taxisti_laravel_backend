@@ -29,11 +29,7 @@ class UserRepository extends Controller
             $end_current_week = date("Y-m-d 23:59:00",$end_week);
 
             $user_list = User::withCount('complate_ride','cancel_ride','total_review')
-            ->withCount([
-                'avg_rating' => function ($query) {
-                    $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
-                }
-            ])
+            ->with('avgRating')
             ->where('user_type', 0)
             ->whereBetween('created_date', [$start_current_week, $end_current_week])
             ->orderBy('user_id', 'DESC')
@@ -50,11 +46,7 @@ class UserRepository extends Controller
             $end_last_week = date("Y-m-d 23:59:00",$end_week);
 
             $user_list = User::withCount('complate_ride','cancel_ride','total_review')
-            ->withCount([
-                'avg_rating' => function ($query) {
-                    $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
-                }
-            ])
+            ->with('avgRating')
             ->where('user_type', 0)
             ->whereBetween('created_date', [$start_last_week, $end_last_week])
             ->orderBy('user_id', 'DESC')
@@ -79,11 +71,7 @@ class UserRepository extends Controller
                     $end_current_week = date("Y-m-d 23:59:00",$end_week);
         
                     $query = User::withCount('complate_ride','cancel_ride','total_review')
-                    ->withCount([
-                        'avg_rating' => function ($query) {
-                            $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
-                        }
-                    ])
+                    ->with('avgRating')
                     ->where('user_type', 0)
                     ->whereBetween('created_date', [$start_current_week, $end_current_week]);
         
@@ -99,11 +87,7 @@ class UserRepository extends Controller
                     $end_last_week = date("Y-m-d 23:59:00",$end_week);
         
                     $query = User::withCount('complate_ride','cancel_ride','total_review')
-                    ->withCount([
-                        'avg_rating' => function ($query) {
-                            $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
-                        }
-                    ])
+                    ->with('avgRating')
                     ->where('user_type', 0)
                     ->whereBetween('created_date', [$start_last_week, $end_last_week]);
                 }
@@ -111,18 +95,10 @@ class UserRepository extends Controller
                 {
                     $list = 'Filter all';
 
-                    $query = User::withCount('complate_ride','cancel_ride','total_review','avg_rating')
-                    ->withCount([
-                        'avg_rating' => function ($query) {
-                            $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1) as test'));
-                        }
-                    ])
-                    ->where('user_type', 0);
+                    $query = User::withCount('complate_ride','cancel_ride','total_review')
+                        ->with('avgRating')
+                        ->where('user_type', 0);
 
-                    // Test 1 
-                    // ->addSelect(['test_select' => User::select(DB::raw('ROUND(coalesce(avg(user_id),0),1) as test'))
-                    //     ->having('test','<=',5)
-                    // ])
                 }
 
                 if(!empty($filter->username)) // username filter
@@ -206,30 +182,13 @@ class UserRepository extends Controller
                 
                 if(!empty($filter->average_ratting)) // average_ratting filter
                 {
-                    $average_ratting = explode('-',$filter->average_ratting);
-                    $query = $query->withCount([
-                        'avg_rating' => function ($query) {
-                            $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
-                        }
-                    ])->where(function($q) use ( $average_ratting ){
-                        $q->has('avg_rating','>=',$average_ratting[0]);
-                        $q->has('avg_rating','<=',$average_ratting[1]);
+                    $average_ratting = explode('-',$filter->average_ratting);                    
+                    $query->whereHas('avg_rating' , function ($q) use ( $average_ratting ) {
+                        $q->havingRaw('AVG(taxi_ratting.ratting) >= '.$average_ratting[0]);
+                        $q->havingRaw('AVG(taxi_ratting.ratting) <= '.$average_ratting[1]);
                     });
-
-                    // Test 1 
-                    // $query = $query->withCount([
-                    //     'avg_rating' => function ($query) {
-                    //         $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1) as test1'));
-                    //         $query->having('test12','<=',5);
-                    //     }
-                    // ]);
-
-                    // Test 2 
-                    // $query = $query->having('avg_rating_count','>=',$average_ratting[0])->having('avg_rating_count','>=',$average_ratting[1]);
-
+                    
                 }
-
-                // return $user_list = $query->toSql();
 
                 $user_list = $query->orderBy('user_id', 'DESC')->paginate(10)->toArray();
             }
@@ -247,11 +206,7 @@ class UserRepository extends Controller
             
             $list = 'All';
             $user_list = User::withCount('complate_ride','cancel_ride','total_review')
-            ->withCount([
-                'avg_rating' => function ($query) {
-                    $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
-                }
-            ])
+            ->with('avgRating')
             ->where('user_type', 0)
             ->orderBy('user_id', 'DESC')
             ->paginate(10)->toArray();
