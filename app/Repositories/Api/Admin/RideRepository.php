@@ -749,10 +749,10 @@ class RideRepository extends Controller
                     $query->where('rider.first_name', 'LIKE', '%'.$filter->rider_name.'%')->orWhere('rider.last_name', 'LIKE', '%'.$filter->rider_name.'%')->where('taxi_request.status',3)->where('taxi_request.is_canceled',1)->where('taxi_request.cancel_by',0);
                 }
 
-                /* if(!empty($filter->driver_name)) // driver_name filter
+                if(!empty($filter->driver_name)) // driver_name filter
                 {
-                    $query->where('driver.first_name', 'LIKE', '%'.$filter->driver_name.'%')->orWhere('driver.last_name', 'LIKE', '%'.$filter->driver_name.'%')->where('taxi_request.status',3)->where('taxi_request.is_canceled',1)    ->where('taxi_request.cancel_by',0);
-                } */
+                    $query->where('driver.first_name', 'LIKE', '%'.$filter->driver_name.'%')->orWhere('driver.last_name', 'LIKE', '%'.$filter->driver_name.'%')->where('taxi_request.status',3)->where('taxi_request.is_canceled',1)->where('taxi_request.cancel_by',0);
+                }
 
                 if(!empty($filter->start_date)) // start_datetime filter
                 {
