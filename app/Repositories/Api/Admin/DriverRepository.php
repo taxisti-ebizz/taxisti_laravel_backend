@@ -40,11 +40,7 @@ class DriverRepository extends Controller
             $driver_list = Driver::select('taxi_driver_detail.*','taxi_users.*')
                 ->leftJoin('taxi_users', 'taxi_driver_detail.driver_id', '=', 'taxi_users.user_id')
                 ->withCount('driver_rides','driver_cancel_ride','driver_total_review')
-                ->withCount([
-                    'driver_avg_rating' => function ($query) {
-                        $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
-                    }
-                ])
+                ->with('driverAvgRating')
                 ->orderByRaw('taxi_users.user_id DESC')
                 ->paginate(10)->toArray();
         }
@@ -92,11 +88,7 @@ class DriverRepository extends Controller
             ->leftJoin('taxi_users', 'taxi_driver_detail.driver_id', '=', 'taxi_users.user_id')
             ->whereIn('taxi_users.user_id', $driverArray)
             ->withCount('driver_rides','driver_cancel_ride','driver_total_review')
-            ->withCount([
-                'driver_avg_rating' => function ($query) {
-                    $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
-                }
-            ])
+            ->with('driverAvgRating')
             ->orderByRaw('taxi_users.user_id DESC')
             ->paginate(10)->toArray();
 
@@ -116,11 +108,7 @@ class DriverRepository extends Controller
             ->leftJoin('taxi_driver_detail','taxi_users.user_id' , '=', 'taxi_driver_detail.driver_id')
             ->where('taxi_users.user_type',1)
             ->withCount('driver_rides','driver_cancel_ride','driver_total_review')
-            ->withCount([
-                'driver_avg_rating' => function ($query) {
-                    $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
-                }
-            ])
+            ->with('driverAvgRating')
             ->whereBetween('taxi_users.created_date', [$start_current_week, $end_current_week])
             ->orderByRaw('taxi_users.user_id DESC')
             ->paginate(10)->toArray();
@@ -141,11 +129,7 @@ class DriverRepository extends Controller
             ->leftJoin('taxi_driver_detail','taxi_users.user_id' , '=', 'taxi_driver_detail.driver_id')
             ->where('taxi_users.user_type',1)
             ->withCount('driver_rides','driver_cancel_ride','driver_total_review')
-            ->withCount([
-                'driver_avg_rating' => function ($query) {
-                    $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
-                }
-            ])
+            ->with('driverAvgRating')
             ->whereBetween('taxi_users.created_date', [$start_last_week, $end_last_week])
             ->orderByRaw('taxi_users.user_id DESC')
             ->paginate(10)->toArray();
@@ -166,11 +150,7 @@ class DriverRepository extends Controller
                     $query = Driver::select('taxi_driver_detail.*','taxi_users.*')
                     ->leftJoin('taxi_users', 'taxi_driver_detail.driver_id', '=', 'taxi_users.user_id')
                     ->withCount('driver_rides','driver_cancel_ride','driver_total_review')
-                    ->withCount([
-                        'driver_avg_rating' => function ($query) {
-                            $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
-                        }
-                    ]);
+                    ->with('driverAvgRating');
 
 
                 }
@@ -220,11 +200,7 @@ class DriverRepository extends Controller
                     ->leftJoin('taxi_users', 'taxi_driver_detail.driver_id', '=', 'taxi_users.user_id')
                     ->whereIn('taxi_users.user_id', $driverArray)
                     ->withCount('driver_rides','driver_cancel_ride','driver_total_review')
-                    ->withCount([
-                        'driver_avg_rating' => function ($query) {
-                            $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
-                        }
-                    ]);
+                    ->with('driverAvgRating');
 
         
                 }
@@ -242,11 +218,7 @@ class DriverRepository extends Controller
                     ->leftJoin('taxi_driver_detail','taxi_users.user_id' , '=', 'taxi_driver_detail.driver_id')
                     ->where('taxi_users.user_type',1)
                     ->withCount('driver_rides','driver_cancel_ride','driver_total_review')
-                    ->withCount([
-                        'driver_avg_rating' => function ($query) {
-                            $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
-                        }
-                    ])
+                    ->with('driverAvgRating')
                     ->whereBetween('taxi_users.created_date', [$start_current_week, $end_current_week]);
                 }
                 elseif($request['type'] == 'lastWeek')
@@ -263,27 +235,18 @@ class DriverRepository extends Controller
                     ->leftJoin('taxi_driver_detail','taxi_users.user_id' , '=', 'taxi_driver_detail.driver_id')
                     ->where('taxi_users.user_type',1)
                     ->withCount('driver_rides','driver_cancel_ride','driver_total_review')
-                    ->withCount([
-                        'driver_avg_rating' => function ($query) {
-                            $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
-                        }
-                    ])
+                    ->with('driverAvgRating')
                     ->whereBetween('taxi_users.created_date', [$start_last_week, $end_last_week]);
                 }
                 else
                 {
                     $list = 'Filter all';
 
-                    $query = User::query()
-                        ->select('taxi_driver_detail.*','taxi_users.*')
+                    $query = User::select('taxi_driver_detail.*','taxi_users.*')
                         ->leftJoin('taxi_driver_detail','taxi_users.user_id' , '=', 'taxi_driver_detail.driver_id')
                         ->where('taxi_users.user_type',1)
                         ->withCount('driver_rides','driver_cancel_ride','driver_total_review')
-                        ->withCount([
-                            'driver_avg_rating' => function ($query) {
-                                $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
-                            }
-                        ]);
+                        ->with('driverAvgRating');
                         
                 }
 
@@ -363,14 +326,11 @@ class DriverRepository extends Controller
                 if(!empty($filter->driver_avg_rating)) // driver_avg_rating filter
                 {
                     $driver_avg_rating = explode('-',$filter->driver_avg_rating);
-                    $query = $query->withCount([
-                        'driver_avg_rating' => function ($query) {
-                            $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
-                        }
-                    ])->where(function($q) use ( $driver_avg_rating ){
-                        $q->has('driver_avg_rating','>=',$driver_avg_rating[0]);
-                        $q->has('driver_avg_rating','<=',$driver_avg_rating[1]);
+                    $query->whereHas('driver_avg_rating' , function ($q) use ( $driver_avg_rating ) {
+                        $q->havingRaw('AVG(taxi_ratting.ratting) >= '.$driver_avg_rating[0]);
+                        $q->havingRaw('AVG(taxi_ratting.ratting) <= '.$driver_avg_rating[1]);
                     });
+
                 }
 
                 $driver_list = $query->orderByRaw('taxi_users.user_id DESC')->paginate(10)->toArray();
@@ -432,16 +392,11 @@ class DriverRepository extends Controller
         else {
             // all driver
             $list = 'All';
-            $driver_list = User::query()
-                ->select('taxi_driver_detail.*','taxi_users.*')
+            $driver_list = User::select('taxi_driver_detail.*','taxi_users.*')
                 ->leftJoin('taxi_driver_detail','taxi_users.user_id' , '=', 'taxi_driver_detail.driver_id')
                 ->where('taxi_users.user_type',1)
                 ->withCount('driver_rides','driver_cancel_ride','driver_total_review')
-                ->withCount([
-                    'driver_avg_rating' => function ($query) {
-                        $query->select(DB::raw('ROUND(coalesce(avg(ratting),0),1)'));
-                    }
-                ])
+                ->with('driverAvgRating')
                 ->orderByRaw('taxi_users.user_id DESC')
                 ->paginate(10)->toArray();
         }

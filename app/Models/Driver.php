@@ -46,5 +46,11 @@ class Driver extends Model
         return $this->hasManyThrough(Ratting::class, Request::class, 'driver_id', 'request_id', 'driver_id')->where('review_by', '=', 'rider');
     }
 
+    public function driverAvgRating()
+    {
+        return $this->driver_avg_rating()
+            ->selectRaw('avg(ratting) as avg, driver_id')
+            ->groupBy('driver_id');
+    }
 
 }

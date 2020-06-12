@@ -96,6 +96,13 @@ class User extends Authenticatable
             ->groupBy('rider_id');
     }
 
+    public function driverAvgRating()
+    {
+        return $this->driver_avg_rating()
+            ->selectRaw('avg(ratting) as avg, driver_id')
+            ->groupBy('driver_id');
+    }
+
     public function getAvgRatingAttribute()
     {
         if ( ! array_key_exists('avgRating', $this->relations)) {

@@ -182,7 +182,7 @@ class UserRepository extends Controller
                 
                 if(!empty($filter->average_ratting)) // average_ratting filter
                 {
-                    $average_ratting = explode('-',$filter->average_ratting);                    
+                    $average_ratting = explode('-',$filter->average_ratting);
                     $query->whereHas('avg_rating' , function ($q) use ( $average_ratting ) {
                         $q->havingRaw('AVG(taxi_ratting.ratting) >= '.$average_ratting[0]);
                         $q->havingRaw('AVG(taxi_ratting.ratting) <= '.$average_ratting[1]);
