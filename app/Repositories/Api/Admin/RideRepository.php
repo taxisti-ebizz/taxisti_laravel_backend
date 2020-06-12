@@ -432,13 +432,14 @@ class RideRepository extends Controller
         {
             $listOf = 'CurrentWeek ';
 
-            $completed_ride_list = DB::table('taxi_request')
-                ->select('taxi_request.*', 
+            $completed_ride_list = Request::select('taxi_request.*', 
                     DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
                         'rider.mobile_no as rider_mobile', 
                     DB::raw('CONCAT(driver.first_name," ",driver.last_name) as driver_name'),
                         'driver.mobile_no as driver_mobile'
                     )
+                ->with('rider_rating')
+                ->with('driver_rating')
                 ->leftJoin('taxi_users as rider', 'taxi_request.rider_id', '=', 'rider.user_id')
                 ->leftJoin('taxi_users as driver', 'taxi_request.driver_id', '=', 'driver.user_id')
                 ->whereBetween('taxi_request.created_date', [$this->start_current_week, $this->end_current_week])
@@ -452,13 +453,14 @@ class RideRepository extends Controller
         {
             $listOf = 'LastWeek';
 
-            $completed_ride_list = DB::table('taxi_request')
-                ->select('taxi_request.*', 
+            $completed_ride_list = Request::select('taxi_request.*', 
                     DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
                         'rider.mobile_no as rider_mobile', 
                     DB::raw('CONCAT(driver.first_name," ",driver.last_name) as driver_name'),
                         'driver.mobile_no as driver_mobile'
                     )
+                ->with('rider_rating')
+                ->with('driver_rating')
                 ->leftJoin('taxi_users as rider', 'taxi_request.rider_id', '=', 'rider.user_id')
                 ->leftJoin('taxi_users as driver', 'taxi_request.driver_id', '=', 'driver.user_id')
                 ->whereBetween('taxi_request.created_date', [$this->start_last_week, $this->end_last_week])
@@ -480,13 +482,14 @@ class RideRepository extends Controller
                 {
                     $listOf = 'Filter currentWeek ';
 
-                    $query = DB::table('taxi_request')
-                        ->select('taxi_request.*', 
+                    $query = Request::select('taxi_request.*', 
                             DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
                                 'rider.mobile_no as rider_mobile', 
                             DB::raw('CONCAT(driver.first_name," ",driver.last_name) as driver_name'),
                                 'driver.mobile_no as driver_mobile'
-                            )               
+                            )         
+                        ->with('rider_rating')
+                        ->with('driver_rating')
                         ->leftJoin('taxi_users as rider', 'taxi_request.rider_id', '=', 'rider.user_id')
                         ->leftJoin('taxi_users as driver', 'taxi_request.driver_id', '=', 'driver.user_id')
                         ->whereBetween('taxi_request.created_date', [$this->start_current_week, $this->end_current_week])
@@ -498,13 +501,14 @@ class RideRepository extends Controller
                 {
                     $listOf = 'Filter lastWeek';
 
-                    $query = DB::table('taxi_request')
-                        ->select('taxi_request.*', 
+                    $query = Request::select('taxi_request.*', 
                             DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
                                 'rider.mobile_no as rider_mobile', 
                             DB::raw('CONCAT(driver.first_name," ",driver.last_name) as driver_name'),
                                 'driver.mobile_no as driver_mobile'
-                            )               
+                            )       
+                        ->with('rider_rating')
+                        ->with('driver_rating')
                         ->leftJoin('taxi_users as rider', 'taxi_request.rider_id', '=', 'rider.user_id')
                         ->leftJoin('taxi_users as driver', 'taxi_request.driver_id', '=', 'driver.user_id')
                         ->whereBetween('taxi_request.created_date', [$this->start_last_week, $this->end_last_week])
@@ -516,19 +520,20 @@ class RideRepository extends Controller
                 {
                     $listOf = 'Filter all';
 
-                    $query = DB::table('taxi_request')
-                    ->select('taxi_request.*', 
+                    $query = Request::select('taxi_request.*', 
                         DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
                             'rider.mobile_no as rider_mobile', 
                         DB::raw('CONCAT(driver.first_name," ",driver.last_name) as driver_name'),
                             'driver.mobile_no as driver_mobile'
-                        )               
+                        )
+                    ->with('rider_rating')
+                    ->with('driver_rating')
                     ->leftJoin('taxi_users as rider', 'taxi_request.rider_id', '=', 'rider.user_id')
                     ->leftJoin('taxi_users as driver', 'taxi_request.driver_id', '=', 'driver.user_id')
                     ->where('taxi_request.status',3)
                     ->where('taxi_request.ride_status',3);
                 }
-               
+            
 
                 if(!empty($filter->rider_name)) // rider_name filter
                 {
@@ -573,23 +578,26 @@ class RideRepository extends Controller
                     $query->whereBetween('taxi_request.distance',$distance);
                 }
 
-                $completed_ride_list = $query->orderByRaw('taxi_request.id DESC')->paginate(10)->toArray();
-
-                if($completed_ride_list['data'])
+                if(!empty($filter->rider_rating)) // rider_rating filter
                 {
-                    $list = [];
-                    foreach($completed_ride_list['data'] as $ride)
-                    {
-                        $driver_ratting = $this->get_driver_ratting($ride->id);
-                        $rider_ratting = $this->get_rider_ratting($ride->id);
-    
-                        $ride->driver_ratting = $driver_ratting ? $driver_ratting->ratting : 0;
-                        $ride->rider_ratting = $rider_ratting ? $rider_ratting->ratting : 0;
-    
-                        $list[] = $ride;
-                    }
-                    $completed_ride_list['data'] = $list;
+                    $rider_rating = explode('-',$filter->rider_rating);
+                    $query->whereHas('rider_rating' , function ($q) use ( $rider_rating ) {
+                        $q->whereRaw('taxi_ratting.ratting >= '.$rider_rating[0]);
+                        $q->whereRaw('taxi_ratting.ratting <= '.$rider_rating[1]);
+                    });
+                
                 }
+
+                if(!empty($filter->driver_rating)) // driver_rating filter
+                {
+                    $driver_rating = explode('-',$filter->driver_rating);
+                    $query->whereHas('driver_rating' , function ($q) use ( $driver_rating ) {
+                        $q->whereRaw('taxi_ratting.ratting >= '.$driver_rating[0]);
+                        $q->whereRaw('taxi_ratting.ratting <= '.$driver_rating[1]);
+                    });
+                }
+
+                $completed_ride_list = $query->orderByRaw('taxi_request.id DESC')->paginate(10)->toArray();
 
             }
             else
@@ -605,14 +613,15 @@ class RideRepository extends Controller
         else
         {
             $listOf = 'All';
-    
-            $completed_ride_list = DB::table('taxi_request')
-                ->select('taxi_request.*', 
+
+            $completed_ride_list = Request::select('taxi_request.*', 
                     DB::raw('CONCAT(rider.first_name," ",rider.last_name) as rider_name'),
                         'rider.mobile_no as rider_mobile', 
                     DB::raw('CONCAT(driver.first_name," ",driver.last_name) as driver_name'),
                         'driver.mobile_no as driver_mobile'
                     )
+                ->with('rider_rating')
+                ->with('driver_rating')
                 ->leftJoin('taxi_users as rider', 'taxi_request.rider_id', '=', 'rider.user_id')
                 ->leftJoin('taxi_users as driver', 'taxi_request.driver_id', '=', 'driver.user_id')
                 ->where('taxi_request.status',3)
@@ -623,79 +632,6 @@ class RideRepository extends Controller
 
         if($completed_ride_list['data'])
         {
-            if($request['sub_type'] == 'filter')
-            {
-                if(!empty($filter->rider_rating)) // rider_rating filter
-                {
-                    $rider_rating = explode('-',$filter->rider_rating);
-                    $list = [];
-                    foreach($completed_ride_list['data'] as $ride)
-                    {
-                        $driver_ratting = $this->get_driver_ratting($ride->id);
-                        $rider_ratting = $this->get_rider_ratting($ride->id);
-        
-                        $ride->driver_ratting = $driver_ratting ? $driver_ratting->ratting : 0;
-                        $ride->rider_ratting = $rider_ratting ? $rider_ratting->ratting : 0;
-        
-                        if($ride->rider_ratting >= $rider_rating[0] && $ride->rider_ratting <= $rider_rating[1])
-                        {
-                            $list[] = $ride;
-                        }
-                    }
-                    $completed_ride_list['data'] = $list;
-    
-
-                }
-
-                if(!empty($filter->driver_rating)) // driver_rating filter
-                {
-                    $driver_rating = explode('-',$filter->driver_rating);
-                    $list = [];
-                    foreach($completed_ride_list['data'] as $ride)
-                    {
-                        $driver_ratting = $this->get_driver_ratting($ride->id);
-                        $rider_ratting = $this->get_rider_ratting($ride->id);
-        
-                        $ride->driver_ratting = $driver_ratting ? $driver_ratting->ratting : 0;
-                        $ride->rider_ratting = $rider_ratting ? $rider_ratting->ratting : 0;
-        
-                        if($ride->rider_ratting >= $driver_rating[0] && $ride->rider_ratting <= $driver_rating[1])
-                        {
-                            $list[] = $ride;
-                        }
-                    }
-                    $completed_ride_list['data'] = $list;
-    
-
-                }
-
-                if(!$completed_ride_list['data'])
-                {
-                    return response()->json([
-                        'status'    => false,
-                        'message'   => 'No data available', 
-                        'data'    => new ArrayObject,
-                    ], 200);
-                }
-
-            }
-            else
-            {
-                $list = [];
-                foreach($completed_ride_list['data'] as $ride)
-                {
-                    $driver_ratting = $this->get_driver_ratting($ride->id);
-                    $rider_ratting = $this->get_rider_ratting($ride->id);
-    
-                    $ride->driver_ratting = $driver_ratting ? $driver_ratting->ratting : 0;
-                    $ride->rider_ratting = $rider_ratting ? $rider_ratting->ratting : 0;
-    
-                    $list[] = $ride;
-                }
-                $completed_ride_list['data'] = $list;
-                
-            }
-
             return response()->json([
                 'status'    => true,
                 'message'   => $listOf.' Completed Ride List', 
@@ -1462,10 +1398,10 @@ class RideRepository extends Controller
                     $lists = [];
                     foreach($fake_ride_list['data'] as $ride)
                     {
-                        $driver_ratting = $this->get_driver_ratting($ride->id);
+                        $driver_rating = $this->get_driver_ratting($ride->id);
                         $rider_ratting = $this->get_rider_ratting($ride->id);
     
-                        $ride->driver_ratting = $driver_ratting ? $driver_ratting->ratting : 0;
+                        $ride->driver_rating = $driver_rating ? $driver_rating->ratting : 0;
                         $ride->rider_ratting = $rider_ratting ? $rider_ratting->ratting : 0;
     
                         $lists[] = $ride;
@@ -1514,10 +1450,10 @@ class RideRepository extends Controller
                     $list = [];
                     foreach($fake_ride_list['data'] as $ride)
                     {
-                        $driver_ratting = $this->get_driver_ratting($ride->id);
+                        $driver_rating = $this->get_driver_ratting($ride->id);
                         $rider_ratting = $this->get_rider_ratting($ride->id);
         
-                        $ride->driver_ratting = $driver_ratting ? $driver_ratting->ratting : 0;
+                        $ride->driver_ratting = $driver_rating ? $driver_rating->ratting : 0;
                         $ride->rider_ratting = $rider_ratting ? $rider_ratting->ratting : 0;
         
                         if($ride->rider_ratting >= $rider_rating[0] && $ride->rider_ratting <= $rider_rating[1])

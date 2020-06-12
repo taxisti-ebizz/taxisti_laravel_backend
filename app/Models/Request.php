@@ -20,5 +20,13 @@ class Request extends Model
         'rider_id','driver_id','start_datetime','status','all_driver','rejected_by','end_datetime','start_location','start_latitude','start_longitude','end_location','end_latitude','end_longitude','passenger','created_date','updated_date','is_canceled','amount','distance','note','ride_status','last_cron','cancel_by','ride_status_text','cancel_text',
     ];
 
+    public function rider_rating()
+    {
+        return $this->hasMany(Ratting::class, 'request_id', 'id')->where('review_by','rider');
+    }
 
+    public function driver_rating()
+    {
+        return $this->hasMany(Ratting::class, 'request_id', 'id')->where('review_by','driver');
+    }
 }
