@@ -12,6 +12,7 @@ use App\Http\Requests\Api\App\Common\CheckLoginRequest;
 use App\Http\Requests\Api\App\Common\CheckPhoneRequest;
 use App\Http\Requests\Api\App\Common\GetCmsPageRequest;
 use App\Http\Requests\Api\App\Common\GetRattingRequest;
+use App\Http\Requests\Api\App\Common\SwitchUserRequest;
 use App\Http\Requests\Api\App\Common\AdminSettingRequest;
 use App\Http\Requests\Api\App\Common\CheckPromotionStatus;
 use App\Http\Requests\Api\App\Common\StorePasswordRequest;
@@ -301,6 +302,21 @@ class AppCommonController extends Controller
         }   
 
         return $this->appCommon->storePassword($request);
+
+    }
+
+    // switch User
+    public function switch_user(SwitchUserRequest $request)
+    {
+        if ($request->validator->fails()) {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'parameter invalid', 
+                'errors'    => $request->validator->errors(),
+            ], 200);
+        }   
+
+        return $this->appCommon->switch_user($request);
 
     }
 }

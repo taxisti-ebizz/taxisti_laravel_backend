@@ -4,6 +4,7 @@
 namespace App\Repositories\Api\App;
 
 use App\GCM;
+use ArrayObject;
 use App\Models\User;
 use App\Models\Driver;
 use App\Models\Ratting;
@@ -743,6 +744,55 @@ class AppCommonRepository extends Controller
         {
             $msg['status']=true;
             $msg['message']='Password saved failed';
+        }
+
+        return response()->json($msg, 200);
+
+    }
+
+    // switch User
+    public function switch_user($request)
+    {
+        $user_id = Auth()->user()->user_id;
+
+        $inpute['user_type'] = $request['user_type'];
+        $inpute['updated_date'] = date('Y-m-d H:i:s');
+
+        // update 
+        User::where('user_id',$user_id)->update($inpute);
+
+        // get user data
+        $user =  User::where('user_id',$user_id)->first();
+
+        if($user)
+        {
+            $user->profile_pic = $user->profile_pic != '' ? env('AWS_S3_URL').$user->profile_pic : '';
+            $user->date_of_birth = $user->date_of_birth != '' ? $user->date_of_birth : '';
+    
+    
+            if($user->user_type == 1)
+            {
+                $driver_detail =  $this->get_driver_detail($user->user_id);
+                if($driver_detail)
+                {
+                    $driver_detail['car_images'] = $this->car_images($driver_detail['id']);
+                    $user->driver_detail = $driver_detail;
+                }
+                else
+                {
+                    $user->driver_detail = new ArrayObject;
+                }
+            }
+
+            $msg['status'] = 1;
+            $msg['message'] = 'User Switch successfully'; 
+            $msg['data'] = $user;
+        }
+        else
+        {
+            $msg['status'] = 0;
+            $msg['message'] = 'No data found'; 
+            $msg['data'] = array();
         }
 
         return response()->json($msg, 200);

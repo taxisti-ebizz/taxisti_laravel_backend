@@ -147,6 +147,8 @@ Route::prefix('common')->group(function () {
         Route::post('getRequestList','Api\App\AppCommonController@get_request_list');
         Route::post('addReview','Api\App\AppCommonController@add_review');
         Route::post('rideRequestAutomation','Api\App\AppCommonController@ride_request_automation');
+        Route::post('switchUser','Api\App\AppCommonController@switch_user');
+
 
 
 
