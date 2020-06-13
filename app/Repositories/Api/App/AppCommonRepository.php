@@ -326,6 +326,7 @@ class AppCommonRepository extends Controller
         $user_id = Auth()->user()->user_id;
 
         $promotion_data = DB::table('taxi_user_promotion')
+            ->select('taxi_user_promotion.id','taxi_user_promotion.promotion_id','taxi_promotion.code','taxi_promotion.description','taxi_promotion.promo_image')
             ->join('taxi_promotion','taxi_promotion.id','taxi_user_promotion.promotion_id')
             ->where('taxi_user_promotion.user_id',$user_id)
             ->where('taxi_user_promotion.type',$request['type'])

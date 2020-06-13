@@ -114,4 +114,20 @@ class User extends Authenticatable
         return ($relation) ? (int) $relation->aggregate : 0;
     }
 
+    public function acceptanceRow()
+    {
+        return $this->hasMany(Request::class, 'all_driver', 'user_id')->whereRaw('FIND_IN_SET('.$this->user_id.',all_driver)');
+    }
+
+    public function acceptanceRatio()
+    {
+        $driver_id =  $this->user_id;
+        $acceptanceRatio = Ratting::select(DB::raw('count(id) as accepted'))
+            ->whereRaw('FIND_IN_SET('.$this->user_id.',all_driver)')
+            ->value('accepted');
+
+        return $acceptanceRatio;
+
+    }
+
 }
