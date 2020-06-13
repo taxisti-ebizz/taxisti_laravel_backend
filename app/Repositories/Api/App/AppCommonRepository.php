@@ -800,6 +800,36 @@ class AppCommonRepository extends Controller
 
     }
 
+    // return status
+    public function return_status($request)
+    {
+
+        $request_detail = Request::where('id',$request['request_id'])->first();
+        if($request_detail)
+        {
+
+            $rider_detail =  $this->get_rider($request_detail['rider_id']);
+            $driver_detail =  $this->get_driver($request_detail['driver_id']);
+            $driver_detail['car_images'] = $this->car_images($driver_detail['driver_detail']['id']);
+
+            $data['request_data'] = $request_detail;
+            $data['rider_data'] = $rider_detail;
+            $data['driver_data'] = $driver_detail;
+
+            $msg['status'] = true;
+            $msg['message'] = 'Success'; 
+            $msg['data'] = $data;
+        }
+        else
+        {
+            $msg['status'] = false;
+            $msg['message'] = 'No data found'; 
+            $msg['data'] = new ArrayObject;;
+        }
+
+        return response()->json($msg, 200);
+
+    }
 
 
 
