@@ -872,7 +872,35 @@ class AppCommonRepository extends Controller
         else
         {
             $msg['status'] = false;
+            $msg['message'] = 'Failed';
+            $msg['data']['android_version']= new ArrayObject;
+ 
+        }
+
+        return response()->json($msg, 200);
+
+    }
+
+    // force update ios
+    public function force_update_ios($request)
+    {
+
+
+        $version = DB::table('current_version')->where('id',1)->first();
+        if($version)
+        {
+            $data['current_version'] = $version->version_ios;
+            $msg['status'] = true;
+            $msg['message'] = 'Success'; 
+            $msg['data'] = $data; 
+
+        }
+        else
+        {
+            $msg['status'] = false;
             $msg['message'] = 'Failed'; 
+            $msg['data']['current_version'] = new ArrayObject;
+
         }
 
         return response()->json($msg, 200);

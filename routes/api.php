@@ -127,6 +127,9 @@ Route::prefix('common')->group(function () {
     Route::post('appRegister','Api\App\Auth\AppRegisterController@create');
     Route::post('checkPhone','Api\App\AppCommonController@check_phone');
     Route::post('storePassword','Api\App\AppCommonController@storePassword');
+    Route::post('forceUpdateAndroid','Api\App\AppCommonController@force_update_android');
+    Route::post('forceUpdateIos','Api\App\AppCommonController@force_update_ios');
+
 
 
     // App Auth Routes
@@ -150,7 +153,7 @@ Route::prefix('common')->group(function () {
         Route::post('switchUser','Api\App\AppCommonController@switch_user');
         Route::post('returnStatus','Api\App\AppCommonController@return_status');
         Route::post('updateFcm','Api\App\AppCommonController@update_fcm');
-        Route::post('forceUpdateAndroid','Api\App\AppCommonController@force_update_android');
+
 
 
 

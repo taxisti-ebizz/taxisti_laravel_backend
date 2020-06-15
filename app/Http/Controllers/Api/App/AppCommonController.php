@@ -20,6 +20,7 @@ use App\Http\Requests\Api\App\Common\CheckPromotionStatus;
 use App\Http\Requests\Api\App\Common\StorePasswordRequest;
 use App\Http\Requests\Api\App\Common\UpdateProfileRequest;
 use App\Http\Requests\Api\App\Common\ApplyPromotionRequest;
+use App\Http\Requests\Api\App\Common\ForceUpdateIosRequest;
 use App\Http\Requests\Api\App\Common\GetRequestListRequest;
 use App\Http\Requests\Api\App\Common\DeletePromotionRequest;
 use App\Http\Requests\Api\App\Common\AddUserPromotionRequest;
@@ -365,6 +366,21 @@ class AppCommonController extends Controller
         }   
 
         return $this->appCommon->force_update_android($request);
+
+    }
+
+    // force update ios
+    public function force_update_ios(ForceUpdateIosRequest $request)
+    {
+        if ($request->validator->fails()) {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'parameter invalid', 
+                'errors'    => $request->validator->errors(),
+            ], 200);
+        }   
+
+        return $this->appCommon->force_update_ios($request);
 
     }
 }
