@@ -997,39 +997,67 @@ class AppCommonRepository extends Controller
         else if ($device_type == 'I')
         {
             $fields = array(
-                    'to' => $device_token,
-                    "content_available"=> true,
-                    'notification' => array('title' => 'silent_logout_notification','body'=>$msg),
-                    'data' => array('message' => $msg ,'type' => 'silent_logout_notification','body'=>$user_id,'title' => 'Logout')
-                );
-            //APNS====================================================
-            
-            
-            // include_once '../../../public/ios_notif/GCM.php';
-            
+                'to' => $device_token,
+                "content_available"=> true,
+                'notification' => array('title' => 'silent_logout_notification','body'=>$msg),
+                'data' => array('message' => $msg ,'type' => 'silent_logout_notification','body'=>$user_id,'title' => 'Logout')
+            );
+
+            // APNS ----------------------------------------
+
             $message = 'You logout from app.';
-            $body1=json_decode('{"alert":"'.$message.'","sound":"default","badge":1,"user_id":'.$user_id.',"type":"silent_logout_notification"}');
             $deviceToken =  $device_token;
-            $ctx = stream_context_create();
-            stream_context_set_option($ctx, 'ssl', 'local_cert', 'ck.pem');
-            stream_context_set_option($ctx, 'ssl', 'passphrase', '1');
-            $fp = stream_socket_client('ssl://gateway.sandbox.push.apple.com:2195', $err,$errstr, 60, STREAM_CLIENT_CONNECT|STREAM_CLIENT_PERSISTENT, $ctx);
+
+            $apnsServer = 'ssl://gateway.push.apple.com:2195';
+            //ssl://gateway.push.apple.com:2195
+            //ssl://gateway.sandbox.push.apple.com:2195
+            $privateKeyPassword = '1';
+            $pushCertAndKeyPemFile = 'pushcert.pem';
+            $contextOptions = array(
+                'ssl' => array(
+                    'verify_peer' => false, // You could skip all of the trouble by changing this to false, but it's WAY 
+                    'verify_depth' => false,
+                    'disable_compression' => true,
+                ));
+            $stream = stream_context_create();
+            stream_context_set_option($stream,'ssl','passphrase',$privateKeyPassword);
+            stream_context_set_option($stream,'ssl','local_cert',$pushCertAndKeyPemFile);
+            stream_context_set_option($stream,$contextOptions);
+        
+            $connectionTimeout = 20;
+            $connectionType = STREAM_CLIENT_CONNECT | STREAM_CLIENT_PERSISTENT;
+            $connection = stream_socket_client($apnsServer,$errorNumber,$errorString,$connectionTimeout,$connectionType,$stream);
+            if (!$connection){
+                // echo "Failed to connect to the APNS server. Error no = $errorNumber<br/>";
+                exit;
+            } else {
+                // echo "Successfully connected to the APNS. Processing...</br>";
+            } 
+        
+            $messageBody['aps'] = array(
+                "alert" => $message,
+                "badge" => +1,
+                "sound" => 'default',
+                "user_id" => '1',
+                "post_id" => '1',
+                "type" => 'silent_logout_notification'
+            );
             
-            // $ctx = stream_context_create();
-            // $fp = stream_context_set_option($ctx, 'ssl', 'local_cert', 'ck.pem');
+            $payload = json_encode($messageBody);
+            $notification = chr(0) . pack('n', 32) . pack('H*', $deviceToken) . pack('n', strlen($payload)) . $payload;
+            $wroteSuccessfully = fwrite($connection, $notification, strlen($notification));
+            if (!$wroteSuccessfully){
+                //echo "Could not send the message<br/>";
+            }
+            else {
+                //echo "Successfully sent the message<br/>";
+            }
+            fclose($connection);
 
-
-            $body['aps'] =$body1; 
-            // Encode the payload as JSON
-            $payload = json_encode($body);
-            $msg = chr(0) . pack('n', 32) . pack('H*', $deviceToken) . pack('n', strlen($payload)) . $payload;
-            fwrite($fp, $msg, strlen($msg));
-    
             $regId = $device_token;
-            $gcm = new GCM();
             $registatoin_ids = array($regId);
             $message = array("price" => $message);
-            $a=$gcm->send_notification($registatoin_ids, $message);
+            $this->send_notification($registatoin_ids, $message);
         }
         else 
         {
@@ -1280,6 +1308,37 @@ class AppCommonRepository extends Controller
         DB::table('taxi_notification')->insert($input);
         return true;
     }
+
+    public function send_notification($registatoin_ids, $message)
+    {
+        $url = 'https://android.googleapis.com/gcm/send';
+
+        $fields = array(
+            'registration_ids' => $registatoin_ids,
+            'data' => $message,
+        );
+
+        $headers = array(
+            'Authorization: key=AIzaSyAlN84WM8MaPgO_JPRKvLi1bFvWyI_DT1A',
+            'Content-Type: application/json'
+        );
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($fields));
+
+        // Execute post
+        $result = curl_exec($ch);
+        if ($result === FALSE) {
+            die('Curl failed: ' . curl_error($ch));
+        }
+        curl_close($ch);
+    }
+
 
 
 

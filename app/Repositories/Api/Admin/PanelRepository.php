@@ -311,9 +311,9 @@ class PanelRepository extends Controller
         ->where('taxi_user_promotion.id',$request['id'])
         ->first();
 
-        // $msg = "The offer for ".$promotion->code." has been successfully served";
-        // $noti_type = "promotion_redeem";
-        // $send = sendNotiToUser($con,$promotion->user_id,$promotion->device_token,$promotion->device_type,$msg,$noti_type);
+        $msg = "The offer for ".$promotion->code." has been successfully served";
+        $noti_type = "promotion_redeem";
+        $this->sendNotiToUser($promotion->user_id,$promotion->device_token,$promotion->device_type,$msg,$noti_type);
 
         return response()->json([
             'status'    => true,
@@ -857,7 +857,7 @@ class PanelRepository extends Controller
             $privateKeyPassword = '1';
             $message = $msg;
             $deviceToken = $device_token;
-            $pushCertAndKeyPemFile = 'dis_taxisti_push.pem';
+            $pushCertAndKeyPemFile = 'pushcert.pem';
             $stream = stream_context_create();
             stream_context_set_option($stream,'ssl','passphrase',$privateKeyPassword);
             stream_context_set_option($stream,'ssl','local_cert',$pushCertAndKeyPemFile);
@@ -866,9 +866,6 @@ class PanelRepository extends Controller
             $connectionType = STREAM_CLIENT_CONNECT | STREAM_CLIENT_PERSISTENT;
             $connection = stream_socket_client($apnsServer,$errorNumber,$errorString,$connectionTimeout,$connectionType,$stream);
     
-            // $ctx = stream_context_create();
-            // $connection = stream_context_set_option($ctx, 'ssl', 'local_cert', $privateKeyPassword);
-            
             if (!$connection){
                 //echo "Failed to connect to the APNS server. Error no = $errorNumber<br/>";
                 // exit;

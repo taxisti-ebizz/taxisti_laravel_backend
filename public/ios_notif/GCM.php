@@ -12,20 +12,22 @@ namespace App;
  *
  * @author Ravi Tamada
  */
-class GCM {
+class GCM
+{
 
     //put your code here
     // constructor
-    function __construct() {
-        
+    function __construct()
+    {
     }
 
     /**
      * Sending Push Notification
      */
-    public function send_notification($registatoin_ids, $message) {
+    public function send_notification($registatoin_ids, $message)
+    {
         // include config
-//        include_once './Config.Inc.php';
+        //        include_once './Config.Inc.php';
 
         // Set POST variables
         $url = 'https://android.googleapis.com/gcm/send';
@@ -56,7 +58,7 @@ class GCM {
 
         // Execute post
         $result = curl_exec($ch);
-//        echo json_encode($result);
+        //        echo json_encode($result);
         if ($result === FALSE) {
             die('Curl failed: ' . curl_error($ch));
         }
@@ -65,7 +67,4 @@ class GCM {
         curl_close($ch);
         //echo $result;
     }
-
 }
-
-?>

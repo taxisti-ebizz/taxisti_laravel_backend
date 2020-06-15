@@ -1765,7 +1765,7 @@ class RideRepository extends Controller
     {
 
         $result = User::all();
-        $all_device_token 	= array_column($result, 'device_token');
+        $all_device_token 	= array_column($result->toArray(), 'device_token');
         $device_tokens 		= str_replace(' ', '', implode(',',$all_device_token));
 
         $session_user = $this->qb_create_session_with_user();

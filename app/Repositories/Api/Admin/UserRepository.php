@@ -296,6 +296,25 @@ class UserRepository extends Controller
 
         // update status
         User::where('user_id', $request['user_id'])->update($input);
+        $user =  User::where('user_id', $request['user_id'])->first();
+
+        if($request['verify']==1)
+		{
+			$message='Hi '.$user['first_name'].", Your Account Is verified By Administrator.";
+		}
+        else
+        {
+			$message='Hi '.$user['first_name'].", Your Account Is Deactivated By Administrator.";
+        }
+        
+        $device_type = $user['device_type'];
+		$device_token = $user['device_token'];
+        $type = 'account_verify';
+        
+		if($this->sentNotificationOnVerified($message,$device_token,$type, $device_type))
+		{
+            $this->store_notification($request['user_id'],'verify_user',$message);
+        }
 
         // get user details
         $get_user_detail = $this->get_user_detail($request);
@@ -501,6 +520,152 @@ class UserRepository extends Controller
         return $ratting_review;
 
     }
+
+    public function sentNotificationOnVerified($msg,$device_token,$type, $device_type)
+    {	
+        $session_user = $this->qb_create_session_with_user();
+        $session_data = json_decode($session_user);
+        $token = $session_data->session->token;
+
+        $path_to_firebase_cm = 'https://fcm.googleapis.com/fcm/send';
+
+        if ($device_type == 'A')
+        {
+            $fields = array(
+                'to' => $device_token,
+                'data' => array('message' => "success" ,'type' => $type,'title' => $msg)
+            );
+            $headers = array(
+                'Authorization:key=AIzaSyBHZX8zi36hoodNoZLjrZxbgtTV9OwoyPw',
+                'Content-Type:application/json'
+            );		
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $path_to_firebase_cm); 
+            curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true); 
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            curl_setopt($ch, CURLOPT_IPRESOLVE, CURL_IPRESOLVE_V4 ); 
+            curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($fields));
+            $result = curl_exec($ch);
+            curl_close($ch);
+            $data = json_encode($fields['data']);
+            return json_encode($result).json_encode($fields);
+        }
+        else if ($device_type == 'I')
+        {
+            $apnsServer = 'ssl://gateway.push.apple.com:2195';
+            //$apnsServer = 'ssl://gateway.sandbox.push.apple.com:2195';
+            $privateKeyPassword = '1';
+            $deviceToken =$device_token;
+            $pushCertAndKeyPemFile = 'pushcert.pem';
+            $stream = stream_context_create();
+            stream_context_set_option($stream,'ssl','passphrase',$privateKeyPassword);
+            stream_context_set_option($stream,'ssl','local_cert',$pushCertAndKeyPemFile);
+
+            $connectionTimeout = 20;
+            $connectionType = STREAM_CLIENT_CONNECT | STREAM_CLIENT_PERSISTENT;
+            $connection = stream_socket_client($apnsServer,$errorNumber,$errorString,$connectionTimeout,$connectionType,$stream);
+            if (!$connection){
+                // echo 0;
+                // exit;
+            } else {
+                // echo 1;
+            }
+            $messageBody['aps'] = array(
+                    'alert' => array(
+                        'title' => "Notification from Taxisti",
+                        'body' => $msg
+                    ),
+                    "type" => 'admin_notification',
+                    "badge" => +1,
+                    "sound" => 'default',
+                );
+            $payload = json_encode($messageBody);
+            $notification = chr(0) .
+            pack('n', 32) .
+            pack('H*', $deviceToken) .
+            pack('n', strlen($payload)) .
+            $payload;
+            $wroteSuccessfully = fwrite($connection, $notification, strlen($notification));
+            fclose($connection);
+            if (!$wroteSuccessfully){
+                return 0;
+            }
+            else {
+                return 1;
+            }
+        }
+    }
+
+    public function qb_create_session_with_user()
+    {
+        DEFINE('APPLICATION_ID', 69589);
+        DEFINE('AUTH_KEY', "YKnMcUtfn792W-e");
+        DEFINE('AUTH_SECRET', "fUDgC4R4qmGzwNr");
+
+        // User credentials
+        DEFINE('USER_LOGIN', "Taxisti");                  // Your Project Name in QuickBlox
+        DEFINE('USER_PASSWORD', "Taxisti2016libya");      // QuickBlox Password
+
+        // Quickblox endpoints
+        DEFINE('QB_API_ENDPOINT', "https://api.quickblox.com");
+        DEFINE('QB_PATH_SESSION', "session.json");
+
+        // Generate signature
+        $nonce = rand();
+        $timestamp = time(); // time() method must return current timestamp in UTC but seems like hi is return timestamp in current time zone
+        $signature_string = "application_id=".APPLICATION_ID."&auth_key=".AUTH_KEY."&nonce=".$nonce."&timestamp=".$timestamp."&user[login]=".USER_LOGIN."&user[password]=".USER_PASSWORD;
+
+        $signature = hash_hmac('sha1', $signature_string , AUTH_SECRET);
+
+        // Build post body
+        $post_body = http_build_query(array(
+                        'application_id' => APPLICATION_ID,
+                        'auth_key' => AUTH_KEY,
+                        'timestamp' => $timestamp,
+                        'nonce' => $nonce,
+                        'signature' => $signature,
+                        'user[login]' => USER_LOGIN,
+                        'user[password]' => USER_PASSWORD
+                        ));
+
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_URL, QB_API_ENDPOINT . '/' . QB_PATH_SESSION); // Full path is - https://api.quickblox.com/session.json
+        curl_setopt($curl, CURLOPT_POST, true); // Use POST
+        curl_setopt($curl, CURLOPT_POSTFIELDS, $post_body); // Setup post body
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true); // Receive server response
+
+        // Execute request and read responce
+        $responce = curl_exec($curl);
+
+        // Check errors
+        if ($responce) {
+                // echo $responce . "\n";
+        } else {
+                $error = curl_error($curl). '(' .curl_errno($curl). ')';
+                echo $error . "\n";
+        }
+
+        // Close connection
+        curl_close($curl);
+
+        return $responce;
+    }
+
+    // store notification
+    public function store_notification($user_id,$type,$msg)
+    {
+
+        $input['type'] = $type;
+        $input['message'] = json_encode($msg);
+        $input['user_id'] = $user_id;
+        $input['datetime'] = date('Y-m-d H:i:s');
+
+        DB::table('taxi_notification')->insert($input);
+        return true;
+    }
+    
 
     
 }
