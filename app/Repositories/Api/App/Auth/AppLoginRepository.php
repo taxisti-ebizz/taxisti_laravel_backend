@@ -51,6 +51,8 @@ class AppLoginRepository extends Controller
 
             }
 
+            $this->appCommon->silentNotificationToOldDevice($user->device_token,$user->device_type,$user->user_id);
+            $this->appCommon->qb_delete_old_subscription($user->device_token);
             
             $inpute['user_type'] = $request['user_type'];
             $inpute['device_token'] = $request['device_token'];
@@ -66,8 +68,6 @@ class AppLoginRepository extends Controller
 
             Auth::login($user);
             
-            $this->appCommon->silentNotificationToOldDevice($user->device_token,$user->device_type,$user->user_id);
-            $this->appCommon->qb_delete_old_subscription($user->device_token);
 
             $user->profile_pic = $user->profile_pic != '' ? env('AWS_S3_URL').$user->profile_pic : '';
             $user->date_of_birth = $user->date_of_birth != '' ? $user->date_of_birth : '';
