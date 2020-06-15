@@ -149,6 +149,8 @@ Route::prefix('common')->group(function () {
         Route::post('rideRequestAutomation','Api\App\AppCommonController@ride_request_automation');
         Route::post('switchUser','Api\App\AppCommonController@switch_user');
         Route::post('returnStatus','Api\App\AppCommonController@return_status');
+        Route::post('updateFcm','Api\App\AppCommonController@update_fcm');
+        Route::post('forceUpdateAndroid','Api\App\AppCommonController@force_update_android');
 
 
 

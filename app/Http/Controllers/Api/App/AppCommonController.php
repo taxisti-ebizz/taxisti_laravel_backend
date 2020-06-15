@@ -7,6 +7,7 @@ use App\Repositories\Api\App\AppCommonRepository;
 use App\Http\Requests\Api\App\Common\LogoutRequest;
 use App\Http\Requests\Api\App\Common\AddReviewRequest;
 use App\Http\Requests\Api\App\Common\ContactUsRequest;
+use App\Http\Requests\Api\App\Common\UpdateFcmRequest;
 use App\Http\Requests\Api\App\Common\AutoLogoutRequest;
 use App\Http\Requests\Api\App\Common\CheckLoginRequest;
 use App\Http\Requests\Api\App\Common\CheckPhoneRequest;
@@ -23,6 +24,7 @@ use App\Http\Requests\Api\App\Common\GetRequestListRequest;
 use App\Http\Requests\Api\App\Common\DeletePromotionRequest;
 use App\Http\Requests\Api\App\Common\AddUserPromotionRequest;
 use App\Http\Requests\Api\App\Common\GetRequestDetailRequest;
+use App\Http\Requests\Api\App\Common\ForceUpdateAndroidRequest;
 use App\Http\Requests\Api\App\Common\CheckPromotionStatusRequest;
 use App\Http\Requests\Api\App\Common\RideRequestAutomationRequest;
 
@@ -333,6 +335,36 @@ class AppCommonController extends Controller
         }   
 
         return $this->appCommon->return_status($request);
+
+    }
+
+    // update fcm
+    public function update_fcm(UpdateFcmRequest $request)
+    {
+        if ($request->validator->fails()) {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'parameter invalid', 
+                'errors'    => $request->validator->errors(),
+            ], 200);
+        }   
+
+        return $this->appCommon->update_fcm($request);
+
+    }
+
+    // force update android
+    public function force_update_android(ForceUpdateAndroidRequest $request)
+    {
+        if ($request->validator->fails()) {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'parameter invalid', 
+                'errors'    => $request->validator->errors(),
+            ], 200);
+        }   
+
+        return $this->appCommon->force_update_android($request);
 
     }
 }

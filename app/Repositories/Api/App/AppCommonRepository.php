@@ -831,6 +831,54 @@ class AppCommonRepository extends Controller
 
     }
 
+    // update fcm
+    public function update_fcm($request)
+    {
+
+        $user_id = Auth()->user()->user_id;
+        $update['device_token'] = $request['fcm'];
+        $update['updated_date'] = date('Y-m-d H:i:s');
+
+        $user = User::where('user_id',$user_id)->update($update);
+        if($user)
+        {
+            $msg['status'] = true;
+            $msg['message'] = 'Success'; 
+        }
+        else
+        {
+            $msg['status'] = false;
+            $msg['message'] = 'Failed'; 
+        }
+
+        return response()->json($msg, 200);
+
+    }
+
+    // force update android
+    public function force_update_android($request)
+    {
+
+
+        $version = DB::table('current_version')->where('id',1)->first();
+        if($version)
+        {
+            $data['android_version'] = $version->version;
+            $msg['status'] = true;
+            $msg['message'] = 'Success'; 
+            $msg['data'] = $data; 
+
+        }
+        else
+        {
+            $msg['status'] = false;
+            $msg['message'] = 'Failed'; 
+        }
+
+        return response()->json($msg, 200);
+
+    }
+
 
 
     
@@ -938,6 +986,11 @@ class AppCommonRepository extends Controller
             stream_context_set_option($ctx, 'ssl', 'local_cert', 'ck.pem');
             stream_context_set_option($ctx, 'ssl', 'passphrase', '1');
             $fp = stream_socket_client('ssl://gateway.sandbox.push.apple.com:2195', $err,$errstr, 60, STREAM_CLIENT_CONNECT|STREAM_CLIENT_PERSISTENT, $ctx);
+            
+            // $ctx = stream_context_create();
+            // $fp = stream_context_set_option($ctx, 'ssl', 'local_cert', 'ck.pem');
+
+
             $body['aps'] =$body1; 
             // Encode the payload as JSON
             $payload = json_encode($body);

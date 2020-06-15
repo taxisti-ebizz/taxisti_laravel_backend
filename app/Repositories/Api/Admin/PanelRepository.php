@@ -866,6 +866,9 @@ class PanelRepository extends Controller
             $connectionType = STREAM_CLIENT_CONNECT | STREAM_CLIENT_PERSISTENT;
             $connection = stream_socket_client($apnsServer,$errorNumber,$errorString,$connectionTimeout,$connectionType,$stream);
     
+            // $ctx = stream_context_create();
+            // $connection = stream_context_set_option($ctx, 'ssl', 'local_cert', $privateKeyPassword);
+            
             if (!$connection){
                 //echo "Failed to connect to the APNS server. Error no = $errorNumber<br/>";
                 // exit;
