@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Ratting;
 use App\Models\Request;
+use App\Models\DriverOnlineHours;
 use Illuminate\Support\Facades\DB;
 use Laravel\Passport\HasApiTokens;
 use Illuminate\Notifications\Notifiable;
@@ -105,9 +106,10 @@ class User extends Authenticatable
 
     public function getAvgRatingAttribute()
     {
-        if ( ! array_key_exists('avgRating', $this->relations)) {
+        if ( ! array_key_exists('avgRating', $this->relations)) 
+        {
             $this->load('avgRating');
-    }
+        }
 
         $relation = $this->getRelation('avgRating')->first();
 
@@ -116,18 +118,29 @@ class User extends Authenticatable
 
     public function acceptanceRow()
     {
-        return $this->hasMany(Request::class, 'all_driver', 'user_id')->whereRaw('FIND_IN_SET('.$this->user_id.',all_driver)');
+        return $this->hasMany(Request::class, 'all_driver', 'user_id');
     }
 
-    public function acceptanceRatio()
+    public function driverAcceptanceRatio()
     {
-        $driver_id =  $this->user_id;
-        $acceptanceRatio = Ratting::select(DB::raw('count(id) as accepted'))
-            ->whereRaw('FIND_IN_SET('.$this->user_id.',all_driver)')
-            ->value('accepted');
+        return $this->acceptanceRow()
+        ->selectRaw('count(id) as acceptance, driver_id')
+        ->whereRaw('FIND_IN_SET('.$this->user_id.',all_driver)')
+        ->groupBy('driver_id');
 
-        return $acceptanceRatio;
+    }
 
+    public function totalOnlineHoursRow()
+    {
+        return $this->hasMany(DriverOnlineHours::class, 'driver_id', 'user_id');
+    }
+
+    public function totalOnlineHours1()
+    {
+        return $this->totalOnlineHoursRow()
+        ->selectRaw('SEC_TO_TIME(SUM(TIME_TO_SEC(end_time) - TIME_TO_SEC(start_time))) as time, driver_id')
+        ->where('end_time','!=','00:00:00')
+        ->groupBy('driver_id');
     }
 
 }

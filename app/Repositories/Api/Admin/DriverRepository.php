@@ -333,6 +333,16 @@ class DriverRepository extends Controller
 
                 }
 
+                // if(!empty($filter->rejected_ratio)) // rejected_ratio filter
+                // {
+                //     $rejected_ratio = explode('-',$filter->rejected_ratio);
+                //     $query->whereHas('driverAcceptanceRatio' , function ($q) use ( $rejected_ratio ) {
+                //         $q->havingRaw('count(id) >= '.$rejected_ratio[0]);
+                //         $q->havingRaw('count(id) <= '.$rejected_ratio[1]);
+                //     });
+
+
+                // }
                 $driver_list = $query->orderByRaw('taxi_users.user_id DESC')->paginate(10)->toArray();
 
                 if($driver_list['data'])
@@ -412,7 +422,7 @@ class DriverRepository extends Controller
         elseif($driver_list['data'])
         {
 
-            if($request['sub_type'] == 'filter')
+            if($request['sub_type1'] == 'filter')
             {
                 
                 $filter = json_decode($request['filter']);

@@ -119,6 +119,18 @@ Route::prefix('management')->group(function () {
 
 // App Routes ---------------------------------------------------------------
 
+// App Socket
+Route::prefix('socket')->group(function () {
+    
+    // App Socket Routes
+    Route::post('getDriver','Api\App\SocketController@get_driver');
+    Route::post('requestRide','Api\App\SocketController@request_ride');
+    Route::post('sendPushNotification','Api\App\SocketController@send_push_notification');
+
+
+});
+
+
 // App Common Routes
 Route::prefix('common')->group(function () {
     
