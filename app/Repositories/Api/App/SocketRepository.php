@@ -249,9 +249,9 @@ class SocketRepository extends Controller
     {
 
 
-        $messageBody = json_decode($request['body1']);
+        $body1 = json_decode($request['body1']);
 	
-        $message = $messageBody->alert;
+        $message = $body1->alert;
         $deviceToken =  $request['devicetoken'];
         $apnsServer = 'ssl://gateway.push.apple.com:2195';
         //ssl://gateway.push.apple.com:2195
@@ -279,7 +279,8 @@ class SocketRepository extends Controller
             // echo "Successfully connected to the APNS. Processing...</br>";
         } 
 
-        $messageBody['aps'] = $messageBody; 
+
+        $messageBody['aps'] = $body1; 
 
         // Encode the payload as JSON
         $payload = json_encode($messageBody);
@@ -301,7 +302,7 @@ class SocketRepository extends Controller
         $msg['status'] = true;
         $msg['message'] = "sent";
     
-        return response()->join($msg, 200);
+        return response()->json($msg, 200);
     }
 
 }

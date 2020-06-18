@@ -242,7 +242,19 @@ class DriverRepository extends Controller
                 {
                     $list = 'Filter all';
 
-                    $query = User::select('taxi_driver_detail.*','taxi_users.*')
+                    $query = User::select('taxi_driver_detail.*','taxi_users.*'
+
+                        // DB::raw("(SELECT count(id) FROM `taxi_request` WHERE FIND_IN_SET(taxi_users.user_id,all_driver)) AS acceptance"),
+
+                        // DB::raw("(SELECT count(id) FROM `taxi_request` WHERE FIND_IN_SET(taxi_users.user_id,all_driver) OR FIND_IN_SET(taxi_users.user_id,rejected_by)) AS total"),
+
+                        // DB::raw("(ROUND((( acceptance / total) * 100 ),2)) as acceptance_ratio1"),
+
+                        // DB::raw("(ROUND((( (SELECT count(id) FROM `taxi_request` WHERE FIND_IN_SET(taxi_users.user_id,all_driver)) / (SELECT count(id) FROM `taxi_request` WHERE FIND_IN_SET(taxi_users.user_id,all_driver) OR FIND_IN_SET(taxi_users.user_id,rejected_by))) * 100 ),2)) as acceptance_ratio2")
+
+                    
+                    )
+
                         ->leftJoin('taxi_driver_detail','taxi_users.user_id' , '=', 'taxi_driver_detail.driver_id')
                         ->where('taxi_users.user_type',1)
                         ->withCount('driver_rides','driver_cancel_ride','driver_total_review')
@@ -250,9 +262,18 @@ class DriverRepository extends Controller
                         
                 }
 
+
                 if(!empty($filter->username)) // username filter
                 {
-                    $query->where('first_name', 'LIKE', '%'.$filter->username.'%')->orWhere('last_name', 'LIKE', '%'.$filter->username.'%');
+                    $username = explode(' ',$filter->username);
+                    if(count($username) > 1)
+                    {
+                        $query->where('first_name', 'LIKE', '%'.$username[0].'%')->orWhere('last_name', 'LIKE', '%'.$username[0].'%');
+                    }
+                    else
+                    {
+                        $query->where('first_name', 'LIKE', '%'.$filter->username.'%')->orWhere('last_name', 'LIKE', '%'.$filter->username.'%');
+                    }
                 }
 
                 if(!empty($filter->mobile)) // mobile filter 
@@ -344,14 +365,11 @@ class DriverRepository extends Controller
 
                 if(!empty($filter->acceptance_ratio)) // acceptance_ratio filter
                 {
-                    $acceptance_ratio = explode('-',$filter->acceptance_ratio);
-                    // $query->whereHas('totalonlineHoursRow' , function ($q) use ( $acceptance_ratio ) {
-                    //     $q->havingRaw('count(id) >= '.$acceptance_ratio[0]);
-                    //     $q->havingRaw('count(id) <= '.$acceptance_ratio[1]);
-                    // });
+                    // $acceptance_ratio = explode('-',$filter->acceptance_ratio);
+                    // $query->havingRaw("(ROUND((( acceptance / total) * 100 ),2)) >= ".$acceptance_ratio[0])
+                    // ->havingRaw("(ROUND((( acceptance / total) * 100 ),2)) >= ".$acceptance_ratio[1]);
                 }
-
-
+                
                 if(!empty($filter->online_hours_last_week)) // online_hours_last_week filter
                 {
                     $online_hours_last_week = explode('-',$filter->online_hours_last_week);
@@ -379,10 +397,8 @@ class DriverRepository extends Controller
                     });
                 }
 
-
-
                 $driver_list = $query->orderByRaw('taxi_users.user_id DESC')->paginate(10)->toArray();
-               
+             
 
             }
             else
@@ -747,7 +763,15 @@ class DriverRepository extends Controller
 
                 if(!empty($filter->name)) // name filter
                 {
-                    $query->where('first_name', 'LIKE', '%'.$filter->name.'%')->orWhere('last_name', 'LIKE', '%'.$filter->name.'%');
+                    $name = explode(' ',$filter->name);
+                    if(count($name) > 1)
+                    {
+                        $query->where('first_name', 'LIKE', '%'.$name[0].'%')->orWhere('last_name', 'LIKE', '%'.$name[0].'%');
+                    }
+                    else
+                    {
+                        $query->where('first_name', 'LIKE', '%'.$filter->name.'%')->orWhere('last_name', 'LIKE', '%'.$filter->name.'%');
+                    }
                 }
 
                 if(!empty($filter->mobile)) // mobile filter 

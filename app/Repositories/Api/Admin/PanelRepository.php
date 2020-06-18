@@ -215,7 +215,15 @@ class PanelRepository extends Controller
 
                 if(!empty($filter->username)) // username filter
                 {
-                    $query->where('taxi_users.first_name', 'LIKE', '%'.$filter->username.'%')->orWhere('taxi_users.last_name', 'LIKE', '%'.$filter->username.'%');
+                    $username = explode(' ',$filter->username);
+                    if(count($username) > 1)
+                    {
+                        $query->where('taxi_users.first_name', 'LIKE', '%'.$username[0].'%')->orWhere('taxi_users.last_name', 'LIKE', '%'.$username[1].'%');
+                    }
+                    else
+                    {
+                        $query->where('taxi_users.first_name', 'LIKE', '%'.$filter->username.'%')->orWhere('taxi_users.last_name', 'LIKE', '%'.$filter->username.'%');
+                    }
                 }
 
 
@@ -376,7 +384,15 @@ class PanelRepository extends Controller
 
                 if(!empty($filter->username)) // username filter
                 {
-                    $query->where('taxi_users.first_name', 'LIKE', '%'.$filter->username.'%')->orWhere('taxi_users.last_name', 'LIKE', '%'.$filter->username.'%');
+                    $username = explode(' ',$filter->username);
+                    if(count($username) > 1)
+                    {
+                        $query->where('taxi_users.first_name', 'LIKE', '%'.$username[0].'%')->orWhere('taxi_users.last_name', 'LIKE', '%'.$username[1].'%');
+                    }
+                    else
+                    {
+                        $query->where('taxi_users.first_name', 'LIKE', '%'.$filter->username.'%')->orWhere('taxi_users.last_name', 'LIKE', '%'.$filter->username.'%');
+                    }
                 }
 
                 if(!empty($filter->message)) // message filter 

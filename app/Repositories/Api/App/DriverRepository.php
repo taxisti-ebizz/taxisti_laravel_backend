@@ -116,7 +116,7 @@ class DriverRepository extends Controller
                     $imageName = 'uploads/driver_images/'.time().'.'.$profile_pic->getClientOriginalExtension();
                     $img = Storage::disk('s3')->put($imageName, file_get_contents($profile_pic), 'public');
 
-                    $input['profile_pic'] = $imageName;
+                    // $input['profile_pic'] = $imageName;
                     $driver['profile'] = $imageName;
                                             
                 }
@@ -238,7 +238,7 @@ class DriverRepository extends Controller
                 $imageName = 'uploads/driver_images/'.time().'.'.$profile_pic->getClientOriginalExtension();
                 $img = Storage::disk('s3')->put($imageName, file_get_contents($profile_pic), 'public');
 
-                $input['profile_pic'] = $imageName;
+                // $input['profile_pic'] = $imageName;
                 $driver['profile'] = $imageName;
                                         
             }

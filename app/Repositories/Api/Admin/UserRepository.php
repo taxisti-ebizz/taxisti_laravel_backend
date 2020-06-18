@@ -103,9 +103,15 @@ class UserRepository extends Controller
 
                 if(!empty($filter->username)) // username filter
                 {
-                    // $username = explode(' ',$filter->username);
-                    $query->where('first_name', 'LIKE', '%'.$filter->username.'%')->orWhere('last_name', 'LIKE', '%'.$filter->username.'%');
-
+                    $username = explode(' ',$filter->username);
+                    if(count($username) > 1)
+                    {
+                        $query->where('first_name', 'LIKE', '%'.$username[0].'%')->orWhere('last_name', 'LIKE', '%'.$username[1].'%');
+                    }
+                    else
+                    {
+                        $query->where('first_name', 'LIKE', '%'.$filter->username.'%')->orWhere('last_name', 'LIKE', '%'.$filter->username.'%');
+                    }
                 }
                 
                 if(!empty($filter->mobile)) // mobile filter 
@@ -372,7 +378,15 @@ class UserRepository extends Controller
 
                 if(!empty($filter->name)) // name filter
                 {
-                    $query->where('first_name', 'LIKE', '%'.$filter->name.'%')->orWhere('last_name', 'LIKE', '%'.$filter->name.'%');
+                    $name = explode(' ',$filter->name);
+                    if(count($name) > 1)
+                    {
+                        $query->where('first_name', 'LIKE', '%'.$name[0].'%')->orWhere('last_name', 'LIKE', '%'.$name[1].'%');
+                    }
+                    else
+                    {
+                        $query->where('first_name', 'LIKE', '%'.$filter->name.'%')->orWhere('last_name', 'LIKE', '%'.$filter->name.'%');
+                    }
 
                 }
                 
