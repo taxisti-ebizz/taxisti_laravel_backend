@@ -737,7 +737,7 @@ class RideRepository extends Controller
             ->paginate(10)->toArray();
 
         }
-        elseif($request['sub_type'] == 'filter' && $request['sub_type'] == '')
+        elseif($request['sub_type'] == 'filter')
         {
             if(isset($request['filter']))
             {
@@ -787,6 +787,7 @@ class RideRepository extends Controller
                                 'rider.mobile_no as rider_mobile'
                         )
                     ->leftJoin('taxi_users as rider', 'taxi_request.rider_id', '=', 'rider.user_id')
+                    ->leftJoin('taxi_users as driver', 'taxi_request.driver_id', '=', 'driver.user_id')
                     ->where('taxi_request.status',3)
                     ->where('taxi_request.is_canceled',1)
                     ->where('taxi_request.cancel_by',0);
@@ -1341,7 +1342,7 @@ class RideRepository extends Controller
     {
         $fake_ride_list = array();
 
-        if($request['type'] == 'currentWeek')
+        if($request['type'] == 'currentWeek' && $request['sub_type'] == '')
         {
             $list = 'currentWeek';
 
@@ -1361,7 +1362,7 @@ class RideRepository extends Controller
                     ->paginate(10)->toArray();
 
         }
-        elseif($request['type'] == 'lastWeek')
+        elseif($request['type'] == 'lastWeek' && $request['sub_type'] == '')
         {
             $list = 'LastWeek';
 
@@ -1471,6 +1472,17 @@ class RideRepository extends Controller
                     }
 
                 }
+
+                if(!empty($filter->rider_mobile)) // rider_mobile filter
+                {
+                    $query->where('rider.mobile_no', 'LIKE', '%'.$filter->rider_mobile.'%')->where('taxi_request.status',4);
+                }
+
+                if(!empty($filter->driver_mobile)) // driver_mobile filter
+                {
+                    $query->where('driver.mobile_no', 'LIKE', '%'.$filter->driver_mobile.'%')->where('taxi_request.status',4);
+                }
+
 
                 if(!empty($filter->start_date)) // start_datetime filter
                 {
