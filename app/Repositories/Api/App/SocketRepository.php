@@ -278,7 +278,10 @@ class SocketRepository extends Controller
         } else {
             // echo "Successfully connected to the APNS. Processing...</br>";
         } 
-           
+
+        $messageBody['aps'] = $messageBody; 
+
+        // Encode the payload as JSON
         $payload = json_encode($messageBody);
         $notification = chr(0) . pack('n', 32) . pack('H*', $deviceToken) . pack('n', strlen($payload)) . $payload;
         $wroteSuccessfully = fwrite($connection, $notification, strlen($notification));

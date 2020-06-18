@@ -23,7 +23,7 @@ class Driver extends Model
 
     public function profile_data()
     {
-        return $this->belongsTo(User::class, 'driver_id', 'user_id');
+        return $this->belongsTo(User::class, 'driver_id', 'driver_id');
     }
 
     public function driver_rides()
@@ -51,6 +51,54 @@ class Driver extends Model
         return $this->driver_avg_rating()
             ->selectRaw('ROUND(coalesce(avg(ratting),0),1) as avg, driver_id')
             ->groupBy('driver_id');
+    }
+
+    public function onlineHoursCurrentWeekRow()
+    {
+        $previous_week = strtotime("0 week +1 day");
+        $start_week = strtotime("last saturday midnight",$previous_week);
+        $end_week = strtotime("next friday",$start_week);
+        $start_week = date("Y-m-d",$start_week);
+        $end_week = date("Y-m-d",$end_week);
+
+        return $this->hasMany(DriverOnlineHours::class, 'driver_id', 'driver_id')->where('end_time','!=','00:00:00')->whereBetween('created_date', [$start_week, $end_week]);
+    }
+
+    public function onlineHoursLastWeekRow()
+    {
+        $previous_week = strtotime("-1 week +1 day");
+        $start_week = strtotime("last saturday midnight",$previous_week);
+        $end_week = strtotime("next friday",$start_week);
+        $start_week = date("Y-m-d",$start_week);
+        $end_week = date("Y-m-d",$end_week);
+
+        return $this->hasMany(DriverOnlineHours::class, 'driver_id', 'driver_id')->where('end_time','!=','00:00:00')->whereBetween('created_date', [$start_week, $end_week]);
+    }
+
+    public function totalonlineHoursRow()
+    {
+        return $this->hasMany(DriverOnlineHours::class, 'driver_id', 'driver_id')->where('end_time','!=','00:00:00');
+    }
+
+    public function onlineHoursCurrentWeek()
+    {
+        return $this->onlineHoursCurrentWeekRow()
+        ->selectRaw('SEC_TO_TIME(SUM(TIME_TO_SEC(end_time) - TIME_TO_SEC(start_time))) as time, driver_id')
+        ->groupBy('driver_id');
+    }
+    
+    public function onlineHoursLastWeek()
+    {
+        return $this->onlineHoursLastWeekRow()
+        ->selectRaw('SEC_TO_TIME(SUM(TIME_TO_SEC(end_time) - TIME_TO_SEC(start_time))) as time, driver_id')
+        ->groupBy('driver_id');
+    }
+
+    public function totalOnlineHours()
+    {
+        return $this->totalonlineHoursRow()
+        ->selectRaw('SEC_TO_TIME(SUM(TIME_TO_SEC(end_time) - TIME_TO_SEC(start_time))) as time, driver_id')
+        ->groupBy('driver_id');
     }
 
 }
