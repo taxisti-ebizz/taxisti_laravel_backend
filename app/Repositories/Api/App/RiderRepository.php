@@ -243,4 +243,42 @@ class RiderRepository extends Controller
 
         return response()->json($msg, 200);
     }
+
+    // get driver detail 
+    public function get_driver_detail($request)
+    {
+        $user_id = $request['driver_id'];
+
+        $driver = DB::table('taxi_driver_detail')
+        ->select('taxi_driver_detail.*','taxi_users.*')
+        ->join('taxi_users', 'taxi_driver_detail.driver_id', 'taxi_users.user_id')
+        ->where('taxi_driver_detail.driver_id',$user_id)
+        ->first();
+
+        if($driver)
+        {
+            $driver->licence = $driver->licence != ''? env('AWS_S3_URL').$driver->licence : '';
+            $driver->profile = $driver->profile != ''? env('AWS_S3_URL').$driver->profile : '';
+            $driver->profile_pic = $driver->profile_pic != ''? env('AWS_S3_URL').$driver->profile_pic : '';
+            
+            // add ratting
+            $driver->ratting = $this->appCommon->get_driver_ratting($driver->driver_id);   
+            // add car images
+            $driver->car_images = $this->appCommon->car_images($driver->id);
+
+            $msg['status']=1;
+            $msg['message']="Success";
+            $msg['data']=$driver;
+    
+        }
+        else
+        {
+            $msg['message']="Failed.";
+            $msg['status']=2;
+        }
+
+        return response()->json($msg, 200);
+
+    }
+
 }
