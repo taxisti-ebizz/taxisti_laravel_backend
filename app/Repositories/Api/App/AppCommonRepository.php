@@ -651,13 +651,14 @@ class AppCommonRepository extends Controller
     // add review
     public function add_review($request)
     {
-        $where['request_id'] = $request->request_id;
-        $where['review_by'] = $request['review_type'] == 'byrider' ? 'rider' : 'driver' ;
+        // $where['request_id'] = $request->request_id;
+        // $where['review_by'] = $request['review_type'] == 'byrider' ? 'rider' : 'driver' ;
 
-        $check  = Ratting::where($where)->first();
+        // $check  = Ratting::where($where)->first();
 
-        if(!$check)
-        {
+        // if(!$check)
+        // {
+            
             $input = $request->except(['review_type']);
             $input['created_date'] = date('Y-m-d H:i:s');
             $input['review_by'] = $request['review_type'] == 'byrider' ? 'rider' : 'driver';
@@ -669,19 +670,20 @@ class AppCommonRepository extends Controller
                 'message'   => 'Review add successfully', 
                 'data'    => array(),
             ], 200);
-        }
-        else
-        {
-            $error['request_id'] = ['The request id name has already been taken.'];
-            $error['review_by'] = ['The review by has already been taken.'];
 
-            return response()->json([
-                'status'    => false,
-                'message'   => 'Duplicate values', 
-                'errors'    => $error,
-            ], 200);            
+        // }
+        // else
+        // {
+        //     $error['request_id'] = ['The request id name has already been taken.'];
+        //     $error['review_by'] = ['The review by has already been taken.'];
+
+        //     return response()->json([
+        //         'status'    => false,
+        //         'message'   => 'Duplicate values', 
+        //         'errors'    => $error,
+        //     ], 200);            
  
-        }
+        // }
     }
 
     // ride request automation
