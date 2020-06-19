@@ -1764,7 +1764,7 @@ class RideRepository extends Controller
     public function add_area_boundaries($request)
     {
 
-        $check = DB::table('taxi_ride_area_coordinates')->where($request->all())->get();
+        $check = DB::table('taxi_ride_area_coordinates')->where($request->all())->first();
 
         if($check)
         {
