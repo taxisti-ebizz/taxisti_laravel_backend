@@ -522,7 +522,7 @@ class PanelRepository extends Controller
 
         return response()->json([
             'status'    => true,
-            'message'   => 'Notification send sccessfully', 
+            'message'   => 'Notification send successfully', 
             'data'    => array(),
         ], 200);
 
