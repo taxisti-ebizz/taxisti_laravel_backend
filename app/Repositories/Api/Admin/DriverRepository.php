@@ -266,11 +266,15 @@ class DriverRepository extends Controller
                     $username = explode(' ',$filter->username);
                     if(count($username) > 1)
                     {
-                        $query->where('first_name', 'LIKE', '%'.$username[0].'%')->orWhere('last_name', 'LIKE', '%'.$username[0].'%');
+                        $query->where(function ($q) use ($username) {
+                            $q->where('first_name', 'LIKE', '%'.$username[0].'%')->orWhere('last_name', 'LIKE', '%'.$username[0].'%');
+                        });
                     }
                     else
                     {
-                        $query->where('first_name', 'LIKE', '%'.$filter->username.'%')->orWhere('last_name', 'LIKE', '%'.$filter->username.'%');
+                        $query->where(function ($q) use ($filter) {
+                            $q->where('first_name', 'LIKE', '%'.$filter->username.'%')->orWhere('last_name', 'LIKE', '%'.$filter->username.'%');
+                        });
                     }
                 }
 
@@ -764,11 +768,17 @@ class DriverRepository extends Controller
                     $name = explode(' ',$filter->name);
                     if(count($name) > 1)
                     {
-                        $query->where('first_name', 'LIKE', '%'.$name[0].'%')->orWhere('last_name', 'LIKE', '%'.$name[0].'%');
+                        $query->where(function ($q) use ($name) {
+                            $q->where('first_name', 'LIKE', '%' . $name[0] . '%')->orWhere('last_name', 'LIKE', '%' . $name[0] . '%');
+                        });
+
                     }
                     else
                     {
-                        $query->where('first_name', 'LIKE', '%'.$filter->name.'%')->orWhere('last_name', 'LIKE', '%'.$filter->name.'%');
+                        $query->where(function ($q) use ($filter) {
+                            $q->where('first_name', 'LIKE', '%'.$filter->name.'%')->orWhere('last_name', 'LIKE', '%'.$filter->name.'%');
+                        });
+
                     }
                 }
 

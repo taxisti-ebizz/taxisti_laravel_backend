@@ -218,11 +218,17 @@ class PanelRepository extends Controller
                     $username = explode(' ',$filter->username);
                     if(count($username) > 1)
                     {
-                        $query->where('taxi_users.first_name', 'LIKE', '%'.$username[0].'%')->orWhere('taxi_users.last_name', 'LIKE', '%'.$username[1].'%');
+                        $query->where(function ($q) use ($username) {
+                            $q->where('taxi_users.first_name', 'LIKE', '%'.$username[0].'%')->orWhere('taxi_users.last_name', 'LIKE', '%'.$username[1].'%');
+                        });
+
                     }
                     else
                     {
-                        $query->where('taxi_users.first_name', 'LIKE', '%'.$filter->username.'%')->orWhere('taxi_users.last_name', 'LIKE', '%'.$filter->username.'%');
+                        $query->where(function ($q) use ($filter) {
+                            $q->where('taxi_users.first_name', 'LIKE', '%'.$filter->username.'%')->orWhere('taxi_users.last_name', 'LIKE', '%'.$filter->username.'%');
+                        });
+
                     }
                 }
 
@@ -387,11 +393,17 @@ class PanelRepository extends Controller
                     $username = explode(' ',$filter->username);
                     if(count($username) > 1)
                     {
-                        $query->where('taxi_users.first_name', 'LIKE', '%'.$username[0].'%')->orWhere('taxi_users.last_name', 'LIKE', '%'.$username[1].'%');
+                        $query->where(function ($q) use ($username) {
+                            $q->where('taxi_users.first_name', 'LIKE', '%'.$username[0].'%')->orWhere('taxi_users.last_name', 'LIKE', '%'.$username[1].'%');
+                        });
+
                     }
                     else
                     {
-                        $query->where('taxi_users.first_name', 'LIKE', '%'.$filter->username.'%')->orWhere('taxi_users.last_name', 'LIKE', '%'.$filter->username.'%');
+                        $query->where(function ($q) use ($filter) {
+                            $q->where('taxi_users.first_name', 'LIKE', '%'.$filter->username.'%')->orWhere('taxi_users.last_name', 'LIKE', '%'.$filter->username.'%');
+                        });
+
                     }
                 }
 

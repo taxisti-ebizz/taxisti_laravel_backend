@@ -143,11 +143,15 @@ class RideRepository extends Controller
                     $rider_name = explode(' ',$filter->rider_name);
                     if(count($rider_name) > 1)
                     {
-                        $query->where('rider.first_name', 'LIKE', '%'.$rider_name[0].'%')->orWhere('rider.last_name', 'LIKE', '%'.$rider_name[1].'%')->where('taxi_request.status',0);
+                        $query->where(function ($q) use ($rider_name) {
+                            $q->where('rider.first_name', 'LIKE', '%'.$rider_name[0].'%')->orWhere('rider.last_name', 'LIKE', '%'.$rider_name[1].'%')->where('taxi_request.status',0);
+                        });
                     }
                     else
                     {
-                        $query->where('rider.first_name', 'LIKE', '%'.$filter->rider_name.'%')->orWhere('rider.last_name', 'LIKE', '%'.$filter->rider_name.'%')->where('taxi_request.status',0);
+                        $query->where(function ($q) use ($filter) {
+                            $q->where('rider.first_name', 'LIKE', '%'.$filter->rider_name.'%')->orWhere('rider.last_name', 'LIKE', '%'.$filter->rider_name.'%')->where('taxi_request.status',0);
+                        });
                     }
 
                 }
@@ -157,11 +161,17 @@ class RideRepository extends Controller
                     $driver_name = explode(' ',$filter->driver_name);
                     if(count($driver_name) > 1)
                     {
-                        $query->where('driver.first_name', 'LIKE', '%'.$driver_name[0].'%')->orWhere('driver.last_name', 'LIKE', '%'.$driver_name[1].'%')->where('taxi_request.status',0);
+                        $query->where(function ($q) use ($driver_name) {
+                            $q->where('driver.first_name', 'LIKE', '%'.$driver_name[0].'%')->orWhere('driver.last_name', 'LIKE', '%'.$driver_name[1].'%')->where('taxi_request.status',0);
+                        });
+
                     }
                     else
                     {
-                        $query->where('driver.first_name', 'LIKE', '%'.$filter->driver_name.'%')->orWhere('driver.last_name', 'LIKE', '%'.$filter->driver_name.'%')->where('taxi_request.status',0);
+                        $query->where(function ($q) use ($filter) {
+                            $q->where('driver.first_name', 'LIKE', '%'.$filter->driver_name.'%')->orWhere('driver.last_name', 'LIKE', '%'.$filter->driver_name.'%')->where('taxi_request.status',0);
+                        });
+
                     }
                 }
 
@@ -352,11 +362,15 @@ class RideRepository extends Controller
                     $rider_name = explode(' ',$filter->rider_name);
                     if(count($rider_name) > 1)
                     {
-                        $query->where('rider.first_name', 'LIKE', '%'.$rider_name[0].'%')->orWhere('rider.last_name', 'LIKE', '%'.$rider_name[1].'%')->where('taxi_request.status',1);
+                        $query->where(function ($q) use ($rider_name) {
+                            $q->where('rider.first_name', 'LIKE', '%'.$rider_name[0].'%')->orWhere('rider.last_name', 'LIKE', '%'.$rider_name[1].'%')->where('taxi_request.status',1);
+                        });
                     }
                     else
                     {
-                        $query->where('rider.first_name', 'LIKE', '%'.$filter->rider_name.'%')->orWhere('rider.last_name', 'LIKE', '%'.$filter->rider_name.'%')->where('taxi_request.status',1);
+                        $query->where(function ($q) use ($filter) {
+                            $q->where('rider.first_name', 'LIKE', '%'.$filter->rider_name.'%')->orWhere('rider.last_name', 'LIKE', '%'.$filter->rider_name.'%')->where('taxi_request.status',1);
+                        });
                     }
 
                 }
@@ -366,11 +380,15 @@ class RideRepository extends Controller
                     $driver_name = explode(' ',$filter->driver_name);
                     if(count($driver_name) > 1)
                     {
-                        $query->where('driver.first_name', 'LIKE', '%'.$driver_name[0].'%')->orWhere('driver.last_name', 'LIKE', '%'.$driver_name[1].'%')->where('taxi_request.status',1);
+                        $query->where(function ($q) use ($driver_name) {
+                            $q->where('driver.first_name', 'LIKE', '%'.$driver_name[0].'%')->orWhere('driver.last_name', 'LIKE', '%'.$driver_name[1].'%')->where('taxi_request.status',1);
+                        });
                     }
                     else
                     {
-                        $query->where('driver.first_name', 'LIKE', '%'.$filter->driver_name.'%')->orWhere('driver.last_name', 'LIKE', '%'.$filter->driver_name.'%')->where('taxi_request.status',1);
+                        $query->where(function ($q) use ($filter) {
+                            $q->where('driver.first_name', 'LIKE', '%'.$filter->driver_name.'%')->orWhere('driver.last_name', 'LIKE', '%'.$filter->driver_name.'%')->where('taxi_request.status',1);
+                        });
                     }
                 }
 
@@ -572,11 +590,15 @@ class RideRepository extends Controller
                     $rider_name = explode(' ',$filter->rider_name);
                     if(count($rider_name) > 1)
                     {
-                        $query->where('rider.first_name', 'LIKE', '%'.$rider_name[0].'%')->orWhere('rider.last_name', 'LIKE', '%'.$rider_name[1].'%')->where('taxi_request.status',3)->where('taxi_request.ride_status',3);
+                        $query->where(function ($q) use ($rider_name) {
+                            $q->where('rider.first_name', 'LIKE', '%'.$rider_name[0].'%')->orWhere('rider.last_name', 'LIKE', '%'.$rider_name[1].'%')->where('taxi_request.status',3)->where('taxi_request.ride_status',3);
+                        });
                     }
                     else
                     {
-                        $query->where('rider.first_name', 'LIKE', '%'.$filter->rider_name.'%')->orWhere('rider.last_name', 'LIKE', '%'.$filter->rider_name.'%')->where('taxi_request.status',3)->where('taxi_request.ride_status',3);
+                        $query->where(function ($q) use ($filter) {
+                            $q->where('rider.first_name', 'LIKE', '%'.$filter->rider_name.'%')->orWhere('rider.last_name', 'LIKE', '%'.$filter->rider_name.'%')->where('taxi_request.status',3)->where('taxi_request.ride_status',3);
+                        });
                     }
 
                 }
@@ -586,11 +608,15 @@ class RideRepository extends Controller
                     $driver_name = explode(' ',$filter->driver_name);
                     if(count($driver_name) > 1)
                     {
-                        $query->where('driver.first_name', 'LIKE', '%'.$driver_name[0].'%')->orWhere('driver.last_name', 'LIKE', '%'.$driver_name[1].'%')->where('taxi_request.status',3)->where('taxi_request.ride_status',3);
+                        $query->where(function ($q) use ($driver_name) {
+                            $q->where('driver.first_name', 'LIKE', '%'.$driver_name[0].'%')->orWhere('driver.last_name', 'LIKE', '%'.$driver_name[1].'%')->where('taxi_request.status',3)->where('taxi_request.ride_status',3);
+                        });
                     }
                     else
                     {
-                        $query->where('driver.first_name', 'LIKE', '%'.$filter->driver_name.'%')->orWhere('driver.last_name', 'LIKE', '%'.$filter->driver_name.'%')->where('taxi_request.status',3)->where('taxi_request.ride_status',3);
+                        $query->where(function ($q) use ($filter) {
+                            $q->where('driver.first_name', 'LIKE', '%'.$filter->driver_name.'%')->orWhere('driver.last_name', 'LIKE', '%'.$filter->driver_name.'%')->where('taxi_request.status',3)->where('taxi_request.ride_status',3);
+                        });
                     }
 
                 }
@@ -799,11 +825,15 @@ class RideRepository extends Controller
                     $rider_name = explode(' ',$filter->rider_name);
                     if(count($rider_name) > 1)
                     {
-                        $query->where('rider.first_name', 'LIKE', '%'.$rider_name[0].'%')->orWhere('rider.last_name', 'LIKE', '%'.$rider_name[1].'%')->where('taxi_request.status',3)->where('taxi_request.is_canceled',1)->where('taxi_request.cancel_by',0);
+                        $query->where(function ($q) use ($rider_name) {
+                            $q->where('rider.first_name', 'LIKE', '%'.$rider_name[0].'%')->orWhere('rider.last_name', 'LIKE', '%'.$rider_name[1].'%')->where('taxi_request.status',3)->where('taxi_request.is_canceled',1)->where('taxi_request.cancel_by',0);
+                        });
                     }
                     else
                     {
-                        $query->where('rider.first_name', 'LIKE', '%'.$filter->rider_name.'%')->orWhere('rider.last_name', 'LIKE', '%'.$filter->rider_name.'%')->where('taxi_request.status',3)->where('taxi_request.is_canceled',1)->where('taxi_request.cancel_by',0);
+                        $query->where(function ($q) use ($filter) {
+                            $q->where('rider.first_name', 'LIKE', '%'.$filter->rider_name.'%')->orWhere('rider.last_name', 'LIKE', '%'.$filter->rider_name.'%')->where('taxi_request.status',3)->where('taxi_request.is_canceled',1)->where('taxi_request.cancel_by',0);
+                        });
                     }
                 }
 
@@ -812,11 +842,15 @@ class RideRepository extends Controller
                     $driver_name = explode(' ',$filter->driver_name);
                     if(count($driver_name) > 1)
                     {
-                        $query->where('driver.first_name', 'LIKE', '%'.$driver_name[0].'%')->orWhere('driver.last_name', 'LIKE', '%'.$driver_name[1].'%')->where('taxi_request.status',3)->where('taxi_request.is_canceled',1)->where('taxi_request.cancel_by',0);
+                        $query->where(function ($q) use ($driver_name) {
+                            $q->where('driver.first_name', 'LIKE', '%'.$driver_name[0].'%')->orWhere('driver.last_name', 'LIKE', '%'.$driver_name[1].'%')->where('taxi_request.status',3)->where('taxi_request.is_canceled',1)->where('taxi_request.cancel_by',0);
+                        });
                     }
                     else
                     {
-                        $query->where('driver.first_name', 'LIKE', '%'.$filter->driver_name.'%')->orWhere('driver.last_name', 'LIKE', '%'.$filter->driver_name.'%')->where('taxi_request.status',3)->where('taxi_request.is_canceled',1)->where('taxi_request.cancel_by',0);
+                        $query->where(function ($q) use ($filter) {
+                            $q->where('driver.first_name', 'LIKE', '%'.$filter->driver_name.'%')->orWhere('driver.last_name', 'LIKE', '%'.$filter->driver_name.'%')->where('taxi_request.status',3)->where('taxi_request.is_canceled',1)->where('taxi_request.cancel_by',0);
+                        });
                     }
 
                 }
@@ -1057,11 +1091,15 @@ class RideRepository extends Controller
                     $user_name = explode(' ',$filter->user_name);
                     if(count($user_name) > 1)
                     {
-                        $query->where('rider.first_name', 'LIKE', '%'.$user_name[0].'%')->orWhere('rider.last_name', 'LIKE', '%'.$user_name[1].'%')->where('taxi_request.status',3)->where('taxi_request.is_canceled',1)->whereIn('taxi_request.cancel_by',[1,2]);
+                        $query->where(function ($q) use ($user_name) {
+                            $q->where('rider.first_name', 'LIKE', '%'.$user_name[0].'%')->orWhere('rider.last_name', 'LIKE', '%'.$user_name[1].'%')->where('taxi_request.status',3)->where('taxi_request.is_canceled',1)->whereIn('taxi_request.cancel_by',[1,2]);
+                        });
                     }
                     else
                     {
-                        $query->where('rider.first_name', 'LIKE', '%'.$filter->user_name.'%')->orWhere('rider.last_name', 'LIKE', '%'.$filter->user_name.'%')->where('taxi_request.status',3)->where('taxi_request.is_canceled',1)->whereIn('taxi_request.cancel_by',[1,2]);
+                        $query->where(function ($q) use ($filter) {
+                            $q->where('rider.first_name', 'LIKE', '%'.$filter->user_name.'%')->orWhere('rider.last_name', 'LIKE', '%'.$filter->user_name.'%')->where('taxi_request.status',3)->where('taxi_request.is_canceled',1)->whereIn('taxi_request.cancel_by',[1,2]);
+                        });
                     }
 
                 }
@@ -1071,24 +1109,32 @@ class RideRepository extends Controller
                     $driver_name = explode(' ',$filter->driver_name);
                     if(count($driver_name) > 1)
                     {
-                        $query->where('driver.first_name', 'LIKE', '%'.$driver_name[0].'%')->orWhere('driver.last_name', 'LIKE', '%'.$driver_name[1].'%')->where('taxi_request.status',3)->where('taxi_request.is_canceled',1)->whereIn('taxi_request.cancel_by',[1,2]);
+                        $query->where(function ($q) use ($driver_name) {
+                            $q->where('driver.first_name', 'LIKE', '%'.$driver_name[0].'%')->orWhere('driver.last_name', 'LIKE', '%'.$driver_name[1].'%')->where('taxi_request.status',3)->where('taxi_request.is_canceled',1)->whereIn('taxi_request.cancel_by',[1,2]);
+                        });
                     }
                     else
                     {
-                        $query->where('driver.first_name', 'LIKE', '%'.$filter->driver_name.'%')->orWhere('driver.last_name', 'LIKE', '%'.$filter->driver_name.'%')->where('taxi_request.status',3)->where('taxi_request.is_canceled',1)->whereIn('taxi_request.cancel_by',[1,2]);
+                        $query->where(function ($q) use ($filter) {
+                            $q->where('driver.first_name', 'LIKE', '%'.$filter->driver_name.'%')->orWhere('driver.last_name', 'LIKE', '%'.$filter->driver_name.'%')->where('taxi_request.status',3)->where('taxi_request.is_canceled',1)->whereIn('taxi_request.cancel_by',[1,2]);
+                        });
                     }
 
                 }
 
                 if(!empty($filter->driver_mobile)) // driver_mobile filter
                 {
-                    $query->where('driver.mobile_no', 'LIKE', '%'.$filter->driver_mobile.'%')->where('taxi_request.status',3)->where('taxi_request.is_canceled',1)->whereIn('taxi_request.cancel_by',[1,2]);
+                    $query->where(function ($q) use ($filter) {
+                        $q->where('driver.mobile_no', 'LIKE', '%'.$filter->driver_mobile.'%')->where('taxi_request.status',3)->where('taxi_request.is_canceled',1)->whereIn('taxi_request.cancel_by',[1,2]);
+                    });
 
                 }
 
                 if(!empty($filter->user_mobile)) // user_mobile filter
                 {
-                    $query->where('rider.mobile_no', 'LIKE', '%'.$filter->user_mobile.'%')->where('taxi_request.status',3)->where('taxi_request.is_canceled',1)->whereIn('taxi_request.cancel_by',[1,2]);
+                    $query->where(function ($q) use ($filter) {
+                        $q->where('rider.mobile_no', 'LIKE', '%'.$filter->user_mobile.'%')->where('taxi_request.status',3)->where('taxi_request.is_canceled',1)->whereIn('taxi_request.cancel_by',[1,2]);
+                    });
                 }
 
                 if(!empty($filter->start_date)) // start_datetime filter
@@ -1266,11 +1312,15 @@ class RideRepository extends Controller
                     $rider_name = explode(' ',$filter->rider_name);
                     if(count($rider_name) > 1)
                     {
-                        $query->where('rider.first_name', 'LIKE', '%'.$rider_name[0].'%')->orWhere('rider.last_name', 'LIKE', '%'.$rider_name[1].'%');
+                        $query->where(function ($q) use ($rider_name) {
+                            $q->where('rider.first_name', 'LIKE', '%'.$rider_name[0].'%')->orWhere('rider.last_name', 'LIKE', '%'.$rider_name[1].'%');
+                        });
                     }
                     else
                     {
-                        $query->where('rider.first_name', 'LIKE', '%'.$filter->rider_name.'%')->orWhere('rider.last_name', 'LIKE', '%'.$filter->rider_name.'%');
+                        $query->where(function ($q) use ($filter) {
+                            $q->where('rider.first_name', 'LIKE', '%'.$filter->rider_name.'%')->orWhere('rider.last_name', 'LIKE', '%'.$filter->rider_name.'%');
+                        });
                     }
 
                 }
@@ -1450,11 +1500,15 @@ class RideRepository extends Controller
                     $rider_name = explode(' ',$filter->rider_name);
                     if(count($rider_name) > 1)
                     {
-                        $query->where('rider.first_name', 'LIKE', '%'.$rider_name[0].'%')->orWhere('rider.last_name', 'LIKE', '%'.$rider_name[1].'%')->where('taxi_request.status',4);
+                        $query->where(function ($q) use ($rider_name) {
+                            $q->where('rider.first_name', 'LIKE', '%'.$rider_name[0].'%')->orWhere('rider.last_name', 'LIKE', '%'.$rider_name[1].'%')->where('taxi_request.status',4);
+                        });
                     }
                     else
                     {
-                        $query->where('rider.first_name', 'LIKE', '%'.$filter->rider_name.'%')->orWhere('rider.last_name', 'LIKE', '%'.$filter->rider_name.'%')->where('taxi_request.status',4);
+                        $query->where(function ($q) use ($filter) {
+                            $q->where('rider.first_name', 'LIKE', '%'.$filter->rider_name.'%')->orWhere('rider.last_name', 'LIKE', '%'.$filter->rider_name.'%')->where('taxi_request.status',4);
+                        });
                     }
 
                 }
@@ -1464,23 +1518,31 @@ class RideRepository extends Controller
                     $driver_name = explode(' ',$filter->driver_name);
                     if(count($driver_name) > 1)
                     {
-                        $query->where('driver.first_name', 'LIKE', '%'.$driver_name[0].'%')->orWhere('driver.last_name', 'LIKE', '%'.$driver_name[1].'%')->where('taxi_request.status',4);
+                        $query->where(function ($q) use ($driver_name) {
+                            $q->where('driver.first_name', 'LIKE', '%'.$driver_name[0].'%')->orWhere('driver.last_name', 'LIKE', '%'.$driver_name[1].'%')->where('taxi_request.status',4);
+                        });
                     }
                     else
                     {
-                        $query->where('driver.first_name', 'LIKE', '%'.$filter->driver_name.'%')->orWhere('driver.last_name', 'LIKE', '%'.$filter->driver_name.'%')->where('taxi_request.status',4);
+                        $query->where(function ($q) use ($filter) {
+                            $q->where('driver.first_name', 'LIKE', '%'.$filter->driver_name.'%')->orWhere('driver.last_name', 'LIKE', '%'.$filter->driver_name.'%')->where('taxi_request.status',4);
+                        });
                     }
 
                 }
 
                 if(!empty($filter->rider_mobile)) // rider_mobile filter
                 {
-                    $query->where('rider.mobile_no', 'LIKE', '%'.$filter->rider_mobile.'%')->where('taxi_request.status',4);
+                    $query->where(function ($q) use ($filter) {
+                        $q->where('rider.mobile_no', 'LIKE', '%'.$filter->rider_mobile.'%')->where('taxi_request.status',4);
+                    });
                 }
 
                 if(!empty($filter->driver_mobile)) // driver_mobile filter
                 {
-                    $query->where('driver.mobile_no', 'LIKE', '%'.$filter->driver_mobile.'%')->where('taxi_request.status',4);
+                    $query->where(function ($q) use ($filter) {
+                        $q->where('driver.mobile_no', 'LIKE', '%'.$filter->driver_mobile.'%')->where('taxi_request.status',4);
+                    });
                 }
 
 
