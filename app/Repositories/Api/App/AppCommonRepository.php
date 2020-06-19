@@ -659,7 +659,7 @@ class AppCommonRepository extends Controller
         // if(!$check)
         // {
             
-            $input = $request->except(['review_type']);
+            $input = $request->except(['review_type','driver_id','rider_id']);
             $input['created_date'] = date('Y-m-d H:i:s');
             $input['review_by'] = $request['review_type'] == 'byrider' ? 'rider' : 'driver';
     
