@@ -821,6 +821,7 @@ class PanelRepository extends Controller
     // send notification to user
     public function sendNotiToUser($user_id,$device_token,$device_type,$msg,$type)
     {   
+        $notificationmsg = 0;
         if($device_type=='A')
         {
             $path_to_firebase_cm = 'https://fcm.googleapis.com/fcm/send';
