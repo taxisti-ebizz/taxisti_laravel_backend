@@ -251,14 +251,12 @@ class DriverRepository extends Controller
                         // DB::raw("(ROUND((( acceptance / total) * 100 ),2)) as acceptance_ratio1"),
 
                         // DB::raw("(ROUND((( (SELECT count(id) FROM `taxi_request` WHERE FIND_IN_SET(taxi_users.user_id,all_driver)) / (SELECT count(id) FROM `taxi_request` WHERE FIND_IN_SET(taxi_users.user_id,all_driver) OR FIND_IN_SET(taxi_users.user_id,rejected_by))) * 100 ),2)) as acceptance_ratio2")
-
-                    
+                   
                     )
-
-                        ->leftJoin('taxi_driver_detail','taxi_users.user_id' , '=', 'taxi_driver_detail.driver_id')
-                        ->where('taxi_users.user_type',1)
-                        ->withCount('driver_rides','driver_cancel_ride','driver_total_review')
-                        ->with('driverAvgRating','onlineHoursCurrentWeek','onlineHoursLastWeek','totalOnlineHours');
+                    ->leftJoin('taxi_driver_detail','taxi_users.user_id' , '=', 'taxi_driver_detail.driver_id')
+                    ->where('taxi_users.user_type',1)
+                    ->withCount('driver_rides','driver_cancel_ride','driver_total_review')
+                    ->with('driverAvgRating','onlineHoursCurrentWeek','onlineHoursLastWeek','totalOnlineHours');
                         
                 }
 
@@ -511,7 +509,7 @@ class DriverRepository extends Controller
             return response()->json([
                 'status'    => false,
                 'message'   => 'No driver found', 
-                'error'    => '',
+                'data'    => array(),
             ], 200);
         }
     }
@@ -535,7 +533,7 @@ class DriverRepository extends Controller
                 $imageName = 'uploads/driver_images/'.time().'.'.$profile_pic->getClientOriginalExtension();
                 $img = Storage::disk('s3')->put($imageName, file_get_contents($profile_pic), 'public');
 
-                $input['profile_pic'] = $imageName;
+                // $input['profile_pic'] = $imageName;
                 $driver['profile'] = $imageName;
                                         
             }
@@ -597,7 +595,7 @@ class DriverRepository extends Controller
                 $imageName = 'uploads/driver_images/'.time().'.'.$profile_pic->getClientOriginalExtension();
                 $img = Storage::disk('s3')->put($imageName, file_get_contents($profile_pic), 'public');
 
-                $input['profile_pic'] = $imageName;
+                // $input['profile_pic'] = $imageName;
                 $driver['profile'] = $imageName;
                                     
             }
@@ -647,7 +645,7 @@ class DriverRepository extends Controller
         return response()->json([
             'status'    => true,
             'message'   => 'update successfull', 
-            'data'    => $get_driver_detail->original['data'],
+            'data'    => array(),
         ], 200);
         
     }
@@ -686,7 +684,7 @@ class DriverRepository extends Controller
         return response()->json([
             'status'    => true,
             'message'   => 'update successfull', 
-            'data'    => $get_driver_detail->original['data'],
+            'data'    => array(),
         ], 200);
         
     }
