@@ -654,7 +654,7 @@ class AppCommonRepository extends Controller
         $where['request_id'] = $request->request_id;
         $where['review_by'] = $request['review_type'] == 'byrider' ? 'rider' : 'driver' ;
 
-        $check  = Ratting::where($where)->get();
+        $check  = Ratting::where($where)->first();
 
         if(!$check)
         {
