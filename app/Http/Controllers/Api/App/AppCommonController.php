@@ -14,6 +14,7 @@ use App\Http\Requests\Api\App\Common\CheckPhoneRequest;
 use App\Http\Requests\Api\App\Common\GetCmsPageRequest;
 use App\Http\Requests\Api\App\Common\GetRattingRequest;
 use App\Http\Requests\Api\App\Common\SwitchUserRequest;
+use App\Http\Requests\Api\App\Common\GetUserTypeRequest;
 use App\Http\Requests\Api\App\Common\AdminSettingRequest;
 use App\Http\Requests\Api\App\Common\ReturnStatusRequest;
 use App\Http\Requests\Api\App\Common\CheckPromotionStatus;
@@ -381,6 +382,21 @@ class AppCommonController extends Controller
         }   
 
         return $this->appCommon->force_update_ios($request);
+
+    }
+
+    // get user type
+    public function get_user_type(GetUserTypeRequest $request)
+    {
+        if ($request->validator->fails()) {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'parameter invalid', 
+                'errors'    => $request->validator->errors(),
+            ], 200);
+        }   
+
+        return $this->appCommon->get_user_type($request);
 
     }
 }

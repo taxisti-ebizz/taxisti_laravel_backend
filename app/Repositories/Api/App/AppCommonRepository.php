@@ -907,6 +907,28 @@ class AppCommonRepository extends Controller
 
     }
 
+        // get user type
+    public function get_user_type($request)
+    {
+
+        $user_id = Auth()->user()->user_id;
+        $user = User::where('user_id',$user_id)->first();
+
+        if($user)
+        {
+            $msg['status'] = 1;
+            $msg['message'] = 'Success'; 
+            $msg['data'] = $user->user_type; 
+        }
+        else
+        {
+            $msg['status'] = 2;
+            $msg['message'] = 'Failed';
+            $msg['data'] = array();
+        }
+
+        return response()->json($msg, 200);
+    }
 
 
     

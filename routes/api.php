@@ -165,8 +165,7 @@ Route::prefix('common')->group(function () {
         Route::post('switchUser','Api\App\AppCommonController@switch_user');
         Route::post('returnStatus','Api\App\AppCommonController@return_status');
         Route::post('updateFcm','Api\App\AppCommonController@update_fcm');
-
-
+        Route::post('getUserType','Api\App\AppCommonController@get_user_type');
 
 
 
