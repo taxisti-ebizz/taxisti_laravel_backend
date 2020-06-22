@@ -980,7 +980,7 @@ class AppCommonRepository extends Controller
     public function get_driver_ratting($driver_id)
     {
         $ratting = Ratting::select(
-            DB::raw('coalesce(AVG(ratting),0) as avgrating, count(review) as countreview'))
+            DB::raw('ROUND(coalesce(AVG(ratting),0),1) as avgrating, count(review) as countreview'))
             ->join('taxi_request','taxi_ratting.request_id','taxi_request.id')
             ->where('taxi_request.driver_id',$driver_id)
             ->where('taxi_ratting.review_by','rider')
@@ -993,7 +993,7 @@ class AppCommonRepository extends Controller
     public function get_rider_ratting($rider_id)
     {
         $ratting =  Ratting::select(
-            DB::raw('coalesce(AVG(ratting),0) as avgrating, count(review) as countreview'))
+            DB::raw('ROUND(coalesce(AVG(ratting),0),1) as avgrating, count(review) as countreview'))
             ->join('taxi_request','taxi_ratting.request_id','taxi_request.id')
             ->where('taxi_request.rider_id',$rider_id)
             ->where('taxi_ratting.review_by','driver')
