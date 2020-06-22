@@ -49,7 +49,7 @@ class DriverRepository extends Controller
             // online driver
             $list = 'Online';
 
-            $url="https://taxisti-8392c.firebaseio.com/userData1.json";
+            $url="https://taxistinewproject.firebaseio.com/userData1.json";
 
             $ch = curl_init();
             // Will return the response, if false it print the response
@@ -161,7 +161,7 @@ class DriverRepository extends Controller
                     // online driver
                     $list = 'Online';
 
-                    $url="https://taxisti-8392c.firebaseio.com/userData1.json";
+                    $url="https://taxistinewproject.firebaseio.com/userData1.json";
         
                     $ch = curl_init();
                     // Will return the response, if false it print the response

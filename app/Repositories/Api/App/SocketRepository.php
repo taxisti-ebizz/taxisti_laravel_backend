@@ -253,7 +253,7 @@ class SocketRepository extends Controller
 	
         $message = $body1->alert;
         $deviceToken =  $request['devicetoken'];
-        $apnsServer = 'ssl://gateway.push.apple.com:2195';
+        $apnsServer = 'ssl://gateway.sandbox.push.apple.com:2195';
         //ssl://gateway.push.apple.com:2195
         //ssl://gateway.sandbox.push.apple.com:2195
         $privateKeyPassword = '1';
