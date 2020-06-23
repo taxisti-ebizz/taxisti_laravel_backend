@@ -1032,7 +1032,8 @@ class AppCommonRepository extends Controller
             $message = 'You logout from app.';
             $deviceToken =  $device_token;
 
-            $apnsServer = 'ssl://gateway.push.apple.com:2195';
+            // $apnsServer = 'ssl://gateway.push.apple.com:2195';
+            $apnsServer = 'ssl://gateway.sandbox.push.apple.com:2195';
             //ssl://gateway.push.apple.com:2195
             //ssl://gateway.sandbox.push.apple.com:2195
             $privateKeyPassword = '1';

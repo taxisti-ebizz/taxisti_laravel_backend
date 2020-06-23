@@ -882,7 +882,8 @@ class PanelRepository extends Controller
         elseif($device_type=='I')
         {
             
-            $apnsServer = 'ssl://gateway.push.apple.com:2195';
+            // $apnsServer = 'ssl://gateway.push.apple.com:2195';
+            $apnsServer = 'ssl://gateway.sandbox.push.apple.com:2195';
             $privateKeyPassword = '1';
             $message = $msg;
             $deviceToken = $device_token;
