@@ -61,9 +61,8 @@ class DriverRepository extends Controller
             // Closing
             curl_close($ch);
 
-                        
             $ids = '';
-            if(!empty($result))
+            if($result != 'null')
             {
                 $datas = json_decode($result);
                 foreach ($datas as $key => $value) 
@@ -175,7 +174,7 @@ class DriverRepository extends Controller
         
                                 
                     $ids = '';
-                    if(!empty($result))
+                    if($result != 'null')
                     {
                         $datas = json_decode($result);
                         foreach ($datas as $key => $value) 

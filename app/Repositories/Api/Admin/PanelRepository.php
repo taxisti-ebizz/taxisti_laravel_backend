@@ -959,7 +959,7 @@ class PanelRepository extends Controller
 
                     
         $ids = '';
-        if(!empty($result))
+        if($result != 'null')
         {
             $datas = json_decode($result);
             foreach ($datas as $key => $value) 
