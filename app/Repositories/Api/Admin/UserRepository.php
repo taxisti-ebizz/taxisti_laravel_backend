@@ -576,8 +576,8 @@ class UserRepository extends Controller
         }
         else if ($device_type == 'I')
         {
-            // $apnsServer = 'ssl://gateway.push.apple.com:2195';
-            $apnsServer = 'ssl://gateway.sandbox.push.apple.com:2195';
+            $apnsServer = 'ssl://gateway.push.apple.com:2195';
+            // $apnsServer = 'ssl://gateway.sandbox.push.apple.com:2195';
             $privateKeyPassword = '1';
             $deviceToken =$device_token;
             $pushCertAndKeyPemFile = 'pushcert.pem';
