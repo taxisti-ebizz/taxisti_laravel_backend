@@ -31,6 +31,7 @@ Route::prefix('management')->group(function () {
         Route::post('getUserDetail','Api\Admin\Users\UserController@get_user_detail');
         Route::post('editUserDetail','Api\Admin\Users\UserController@edit_user_detail');
         Route::post('updateUserStatus','Api\Admin\Users\UserController@edit_user_status');
+        Route::post('manageStatus','Api\Admin\Users\UserController@manage_status');
         Route::delete('deleteUser/{user_id}','Api\Admin\Users\UserController@delete_user');
 
         // DRIVER

@@ -336,6 +336,44 @@ class UserRepository extends Controller
         ], 200);
     }
 
+    // manage status
+    public function manage_status($request)
+    {
+        $input = $request->except(['user_id']);
+        $input['updated_date'] = date('Y-m-d H:i:s');
+
+        // update status
+        User::where('user_id', $request['user_id'])->update($input);
+        $user =  User::where('user_id', $request['user_id'])->first();
+
+        if($request['status']==1)
+		{
+			$message='Hi '.$user['first_name'].", Your Account Is verified By Administrator.";
+		}
+        else
+        {
+			$message='Hi '.$user['first_name'].", Your Account Is Deactivated By Administrator.";
+        }
+        
+        $device_type = $user['device_type'];
+		$device_token = $user['device_token'];
+        $type = 'account_verify';
+        
+		if($this->sentNotificationOnVerified($message,$device_token,$type, $device_type))
+		{
+            $this->store_notification($request['user_id'],'verify_user',$message);
+        }
+
+        // get user details
+        $get_user_detail = $this->get_user_detail($request);
+
+        return response()->json([
+            'status'    => true,
+            'message'   => 'update successfull',
+            'data'    => $get_user_detail->original['data'],
+        ], 200);
+    }
+
     // delete user
     public function delete_user($request, $user_id)
     {

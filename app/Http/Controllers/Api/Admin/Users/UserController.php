@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Repositories\Api\Admin\UserRepository;
 use App\Http\Requests\Api\Admin\User\DeleteUserRequest;
 use App\Http\Requests\Api\Admin\User\GetUserListRequest;
+use App\Http\Requests\Api\Admin\User\ManageStatusRequest;
 use App\Http\Requests\Api\Admin\User\GetUserDetailRequest;
 use App\Http\Requests\Api\Admin\User\EditUserDetailRequest;
 use App\Http\Requests\Api\Admin\User\EditUserStatusRequest;
@@ -76,6 +77,21 @@ class UserController extends Controller
         }   
 
         return $this->user->edit_user_status($request);
+
+    }
+
+    // manage status
+    protected function manage_status(ManageStatusRequest $request)
+    {
+        if ($request->validator->fails()) {
+            return response()->json([
+                'status'    => false,
+                'message'   => 'parameter invalid', 
+                'errors'    => $request->validator->errors(),
+            ], 200);
+        }   
+
+        return $this->user->manage_status($request);
 
     }
 
