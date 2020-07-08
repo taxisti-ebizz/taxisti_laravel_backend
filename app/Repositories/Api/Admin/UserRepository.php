@@ -160,7 +160,22 @@ class UserRepository extends Controller
                         $query->where('verify',$verify);
                     }
                 }
-                
+
+                if(!empty($filter->status)) // status filter
+                {
+                    
+                    $status = explode(',',$filter->status);
+                    if(count($status) > 1)
+                    {
+                        $query->whereBetween('status',[0,1]);
+                    }
+                    else
+                    {
+                        $status = $status[0] == 2 ? 0 : 1; 
+                        $query->where('status',$status);
+                    }
+                }
+
                 if(!empty($filter->complete_ride)) // complete_ride filter
                 {
                     $complete_ride = explode('-',$filter->complete_ride);

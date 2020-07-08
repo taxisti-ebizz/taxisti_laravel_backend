@@ -318,6 +318,21 @@ class DriverRepository extends Controller
                     }
                 }
 
+                if(!empty($filter->status)) // status filter
+                {
+                    
+                    $status = explode(',',$filter->status);
+                    if(count($status) > 1)
+                    {
+                        $query->whereBetween('status',[0,1]);
+                    }
+                    else
+                    {
+                        $status = $status[0] == 2 ? 0 : 1; 
+                        $query->where('status',$status);
+                    }
+                }
+
                 if(!empty($filter->driver_rides)) // driver_rides filter
                 {
                     $driver_rides = explode('-',$filter->driver_rides);
