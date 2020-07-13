@@ -142,6 +142,8 @@ Route::prefix('common')->group(function () {
     Route::post('storePassword','Api\App\AppCommonController@storePassword');
     Route::post('forceUpdateAndroid','Api\App\AppCommonController@force_update_android');
     Route::post('forceUpdateIos','Api\App\AppCommonController@force_update_ios');
+    Route::post('getCmsPage','Api\App\AppCommonController@get_cms_page');
+
 
 
 
@@ -156,7 +158,6 @@ Route::prefix('common')->group(function () {
         Route::post('checkLogin','Api\App\AppCommonController@check_login');
         Route::post('contactUs','Api\App\AppCommonController@contact_us');
         Route::delete('deletePromotion/{id}','Api\App\AppCommonController@delete_promotion');
-        Route::post('getCmsPage','Api\App\AppCommonController@get_cms_page');
         Route::post('getRatting','Api\App\AppCommonController@get_ratting');
         Route::post('getRequestDetail','Api\App\AppCommonController@get_request_detail');
         Route::post('logout','Api\App\AppCommonController@logout');
