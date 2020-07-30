@@ -622,7 +622,7 @@ class AppCommonRepository extends Controller
                 }
                 
                 $value['request_id'] = $value['id'];   
-                $value['profile_pic'] = $user_detail['profile_pic'];  
+                $value['profile_pic'] = $user_detail['profile_pic'] != '' ? env('AWS_S3_URL').$user_detail['profile_pic'] : '';  
                 $value['first_name'] = $user_detail['first_name'];   
                 $value['last_name'] = $user_detail['last_name'];   
                 $value['ratting'] = $user_detail['ratting'];
