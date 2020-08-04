@@ -363,16 +363,17 @@ class UserRepository extends Controller
 
         if($request['status']==1)
 		{
-			$message='Hi '.$user['first_name'].", Your Account Is verified By Administrator.";
+            $message='Hi '.$user['first_name'].", Your Account Is verified By Administrator.";
+            $type = 'user_activate';
 		}
         else
         {
-			$message='Hi '.$user['first_name'].", Your Account Is Deactivated By Administrator.";
+            $message='Hi '.$user['first_name'].", Your Account Is Deactivated By Administrator.";
+            $type = 'user_deactivate';
         }
         
         $device_type = $user['device_type'];
 		$device_token = $user['device_token'];
-        $type = 'account_verify';
         
 		if($this->sentNotificationOnVerified($message,$device_token,$type, $device_type))
 		{
