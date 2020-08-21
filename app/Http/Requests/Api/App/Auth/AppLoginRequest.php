@@ -31,7 +31,7 @@ class AppLoginRequest extends FormRequest
     {
         return [
             // 'email_id' => 'required|string|email|max:255',
-            'password' => 'required|string|min:8',
+            'password' => 'required|string|min:6',
             'phone' => 'required|exists:taxi_users,mobile_no',
             'user_type' => 'required',
             'device_type' => 'required',

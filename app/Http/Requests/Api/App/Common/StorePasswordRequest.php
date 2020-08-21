@@ -31,7 +31,7 @@ class StorePasswordRequest extends FormRequest
     {
         return [
             'phone' => 'required|exists:taxi_users,mobile_no',
-            'password' => 'required'
+            'password' => 'required|string|min:6'
         ];
     }
 }
